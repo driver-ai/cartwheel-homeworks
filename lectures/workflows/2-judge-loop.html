@@ -1,0 +1,491 @@
+<title>The Judge Loop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* layout: three flowchart figures stacked, numbered gloss column beside each, same grammar as the Taxonomy Loop reference */
+  :root {
+    --bg: #f6f4ef;
+    --panel: #ffffff;
+    --fg: #1d1e1b;
+    --muted: #6b6a62;
+    --line: #dbd8cd;
+    --accent: #0f6e63;
+    --on-accent: #ffffff;
+    --note-bg: #eef1ea;
+    --warn: #a35d12;
+    --warn-soft: #f4e6d4;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171a;
+      --panel: #1c1f21;
+      --fg: #e9e7e0;
+      --muted: #9a988f;
+      --line: #35382f;
+      --accent: #57d6c4;
+      --on-accent: #0a1512;
+      --note-bg: #1f2420;
+      --warn: #e2a356;
+      --warn-soft: #3a2c18;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171a;
+    --panel: #1c1f21;
+    --fg: #e9e7e0;
+    --muted: #9a988f;
+    --line: #35382f;
+    --accent: #57d6c4;
+    --on-accent: #0a1512;
+    --note-bg: #1f2420;
+    --warn: #e2a356;
+    --warn-soft: #3a2c18;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .page {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 40px 16px 64px;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: clamp(30px, 6vw, 42px);
+    line-height: 1.08;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .intro {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 60ch;
+    margin: 0 0 40px;
+  }
+  .intro strong { color: var(--fg); font-weight: 600; }
+  .intro code { font-family: "IBM Plex Mono", monospace; font-size: .92em; background: var(--note-bg); padding: 1px 5px; border-radius: 4px; }
+
+  figure {
+    margin: 0 0 18px;
+    padding: 20px 14px 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .figure-grid {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) 300px;
+    gap: 16px 28px;
+    align-items: start;
+  }
+  figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+  }
+  .block-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+  .block-notes .tag {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    color: var(--accent);
+    margin: 0 0 3px;
+  }
+  .block-notes p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fg);
+  }
+  .block-notes code { font-family: "IBM Plex Mono", monospace; font-size: .92em; background: var(--note-bg); padding: 0 4px; border-radius: 3px; }
+  figcaption {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  figcaption b { color: var(--fg); font-weight: 600; }
+
+  .note {
+    background: var(--note-bg);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin: 0 0 48px;
+    max-width: 720px;
+  }
+  .note.warn { background: var(--warn-soft); border-color: var(--warn); }
+  .note h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0 0 10px;
+  }
+  .note ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .note li {
+    margin: 0 0 9px;
+    font-size: 14.5px;
+  }
+  .note li:last-child { margin-bottom: 0; }
+  .note li b { color: var(--fg); }
+  .note code { font-family: "IBM Plex Mono", monospace; font-size: .92em; background: var(--panel); padding: 1px 5px; border-radius: 4px; }
+
+  table.matrix {
+    border-collapse: collapse;
+    margin: 4px 0 18px;
+    font-size: 13.5px;
+  }
+  table.matrix th, table.matrix td {
+    border: 1px solid var(--line);
+    padding: 10px 18px;
+    text-align: center;
+  }
+  table.matrix thead th { color: var(--muted); font-weight: 500; background: none; border: none; border-bottom: 1px solid var(--line); }
+  table.matrix tbody th { color: var(--muted); font-weight: 500; text-align: right; background: none; border: none; border-right: 1px solid var(--line); }
+  table.matrix td.agree { color: var(--accent); font-weight: 600; background: var(--panel); }
+  table.matrix td.err { color: var(--warn); font-weight: 600; background: var(--panel); }
+
+  .phase-tag {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 6px;
+  }
+
+  .metrics {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 48px;
+    font-size: 14px;
+    max-width: 560px;
+  }
+  .metrics caption {
+    text-align: left;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .metrics th, .metrics td {
+    text-align: left;
+    padding: 8px 14px 8px 0;
+    border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  .metrics th { color: var(--muted); font-weight: 500; font-size: 12.5px; }
+  .metrics td.num { font-family: "IBM Plex Mono", monospace; }
+  .metrics tr.final td { color: var(--fg); font-weight: 600; }
+
+  footer {
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+    margin-top: 8px;
+  }
+  footer code { font-family: "IBM Plex Mono", monospace; }
+
+  @media (max-width: 860px) {
+    .figure-grid { grid-template-columns: 1fr; }
+    .block-notes {
+      margin-top: 4px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .page { padding: 28px 16px 48px; }
+    figure { padding: 16px 10px 14px; }
+  }
+</style>
+
+<div class="page">
+
+  <p class="eyebrow">LLM judges, generalized</p>
+  <h1>The Judge Loop</h1>
+  <p class="intro">
+    How a human-labeled failure mode becomes a validated LLM judge. Three phases:
+    <strong>prepare</strong> a judge-safe split into a training set, a development set, and a
+    held-out test set; <strong>iterate</strong> against the development set, inspecting every
+    disagreement before editing the prompt; then <strong>freeze the prompt and score it
+    exactly once</strong> against the test set, data it has never seen.
+  </p>
+
+  <div class="note">
+    <h2>Before you start</h2>
+    <ul>
+      <li><b>One evaluator, one failure mode.</b> Everything below runs for a single mode. A product under evaluation usually has several; repeat the whole loop per mode, each with its own split, its own prompt, and its own frozen version &mdash; don't fold several modes into one judge.</li>
+      <li><b>An LLM judge is one kind of evaluator, not the default.</b> Use it for modes that need interpretation &mdash; tone, relevance, whether a reply actually addresses what was asked. When a mode can be checked mechanically (a schema violation, a banned phrase, a broken link, a missing required field), a deterministic, code-based evaluator is simpler, cheaper, and exactly reproducible; save this loop for what code genuinely can't check.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <h2>What each set is actually for</h2>
+    <ul>
+      <li><b>The training set</b> is the only one the prompt ever <i>contains</i>. A handful of its labeled traces get copied, verbatim, into the prompt text as worked examples (Figure 1, step 1.D) &mdash; the judge reads them every time it runs, the way a textbook's worked example stays on the page.</li>
+      <li><b>The development set</b> never appears in the prompt. You run the finished prompt against it from the outside and compare its verdicts to the human labels; that outside comparison, not anything written into the prompt, is where it does its work. It's what Figure 2 iterates against, over and over.</li>
+      <li><b>The test set</b> is handled exactly like the development set &mdash; run from the outside, never pasted into the prompt &mdash; but scored exactly once, after the prompt is frozen (Figure 3), so the result is an honest read instead of one more round of fitting.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <h2>Sizing this in practice</h2>
+    <ul>
+      <li><b>Labels:</b> at least 30 present / 30 absent from independent conversations; closer to 100 total gives tighter confidence intervals.</li>
+      <li><b>Split:</b> 20% training set / 40% development set / 40% test set, stratified, with a minimum-per-class guard on the development and test sets.</li>
+      <li><b>Revisions:</b> at most two, counted from the first draft. Explain why you stopped revising.</li>
+      <li><b>Model:</b> pin one judge model for the whole process; the development and test sets must use the same one.</li>
+      <li><b>Metric:</b> TPR and TNR with a 95% Wilson interval each, never raw agreement &mdash; agreement hides a judge that always guesses the majority class.</li>
+      <li><b>Resuming:</b> if a batch run is interrupted, rerun with the same judge ID &mdash; completed predictions are cached, so you only pay for what's missing. A revised prompt is registered as a new judge ID and evaluated fresh.</li>
+    </ul>
+  </div>
+
+  <p class="phase-tag">Phase 1 of 3</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 650 420" role="img"
+         aria-label="A short pipeline: reuse the existing failure mode and its human labels, export a judge-safe trace snapshot with no labels or review metadata, split the labels into a training set, a development set, and a held-out test set, then draft the first prompt version using only training-set examples.">
+      <defs>
+        <marker id="arrowA" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <rect x="150" y="16" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">1.A  Reuse the mode and its labels</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10.5" fill="var(--muted)">no relabeling from scratch</text>
+
+        <line x1="320" y1="72" x2="320" y2="108" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowA)"/>
+
+        <rect x="150" y="110" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="132" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">1.B  Export a judge-safe snapshot</text>
+        <text x="320" y="150" text-anchor="middle" font-size="10.5" fill="var(--muted)">trace_id + messages only</text>
+
+        <line x1="320" y1="166" x2="320" y2="202" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowA)"/>
+
+        <rect x="150" y="204" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="226" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">1.C  Split into train / dev / test</text>
+        <text x="320" y="244" text-anchor="middle" font-size="10.5" fill="var(--muted)">20% / 40% / 40%, stratified</text>
+
+        <line x1="320" y1="260" x2="320" y2="296" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowA)"/>
+
+        <rect x="150" y="298" width="340" height="60" rx="10" fill="var(--panel)" stroke="var(--accent)" stroke-width="2.5"/>
+        <text x="320" y="322" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">1.D  Draft v0 from the training set</text>
+        <text x="320" y="340" text-anchor="middle" font-size="10.5" fill="var(--muted)">definition, boundary, 3 worked examples</text>
+
+        <line x1="320" y1="358" x2="320" y2="394" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowA)"/>
+        <text x="320" y="412" text-anchor="middle" font-size="12.5" fill="var(--accent)" font-weight="600">To Figure 2</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">1.A</span><p>Pick a mode that already has a definition, a boundary, and enough independent labels. Keep whichever label convention your existing files already use consistent throughout &mdash; never mix two conventions for the same mode.</p></div>
+      <div><span class="tag">1.B</span><p>Keep only the identifier and the message list the judge needs to decide: earlier turns for context, the tool calls and results that bear on the decision, the final reply. Labels, review notes, and scenario metadata never enter this file &mdash; that's the answer leaking into the question.</p></div>
+      <div><span class="tag">1.C</span><p>Split against the frozen snapshot's trace ids, not the raw label file, so no set can include a trace that didn't make the judge-safe cut. Freeze the resulting split file once checked; don't regenerate it mid-process.</p></div>
+      <div><span class="tag">1.D</span><p>Choose one clear pass, one clear fail, and one deliberately borderline example, all from the training set, and copy them into the prompt text as worked examples &mdash; this is the one place the judge actually reads labeled data directly. Development-set and test-set traces never enter the prompt; that's the same leak as 1.B, one phase later.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 1.</b> Preparing a judge-safe split. The expensive part &mdash; getting to 30+ labels of each class from independent conversations &mdash; is assumed done; this phase is bookkeeping that keeps the later phases honest.</figcaption>
+  </figure>
+
+  <p class="phase-tag">Phase 2 of 3</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 650 850" role="img"
+         aria-label="Run the judge on the development set, producing a verdict and critique for every trace next to its human label. Filter to the disagreements and inspect every one before editing anything. For each disagreement, classify it: the judge is wrong, the label is wrong, or the definition's boundary is unclear. Once every disagreement has been classified, revise the prompt based on what was found and register the result as one new prompt version, then rerun against the whole development set. Check whether a revision is still available and another pass is worth it; if so, loop back to running against the development set again; if not, exit to phase three, explaining why revising stopped."
+         style="overflow: visible;">
+      <defs>
+        <marker id="arrowB" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <!-- header: run dev batch -->
+        <rect x="150" y="16" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.0  Run the judge on the dev set</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10.5" fill="var(--muted)">verdict + critique beside each human label</text>
+
+        <line x1="320" y1="72" x2="320" y2="96" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowB)"/>
+
+        <!-- loop container -->
+        <rect x="50" y="98" width="540" height="326" rx="14" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text x="72" y="120" font-size="10" letter-spacing="0.06em" fill="var(--accent)" font-family="IBM Plex Mono, monospace">INSPECT EVERY DISAGREEMENT FIRST</text>
+
+        <!-- 2.A pick next disagreement -->
+        <rect x="170" y="134" width="300" height="50" rx="9" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="154" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">2.A  Pick the next disagreement</text>
+        <text x="320" y="171" text-anchor="middle" font-size="10" fill="var(--muted)">read the full trace</text>
+
+        <line x1="320" y1="184" x2="320" y2="206" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowB)"/>
+
+        <!-- 2.B classify -->
+        <rect x="150" y="208" width="340" height="60" rx="9" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="230" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">2.B  Classify it</text>
+        <text x="320" y="247" text-anchor="middle" font-size="10" fill="var(--muted)">judge wrong &#183; label wrong &#183; boundary unclear</text>
+        <text x="320" y="261" text-anchor="middle" font-size="10" fill="var(--muted)">(exactly one, every time)</text>
+
+        <line x1="320" y1="268" x2="320" y2="294" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowB)"/>
+
+        <!-- 2.C diamond: more disagreements left? -->
+        <polygon points="320,296 470,351 320,406 170,351" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="346" text-anchor="middle" font-size="11" fill="currentColor">2.C  Disagreements</text>
+        <text x="320" y="361" text-anchor="middle" font-size="11" fill="currentColor">left to inspect?</text>
+
+        <!-- 2.C yes -> loop back to 2.A -->
+        <polyline points="170,351 90,351 90,159 168,159" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowB)"/>
+        <text x="90" y="255" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 90 255)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes &mdash; next one</text>
+
+        <!-- 2.C no -> exit container, straight down -->
+        <line x1="320" y1="406" x2="320" y2="464" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowB)"/>
+        <text x="340" y="432" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no, none left</text>
+
+        <!-- revise + register -->
+        <rect x="150" y="466" width="340" height="60" rx="10" fill="var(--panel)" stroke="var(--accent)" stroke-width="2.5"/>
+        <text x="320" y="489" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.D  Revise the prompt, register a version</text>
+        <text x="320" y="507" text-anchor="middle" font-size="10.5" fill="var(--muted)">a label or boundary fix isn't itself a revision</text>
+
+        <line x1="320" y1="526" x2="320" y2="562" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowB)"/>
+
+        <!-- rerun -->
+        <rect x="150" y="564" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="586" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.E  Rerun against the dev set</text>
+        <text x="320" y="604" text-anchor="middle" font-size="10.5" fill="var(--muted)">the new version, evaluated fresh</text>
+
+        <line x1="320" y1="620" x2="320" y2="656" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowB)"/>
+
+        <!-- diamond: revision budget -->
+        <polygon points="320,658 490,718 320,778 150,718" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="713" text-anchor="middle" font-size="11" fill="currentColor">2.F  Revision left, and</text>
+        <text x="320" y="728" text-anchor="middle" font-size="11" fill="currentColor">worth another pass?</text>
+
+        <!-- yes -> long loop back to the very top (2.0) -->
+        <polyline points="150,718 16,718 16,40 148,40" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowB)"/>
+        <text x="16" y="379" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 16 379)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes &mdash; rerun on the dev set</text>
+
+        <!-- no -> exit to figure 3 -->
+        <line x1="320" y1="778" x2="320" y2="806" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowB)"/>
+        <text x="320" y="826" text-anchor="middle" font-size="12.5" fill="var(--accent)" font-weight="600">No &mdash; explain why, then Figure 3</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">2.0</span><p>Score every trace in the dev set and show the judge's verdict and critique right beside the human label. Overall agreement doesn't belong here &mdash; a judge that always guesses the majority class can win on agreement while being useless; TPR and TNR are what you actually read (see the matrix below).</p></div>
+      <div><span class="tag">2.A &ndash; 2.C</span><p>Go through every disagreement before touching the prompt. For each one, decide exactly one of three things: the <b>judge</b> misread a reply that was actually fine or actually bad (a prompt problem); the <b>label</b> doesn't match the definition once you reread the trace (a label problem); or the <b>definition's boundary</b> doesn't clearly cover this case either way (a spec problem that may affect other labels too, not just this one).</p></div>
+      <div><span class="tag">2.D</span><p>Only once every disagreement is classified do you edit the prompt. Each prompt edit counts as one registered version against the revision budget &mdash; fixing a label or clarifying the boundary changes the ground truth, not the judge, and isn't itself a revision.</p></div>
+      <div><span class="tag">2.E</span><p>Evaluate the new version against the whole dev set.</p></div>
+      <div><span class="tag">2.F</span><p>At most two revisions, counted from the first draft. Stop at the cap even with real disagreements left, and explain why in the write-up.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 2.</b> Iterating on disagreements. Every disagreement in the development set gets inspected and classified before the prompt is edited; each edit is registered as one new version, up to two revisions.</figcaption>
+  </figure>
+
+  <div class="note">
+    <h2>Reading the disagreement matrix</h2>
+    <table class="matrix">
+      <thead><tr><th></th><th>Human: present</th><th>Human: absent</th></tr></thead>
+      <tbody>
+        <tr><th>Judge: present</th><td class="agree">agree</td><td class="err">false alarm</td></tr>
+        <tr><th>Judge: absent</th><td class="err">miss</td><td class="agree">agree</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><b>Rate on absent</b> (the handout's TPR, since Pass/absent is defined as the positive class): of the traces where the failure is genuinely absent, what fraction did the judge also call absent? <code>agree &divide; (agree + false alarm)</code> down the absent column.</li>
+      <li><b>Rate on present</b> (the handout's TNR): of the traces where the failure is genuinely present, what fraction did the judge also call present? <code>agree &divide; (agree + miss)</code> down the present column.</li>
+      <li><b>Both numbers, always.</b> A judge that always says "absent" scores perfectly on one rate and zero on the other while posting high overall agreement whenever failures are rare &mdash; which is exactly the case overall agreement hides.</li>
+      <li>Report each rate with a 95% Wilson interval, not just the point estimate; when the dev and test sets only hold a few dozen traces each, that interval is often wider than the gap between two prompt versions.</li>
+    </ul>
+  </div>
+
+  <p class="phase-tag">Phase 3 of 3</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 650 420" role="img"
+         aria-label="Choose the prompt version with the best results on the development set and freeze it, which is a one-way action per version. Run that frozen version once against the held-out test set, using the same judge model as development. Report the confusion counts, TPR, TNR, and their confidence intervals. Decide whether to use the judge based on those rates, their uncertainty, and whether the remaining errors have an identifiable cause.">
+      <defs>
+        <marker id="arrowC" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <rect x="150" y="16" width="340" height="60" rx="10" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="320" y="41" text-anchor="middle" font-size="13" font-weight="700" fill="var(--on-accent)">3.A  Freeze the chosen version</text>
+        <text x="320" y="60" text-anchor="middle" font-size="10.5" fill="var(--on-accent)" opacity="0.85">one-way per version, no more iterating on the dev set</text>
+
+        <line x1="320" y1="76" x2="320" y2="112" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowC)"/>
+
+        <rect x="150" y="114" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="136" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">3.B  Run once on the test set</text>
+        <text x="320" y="154" text-anchor="middle" font-size="10.5" fill="var(--muted)">same judge model throughout, no peeking first</text>
+
+        <line x1="320" y1="170" x2="320" y2="206" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowC)"/>
+
+        <rect x="150" y="208" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">3.C  Report counts, TPR, TNR, CIs</text>
+        <text x="320" y="248" text-anchor="middle" font-size="10.5" fill="var(--muted)">confusion matrix, Wilson intervals</text>
+
+        <line x1="320" y1="264" x2="320" y2="300" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrowC)"/>
+
+        <rect x="150" y="302" width="340" height="60" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="327" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">3.D  Decide whether to use it</text>
+        <text x="320" y="345" text-anchor="middle" font-size="10.5" fill="var(--muted)">rates, uncertainty, and whether errors explain</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">3.A</span><p>Pick the version using the dev-set results, then freeze it. Freezing is one-way: a later fix means a new version, which re-locks the test set and means paying the evaluation cost again.</p></div>
+      <div><span class="tag">3.B</span><p>Run exactly once. The whole point of holding the test set out was to get one honest read &mdash; looking, reacting, and re-running defeats it the same way peeking at the dev set during iteration would have.</p></div>
+      <div><span class="tag">3.C</span><p>Report TPR and TNR with their intervals, not a single accuracy number. When the dev and test sets only hold a few dozen traces each, the interval is often the most informative part of the result.</p></div>
+      <div><span class="tag">3.D</span><p>A judge can be worth using even with modest rates, if the errors are understood and the use case tolerates them &mdash; or not worth using even with a decent headline number, if the interval is too wide to trust. That judgment belongs to whoever is deciding to ship it.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 3.</b> Freezing and testing. Everything before <b>3.A</b> is allowed to iterate; everything from <b>3.A</b> on is a single, unrepeated measurement.</figcaption>
+  </figure>
+
+  <div class="note">
+    <h2>Dev-set numbers vs. test-set numbers</h2>
+    <ul>
+      <li><b>Dev-set numbers are optimistic by construction</b> &mdash; you looked at its disagreements to revise the prompt, so some of the improvement reflects fitting the examples you inspected.</li>
+      <li><b>The test set is the unbiased read.</b> Report it once, after freezing, instead of treating dev-set alignment as the final result.</li>
+    </ul>
+  </div>
+
+  <footer>
+    A process guide for building and validating an LLM judge against human labels &mdash; not a record of any particular run.
+  </footer>
+
+</div>

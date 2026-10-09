@@ -1,0 +1,1328 @@
+Shreya Shankar
+
+Hmm.
+00:04:51
+
+I wonder why my headphones are not being…
+00:04:52
+Hamel Husain
+
+I can't hear you.
+00:04:56
+Shreya Shankar
+
+Well, I want it to go through my AirPods, but that is not working out for me, let's see.
+00:04:58
+
+My AirPods Pro.
+00:05:05
+
+Okay, can you hear me?
+00:05:08
+Hamel Husain
+
+Yeah, I can hear you. Can you hear me?
+00:05:10
+Shreya Shankar
+
+Excellent. Yes.
+00:05:11
+
+Okay, I'm super excited. Let me share my screen.
+00:05:12
+
+So that way we can get the slides up.
+00:05:16
+Hamel Husain
+
+Welcome, everybody!
+00:05:20
+Shreya Shankar
+
+I'm so happy everyone has their faces.
+00:05:23
+
+available on Zoom. One of my greatest fears…
+00:05:26
+
+was that people would turn off their cameras, and Hamel and I would be speaking to the void, which is a horrible experience, so thank you for doing that.
+00:05:30
+
+Shall we get started?
+00:05:40
+Hamel Husain
+
+Yeah, I think it's a good time to kick it off.
+00:05:42
+Shreya Shankar
+
+Great, let's kick it off. So because there's a bunch of people in the chat.
+00:05:44
+
+We ask that you ask your questions if you're in Discord. Folks, hopefully, are already in Discord, and then we can respond to them later. If you want to ask the questions in the chat, you can, but I will tell you, sometimes it gets very distracting for me and Hamel, so we might kind of ignore it and try to get to it at the end, and we can't really promise that we're going to see everything in chat, because it all disappears eventually.
+00:05:49
+
+Okay. Just to echo.
+00:06:12
+Hamel Husain
+
+that, yeah, we do answer every single question in Discord. Now, if you joined the course in the last few days, you may not have access to Discord yet. It takes up to 72 hours to add you.
+00:06:14
+
+But you'll get… you should have gotten an email with the subject line, you're enrolled in AI evals for engineers and PMs.
+00:06:25
+
+And that email contains a Google Doc.
+00:06:33
+
+please read that Google Doc carefully. It has a lot of instructions on how to access all the materials from this course, so sometimes it goes to your spam. But it's really important you have that.
+00:06:37
+
+And for the questions in the Zoom chat, I would recommend waiting a little bit, because a lot of times, we've done this so many times that your questions will get answered, probably, like, there's a high chance it'll get answered in the presentation itself.
+00:06:49
+
+Because we anticipate what you're going to ask in a lot of cases.
+00:07:01
+Shreya Shankar
+
+I mean, you can still ask them. Also, asking them in the Zoom chat, feel free to answer each other's questions, like, where's the link to X? I'm definitely not going to be able to answer that as I'm speaking, but other folks might be able to.
+00:07:06
+Hamel Husain
+
+Oh, one more thing, the most popular question, sorry, the most popular question is, is this recorded, and where are the slides? That is… everything is recorded, it's available within 48 hours after we do the session, it's posted to Maven, the slides are also in Maven.
+00:07:18
+
+So, if anyone else is asking that in the chat, please help us out and answer that for us. Thank you.
+00:07:34
+Shreya Shankar
+
+Alright, all the really quick, boring stuff aside, we'll probably repeat that a couple of times as people trickle in. But anyways, let's first start by telling you about ourselves. So, my name is Shreya, I'm about to be a computer science professor. I started running this course with Hamel a year ago, a little over a year ago. We really thought it was going to be a one-time thing. We were like, oh my gosh, we've helped people with evals, at least a dozen companies.
+00:07:42
+
+let's just, you know, make a course so that people don't keep asking us to spend one-on-one time with them, and we can just communicate with everybody. It turns out that agents and AI have only grown in popularity, and, you know, we are still surprised every day that it's still exciting and still happening. I'm primarily a researcher.
+00:08:06
+
+Hamel is pretty much the most experienced practitioner that I know in this area. Maybe I'll let Hamel tell a little bit about himself.
+00:08:24
+Hamel Husain
+
+Yeah, sure. So I'm Hamel. I've been working primarily in data science machine learning for a little bit more than 25 years. I've worked at a lot of different startups, like Airbnb, GitHub, some other smaller startups, and I've done a lot of open source work as well.
+00:08:32
+
+Been a maintainer of a lot of MLOps-type projects, and right now I'm an independent consultant. I pretty much focus on evals exclusively.
+00:08:50
+Shreya Shankar
+
+What?
+00:09:00
+
+And…
+00:09:01
+
+We're very lucky in this course to have two amazing, awesome teaching assistants, both in different parts of the world, so we can all answer questions pretty much at any time of day. I don't know if they're able to make this current session, but I'll introduce both of them quite briefly. One, Antaripa. She lives in India, so she's in the Indian time zone. She's been working with us for a few months now, really helping us get a
+00:09:03
+
+lot of the curriculum up and going behind the scenes. So, she's done all of the homeworks part of the course. She's also created onboarding videos to help you get started with the homework if it looks a little bit too overwhelming. So I highly encourage you to watch those as we keep going.
+00:09:28
+
+Then, Eleanor. Eleanor is located in Switzerland, correct me if I'm wrong, Hamel, but Eleanor is someone who's also very seasoned with AI, also primarily on the leadership side, so Eleanor has formerly been an engineering manager, principal engineering manager at both Microsoft and Google, and really helped teams transition through adopting AI into their company. So we're very lucky to have both of them, and hopefully
+00:09:44
+
+You know, folks will also feel free to pick their brains about questions that you might have about the respective companies and applications that they have worked on.
+00:10:08
+
+So, with that aside, now, who are all of you? Who's in the room? Actually, I made this slide a week ago, so it's probably out of date, but generally, it's primarily engineers, product managers, data scientists, or AI scientists. Most of you folks are in your… starting your journey of AI evals. There are some seasoned veterans. There are also many folks who have taken this course repeatedly.
+00:10:18
+
+And so, you know, you probably know everything that we're about to say.
+00:10:42
+
+And also, most of your folks have been building real AI products in your companies, so that's quite exciting, and I highly encourage you to talk to each other on Discord. Something that we've found that's worked successfully for our students in the past, in past cohorts, is to, if you're facing some sort of evals problem or problem at work, you know, don't just keep it to yourself and come to office hours. Actually post in Discord, and a bunch of other people will comment on it.
+00:10:46
+
+because they're likely going through the same issue. The other thing is, one of the things people really like about the course is just, you know, you show up to office hours, you're just lurking in Discord, there's so much that you can learn from what people are doing. So please, you know, share what's going on, ask people for advice or questions, or share what worked well for you, because that's another hidden benefit of this community.
+00:11:11
+
+Folks really want to learn things all across the spectrum. I always really love looking at, you know, the first
+00:11:33
+
+I don't know what it's called on Maven, but, like, the pre-homework or some survey that you guys all fill out. So, why are you here? What do you want to learn? So, strategy to improve agents, just some more systematic method, a lot of stuff around automating and scaling, that's a huge part of evals. You know, people kind of understand that you need to look at your AI outputs manually, but what are the skills and techniques to apply that at scale across all of your agents and
+00:11:39
+
+And then also how to define, you know, a systematic evaluation strategy to communicate to other stakeholders in the company.
+00:12:04
+
+So fortunately, you will learn, hopefully, all of these things, and there's probably more that I didn't get to.
+00:12:11
+
+How will you learn all of this? So, we have 9 lectures in this course. That's a bit more than in previous versions. We have this extra lecture in the beginning, today's lecture, a more soft introduction to, you know, how we're gonna get started. We have 10 office hours, probably more are gonna come. We just…
+00:12:18
+
+always end up adding more. We have a homework assignment to accompany every single lecture. There's one lecture with two homework assignments.
+00:12:36
+
+We promise you don't have to do both of them, but I couldn't figure out… I couldn't bring myself to throw away one of them, so, you know, we… we have those. And all of these homework assignments,
+00:12:46
+
+they are accompanied by video deliverables. Deliverable is a strong word for you, you know, you're not graded on any of this, you're not gonna fail… you're not gonna, like, get a diploma from XYZ University from this, so you don't have to do it. We just encourage folks to make videos because, one, we will watch them, and then two, it really helps clarify what you did, especially when people are using AI agents and coding agents to assist with homework.
+00:12:56
+
+We have an accompanying course reader.
+00:13:21
+
+We also have an old version of the course reader that we will make accessible. That old version has a bunch of problems, or written exercises. The current version of the course reader does not have written exercises, because we figured most people are not actually doing them, but please do ask if you want written exercises, we'll come up with them.
+00:13:24
+
+Already mentioned about TAs, discords, maybe I'll let Hamel give a bit about the guest lectures that we've got coming up.
+00:13:43
+Hamel Husain
+
+Yeah, we'll have a guest lecture from Isaac on document processing. If you've taken this course before, you've heard from Isaac. I've worked with him a lot in the past. You'll get to know him a little bit in the coming weeks, so don't worry about that. And we'll have some other surprise guest lectures as we go along.
+00:13:51
+
+And I might even have some bonus lessons. And these are also… we always throw in some surprises as we go along.
+00:14:09
+
+To kind of… about what is going on in the current AI, sort of times. So just keep an eye out for that, you'll get emails.
+00:14:17
+
+Around that.
+00:14:26
+Shreya Shankar
+
+Yeah, and ask in Discord if there are certain topics you want to learn about, because the reason that we're a little bit flexible for this cohort is because the course has gone… undergone a huge revamp. So, part of it is we're looking for you guys to tell us what you want to learn, and then also the world moves so fast, you know, new models come out every day, and…
+00:14:27
+
+We want to also be flexible to accommodate new things as they come up.
+00:14:45
+
+Great! So let's dive in a little bit more into what we're gonna learn in the course. So we have 5 different modules, I mentioned 9 lectures. So actually, the front half of the course has more of the lectures. Module 1 is just, you know, how do you build an agent?
+00:14:50
+
+Most folks might already know this, but I find that it's helpful to think about building an agent from an observability perspective first. So the first version of your agent should be instrumented with tracing and observability to make all of the next steps easier for you. So some of the tools that we'll fixate on are the OpenAI Agents SDK, I'll talk about that today, and then OpenTelemetry and LangFuse. So LangFuse is an open source tool for tracing and observability that
+00:15:06
+
+We will repeatedly use throughout the course and in the homeworks.
+00:15:31
+
+Module 2 is all about error analysis. So, Hamel and I always preach to the skies, you know, look at your data.
+00:15:34
+
+So Module 2 will teach you about how to systematically look at your data and do this at scale. And there are a couple of skills that we have. When I say skills, I truly, literally mean skills for agents, so these are files that you provide to your agents for how to assist you or speed up your error analysis so you don't have to manually do all of it yourself.
+00:15:42
+
+So it's a little bit different from what we've taught in the past.
+00:16:03
+
+Module 3 is going to be all about continuous integration and continuous deployment. So you have looked at your data, you kind of know what failures arise, what does your tail of failure modes look like. Now, how do you think about curating what people might call evals or tasks that you put in the offline set? You put them in CI, for example, in GitHub Actions, and we'll also talk about what kind of metrics you might want to monitor in production, and
+00:16:07
+
+We'll just use LangFuse as a tool to do it, but you could probably do a lot of tools here.
+00:16:31
+
+We're having a module which has only one lecture, but we decided that was important to have this because people really care about it. So we have a module about security. So that is, what are the kinds of adversarial messages or inputs that your agents or your LLM pipelines might get? This is increasingly important, one, because regulation, like EUAI Act, is becoming more and more prominent.
+00:16:35
+
+And then two, you can kind of… I don't know if you read the news, but things like this Hugging Face OpenAI security incident, which I don't even know the full details on, but it's increasingly important, I think, to even just understand how to think about approaching security for agents.
+00:16:59
+
+And then finally, the last module, two lectures here are going to be around improving the AI agent. Now, actually, a lot of people come into the course thinking, like, hey, I need to figure out how to improve my agent. Like, that's why I'm here.
+00:17:14
+
+What they're always surprised to find is that we spent the least time talking about improvement. We spend, you know, 8, 7, 8…
+00:17:28
+
+sorry, 7 lectures, talking about everything else, like looking at your data, setting up your scaffolds, your CICD, your tests, such that improvement becomes very easy, and if we're very forward-looking, think, you know, a year from now, AI agents doing all of our coding within the organization, they should just be able to hill climb on all of the metrics and the tests that we set in all of the previous modules. So in this improvement, we'll go through, you know, fancy techniques.
+00:17:35
+
+like JEPA, if you're familiar with that, or you heard about prompt optimization. And we'll talk about cost reduction techniques like prompt caching, KV caching, model cascades. The reader will have a little bit about fine-tuning, but we will not get into that in the lectures.
+00:18:00
+
+So this is a high-level overview of, you know, AI Evals B2, or I don't know what we want to call it, we haven't changed the name, but it's kind of a different course. I'm super excited to teach it.
+00:18:15
+
+What will we talk about today? Today is introduction, building agents. So we're going to talk about the three golfs model, conceptual model for what are the challenges in building agents.
+00:18:26
+
+Then we're going to talk about this e-commerce agent that is going to be a running course example for us, so that's going to be the homework. We're going to build an e-commerce, kind of think, like, Shopify, if you're familiar with Shopify. We're going to build a customer support agent for that. We're going to talk through different ways to think about assembling agents, so what are the different… maybe you could just have a single monocall, or you could have a full-on agent. What does that even mean?
+00:18:38
+
+to that later. And then I'll walk through at a high level what the homework one is going to be. Shouldn't take
+00:19:03
+
+Too long, hopefully, is just to get your feet wet with the ecosystem here.
+00:19:09
+
+All right, are we ready to get started? Hamel, anything that I'm missing on, kind of, administrivia?
+00:19:15
+
+Before we get into content.
+00:19:20
+Hamel Husain
+
+Have you talked about the horse reader, or is that gonna come later?
+00:19:23
+Shreya Shankar
+
+Oh, good question. I think I mentioned briefly the course reader. There is a course reader released by a module, so every Wednesday we'll release it, or we'll update the version on the existing DocSend link. The DocSend link is in the onboarding email that Hamel mentioned.
+00:19:27
+
+Am I missing anything?
+00:19:45
+Hamel Husain
+
+No, that's it, yeah. Onboarding email is pinned to the chat, so there's a Google Doc.
+00:19:48
+Shreya Shankar
+
+Thank you very much.
+00:19:53
+Hamel Husain
+
+You can't miss it. It has every logistical question you could possibly want to answer in there.
+00:19:53
+Shreya Shankar
+
+Thank you very much.
+00:19:59
+
+Other things that I've missed, you know, feel free to just interject.
+00:20:00
+
+All right, 15 minutes, administrivia's over, so now let's get into the exciting content. So let's talk about the three goals. And before that, let's talk about why we want to have a conceptual model for building AI agents. It's because building AI agents, especially in a team, is very challenging.
+00:20:05
+
+it feels like, you know, it feels like you're playing this game of whack-a-mole. Hamel told me this analogy. You're playing this game of whack-a-mole, things just keep coming up, and you're just trying to hit these moles, and there's no good or systematic way to look at the whole problem, to assign resources to solving parts of the problem. The Three Golfs model is, like, a way to help think about, okay, how might we part… how might we think about all the challenges that are going to arise in our journey?
+00:20:23
+
+of building an AI system.
+00:20:48
+
+So here's this visual of the three gulfs, and I'll walk through each of them quite slowly. So you can think of… there are three entities that are involved in building AI agents, or pipelines, or whatever you want to call it. The first is this developer, so that's probably you, developer, PM, or the people building the product.
+00:20:50
+
+The second is the data, so that is, what data is the agent operating on? So maybe that's just open-ended.
+00:21:10
+
+requests from your customers. Maybe there's actually documents or something involved to retrieve in here. Maybe, I don't know, there's all sorts of… maybe there's images, or maybe you're, I don't know, a general purpose chatbot. I don't know. Think about all the data that's involved in your AI agent.
+00:21:18
+
+And then the third island, or the third entity here, is the AI agent, or the pipeline that you are riding and building. So, these three are… these three things are entirely different islands, and these gulfs are what sits in between them, that you
+00:21:36
+
+as the product builder, have to bridge when trying to build your entire system. So, the first gulf that people always run into is this gulf of comprehension.
+00:21:53
+
+Which is, imagine you're building this e-commerce
+00:22:05
+
+assistant, or you're building a customer support bot, what are all the kinds of requests that your users are going to ask? Most people don't know this up front. It requires you to sit and actually think about it, brainstorm right on a whiteboard what this might be. So understand this whole space.
+00:22:08
+
+of questions, and what behavior LLMs might have, so how they might respond to the questions.
+00:22:26
+
+And why is this hard, right? Because we have very limited bandwidth to read all of these possible requests in response, and the errors and the outliers are really not obvious at scale.
+00:22:34
+
+So I'll get into that in a little bit.
+00:22:45
+
+So that's a gulf of comprehension.
+00:22:47
+
+The second gulf is, okay, imagine you know what your data is, you want to write your props.
+00:22:49
+
+It turns out prompting is very difficult. Even though it's apparently a natural language, it should be very simple. Sometimes writing code is even easier because code is very precise, it has very well-defined behavior. Prompts are very fuzzy, right? You can say anything in a prompt, you have no idea if that's a good representation of your intent. So with prompting, right, developer intent is very hard to communicate, you have to be detailed, you have to be data-specific.
+00:22:56
+
+Prompting is so hard that probably 99% of prompts out there in production are written by AI agents themselves. Maybe it's 99.9%. I don't know, Hamel, you might have a better take on this, but most prompts are written by AI that I've seen, because it's that hard.
+00:23:20
+
+Then the third goal…
+00:23:36
+
+This third gulf is this, imagine you have written your prompts, you've written your agent.
+00:23:38
+
+Now, how do you make sure your agent actually performs well on every single request that it sees? Okay, how do you make sure it generalizes? So this is Gulf of Generalization.
+00:23:43
+
+If you're a software engineer, you have never had this problem before in your life, right? You've written your code, you know what it is, it's… the behavior is well-defined, it's gonna work when you have lots and lots of data coming in.
+00:23:56
+
+You know, the scale problems that you run into are more software problems, you know, making sure you conserve all of that traffic. And machine learning land and AI land is very different.
+00:24:08
+
+Right? You might be able to serve the traffic, but the model might see, oh, there's data that's out of distribution, it might get confused, it just simply is not consistent at scale. All of these things are not things that we've had to worry before in building software. Those are all the problems in generalization.
+00:24:18
+
+So these are 3 gulfs.
+00:24:34
+
+Why do I… why do we say this? It's because every time you're kind of debugging or building your system, you're kind of wearing a different hat. You're wearing the different golf hat. Sometimes you'll be looking at your data. Sometimes you'll be thinking, okay, how do I articulate this as a prompt? Sometimes you'll be thinking, oh gosh, like.
+00:24:36
+
+I need a dashboard because I want to know what my model is saying at scale, and it might feel like you're constantly circling around all of these vaults all the time. That is very normal, that is how AI agent development happens. A lot of people get confused. They're like, am I doing this correctly? Don't worry, you're doing it correctly. This is just the nature of building AI products.
+00:24:52
+
+Let's actually see what these gulfs look like.
+00:25:15
+
+in a real example application. So, one of my favorite… well, it's not very good, but what… a good teaching example that I really like of a failure is Air Canada's chatbot. So, a couple years back, in 2024, Air Canada had a chatbot that was supposedly just AI-powered or something, and…
+00:25:19
+
+basically, they got sued. What ended up happening was somebody, one of their customers, was chatting with the agent about a bereavement policy, so they were kind of flying for somebody's funeral, they had a refund request.
+00:25:41
+
+with respect to their flight for this, and Air Canada just said, oh yeah, you can, you know, get a refund anytime, like, for this kind of, situation. And it was wrong, that was not the right refund policy. And…
+00:25:54
+
+then eventually, later, Air Canada charged them or something, and then the customer sued, and then they had a whole tribunal in Canada, and then ruled Air Canada liable, and then Air Canada's response was to take down the chatbot. So…
+00:26:08
+
+Ultimately, you know, there's all of this that happened. So what really happened in all of this? I'll kind of illustrate the three gulfs through this Air Canada example.
+00:26:23
+
+So first, remember this gulf of Comprehension.
+00:26:33
+
+So it's all about reading your inputs and your outputs. You want to read all of your inputs to spot any outlier queries. You want to read all of your outputs to catch where the model is wrong.
+00:26:36
+
+What happened in the Air Canada setting, you know, I imagine nobody was reading these outputs, and probably for many different requests, the chatbot was confidently describing some non-existent policy, and then nobody really caught it until later, the customer sued.
+00:26:47
+
+So how do we solve this problem? It's going to be what we teach in the next lecture, which is going to be building interfaces to look at our data.
+00:27:03
+
+Hamel, any, like, stories that come to mind here? Or, like, people… I'm sure there are many, but, like, folks that you've worked with that haven't looked at your data, haven't looked at their data until something goes ob…
+00:27:12
+
+Absolutely blatantly wrong.
+00:27:24
+Hamel Husain
+
+All the time. It's basically the number one failure… way you can fail with evals is not looking at data.
+00:27:27
+
+You know, just the…
+00:27:33
+
+just the other day, I was working with a client of mine, and they were trying to use an LLM to classify documents, and
+00:27:36
+
+It was… it wasn't really working, and…
+00:27:48
+
+I said, okay, let's look at the prompt.
+00:27:52
+
+what's going on? And the prompt had some weird stuff in it, like, I am a data scientist.
+00:27:54
+
+help, you know, we are classifying documents, and all this, like… I'm like, why does the LM need to know that you're a data scientist? It was just very clear that someone just copied and pasted some boilerplate, or some… they let an AI write the prompt.
+00:28:00
+
+Without ever looking at it, and that was actually causing a lot of confusion. The LLM was getting confused.
+00:28:16
+Shreya Shankar
+
+Huh.
+00:28:22
+Hamel Husain
+
+So you should always look at the prompt, look at the data, we're gonna beat that into you in this course.
+00:28:23
+
+Someone should play a game where, in the office hours,
+00:28:29
+
+How many questions are answered by looking at the data?
+00:28:34
+
+You'll be shocked.
+00:28:37
+Shreya Shankar
+
+Yeah, that's true.
+00:28:41
+
+And the prompt, I guess prompt is data, so…
+00:28:43
+
+That's another thing. Okay, so this is a gulf of Comprehension.
+00:28:46
+
+Golf of specification.
+00:28:51
+
+And this one's actually really challenging when you have customer support chatbots. I've seen this several times, which is the behavior you want the chatbot to exhibit is kind of… it's complicated. It's this, like… think of it as, like, a bunch of if-else statements. Like, oh, if this policy applies, then do this, or if this other policy applies, then do something else. And then there's even nested conditionals. If policy A applies, but policy B also applies, then do something.
+00:28:54
+
+else, right? And specifying all of this in natural language is quite difficult. Most of the time, people don't specify everything. And so probably, maybe, what happened in Canada's case was that nobody specified which policies exist.
+00:29:19
+
+And then, more importantly, sometimes you also want to specify policies that don't exist. So, for example, like.
+00:29:35
+
+we blanket won't refund anything greater than $100, so that your model is, you know, not going to try to offer something like refunding a huge, very expensive international business class flight. I don't know.
+00:29:41
+
+But, yeah, so this is all about trying to specify what is good, what is not good, and then kind of to Hamel's point, is solving it with good prompt hygiene, good discipline, know what's in your prompt, know what tools your agent has access to, and where the gaps are.
+00:29:55
+
+I'm not going to do this, I don't want to embarrass anybody, but if we ask people to raise their hand for their AI agents, if they know exactly what's in their prompts, and exactly how many tools their agent has access to, I guarantee you that most of the people don't know. And I'm saying this for myself included, like, sometimes I just don't know everything that's in my agents, because I use AI to build them. So it's quite important to at least have a
+00:30:10
+
+basic understanding of what's happening. And we'll talk a little bit about how we can start doing that.
+00:30:35
+
+Okay, so last gulf before we move forward is this gulf of generalization, right? So you have a good prompt, you think, you kind of know what's in your data, you think.
+00:30:41
+
+But, unfortunately, models make mistakes. You know, they're… you can think of the model as trying to predict a distribution of outcomes for every single request, right? It's never going to get the perfect outcome. The model is learning, you know, distributions of the whole world, essentially. And so, it's going to make mistakes, especially when maybe a request comes in that's not representative of what's seen in training or what it's in its prompt.
+00:30:53
+
+And so perhaps what might happen is somebody who built this Air Canada support bot, maybe all of the standard questions that they asked worked totally fine, and nobody asked about bereavement fares. Because honestly, it's pretty niche, right? So how can you ensure that you build your system
+00:31:18
+
+to always recognize, like, oh, a niche query is coming. Let's go pull that into our set and make sense of them. I think one thing that people get stumped on is they see a lot of these stories with AI, and AI failures, they think, oh, I have to test everything before I deploy it.
+00:31:37
+
+That may be… this is quite unrealistic, because what's going to happen is you're always going to see new outliers that observe in production. Models never can 100% generalize. So we need to build processes that can take failures that are observed in production and pull them back into an eval set, CI, CD,
+00:31:53
+
+what we'll talk about in Module 3, and then constantly be making sure that we're running our agents on that.
+00:32:13
+
+Okay.
+00:32:20
+
+So those are 3 goals. So now let's talk about our cartwheel, our customer support agent that's fictional that we're gonna build in this course.
+00:32:21
+
+So it's a very fictional e-commerce platform, modeled very much like Shopify, and together we are all going to build its customer support chatbot. And I really made this up as somebody who doesn't work at Shopify, so, you know, please tell me if it's totally off-base.
+00:32:30
+
+But why did I… why did we pick this example? One, there are many people or entities involved in the cartwheel system, so there are shoppers, there are merchants, so people who have, you know, stores, there are support staff.
+00:32:45
+
+there might be high-level, Shopify people, or cartwheel people, employees that exist. So all of these people, right, are gonna have different queries that are all going to kind of come in somehow on the spot.
+00:32:59
+
+Another reason that we like this example is because there's a lot of data involved in this, much like real agents. There are policies, policy documents, there might be general-purpose cartwheel policies, like the things about refunds.
+00:33:11
+
+And there also might be store-specific policies, like maybe a particular store, like, a particular boutique store might have a separate refund policy.
+00:33:27
+
+So there's a lot of data involved, sometimes the data is conflicting. Tools, a lot of tools that exist, so think about things like just read-only tools versus tools that are also writing, like, actually doing the refund. The agent has to make consequential decisions, so that's kind of why we are picking a lot of this.
+00:33:38
+
+And here's a good visualization. My rectangle is not big enough, but here's a visualization of, kind of, you can imagine there are multiple different users who all have different requests, all of them go to the same agent.
+00:33:56
+
+the agent has access to… we're gonna build these 5 tools in Homework 1, and…
+00:34:10
+
+that's going to operate on this data that also exists in Homework 1. It's very contrived. This homework is going to operate on a SQLite database, which you wouldn't see in production. You might see a bigger data warehouse, but we want everyone to just be able to run this locally.
+00:34:16
+
+We will also… there's only 5 tools that we tell people you should actually implement in the homework, but you should implement more, you know, be creative.
+00:34:32
+
+make this what you want. And so forth.
+00:34:42
+
+Oops. Great. Okay, so this is the high-level homework. We're gonna build this, we're gonna evaluate this throughout the whole course. And now let's talk about how we are going to start building this customer support agent bot.
+00:34:47
+
+This part is new. I wouldn't have said to do this last year, but because I feel like a lot of prompts are written by AI, or will be improved upon by AI, because we have AI coding.
+00:35:00
+
+We want to start out by not writing the prop, but we want to write a good spec.
+00:35:12
+
+So when I say spec, spec short for specification, but we want to write something that is a human-readable representation of everything that our agent is supposed to do. Before you write this prompt, write down what your agent should and should not do. Again, emphasis on human written.
+00:35:17
+
+emphasis on structured, so there are these four, aspects of a spec that I like to write now, and to be very, very concrete in the spec. So again, something written by humans for humans.
+00:35:34
+
+So there are four parts to a spec that at least I write. So one is the scope. So that is thinking about, like, what are all the requests does the agent handle? What are all the requests that the agent is not going to handle?
+00:35:47
+
+Second is a set of permissions. So, oftentimes, you have people who are making requests to agents.
+00:36:00
+
+these people can see some of the data, they shouldn't be able to see all of the data. Some people should have permissions to do X, but not have permissions to do Y, so really thinking about permissions up front, so you don't get into the situation where, for example, you've exposed, like, a general-purpose SQL tool, but then not everybody should be able to just use SQL blindly on all of the data.
+00:36:09
+
+The third part of this is tool contracts. So this part is really important, I've realized, because for every tool, right, there's a successful use of the tool, and there's unsuccessful use of the tool. Like, for example, they might not have permissions to use the tool, or the tool failed, or it was flaky, or it wasn't controlled by you, somebody else's tool.
+00:36:31
+
+it's really important to kind of specify, okay, if there's a failure, what is that failure reason, so that when the tool returns it, the agent can then actually see the reason and adapt accordingly.
+00:36:51
+
+I've seen a number of, you know, failing traces just because
+00:37:04
+
+The agent tried to use the tool, the tool kind of… the tool failed or returned something incomplete, but the agent didn't actually know that.
+00:37:08
+
+So, it either kept retrying the tool, or it took what the tool said and was like, oh, this is the issue, like, I'm done. There's so many ways, you know, we can engineer that contract to actually make sure that the better… the agent is better handling it.
+00:37:17
+
+Then the fourth part of this is escalation. So when does the agent hand off to a human? This part is very difficult to get right. People often don't think about it whenever… before they have deployed their customer service bot or agent.
+00:37:33
+
+you… you can think about this early, right? You can think, hey, like, if they…
+00:37:47
+
+if the user wants to refund more than $1,000, we should just simply hand that off to human. A human should have to approve that.
+00:37:53
+
+And so kind of rethinking what escalation means and, like, what policies require escalation. Or here's another great one. If the user, says they want to talk to a human.
+00:38:01
+
+We should probably send them to a human. Cannot tell you the number of times I've interacted with customer support bots, asked to talk to a human, and the agent never sends me to the human. That is very frustrating. So you can think about all of these cases up front, right?
+00:38:13
+
+Hamel, I wanted to ask you about tool contracts, because I think you have a lot of experience with Nurture, kind of the real estate agent, and…
+00:38:28
+
+pretty much whenever you do error analysis for some of your clients, you've always told me, oh, it cannot handle tools correctly. You want to tell us more about this so people know that I'm not just, like, preaching something that's wrong?
+00:38:38
+Hamel Husain
+
+Yeah, one thing that always comes up, for whatever reason, maybe the problem is also attracted to me, is, like, scheduling appointments and things like that, like any kind of industry where you're trying to schedule and reschedule and edit appointments. Large language models.
+00:38:50
+
+can be a little bit brittle on this. Like, if you have a tool called for scheduling.
+00:39:07
+
+and then maybe… and then you haven't thought about rescheduling, or editing a schedule, an LLM will happily call.
+00:39:13
+
+A tool to, like… if someone says reschedule, they'll just schedule another one and not cancel the other one.
+00:39:20
+
+And so, you have to be really careful that that happens. And you want to also think about the side effects. So, like, if a tool contract
+00:39:27
+
+is doing, like, taking some action, like scheduling an appointment. You want to make it crystal clear, like, somehow, like, you know, what the side effect is, and…
+00:39:37
+
+somehow give some feedback to the LLM
+00:39:48
+
+Or put it in the trace, and we'll talk about what a trace is. That where you can see the side effect, so you can verify that the side effect actually occurred.
+00:39:51
+Shreya Shankar
+
+Yeah, I agree.
+00:40:01
+
+Okay, so let's… instead of talking about all of this at a high level, let's actually think about what this might look like for a cartwheel. So let's start with scope.
+00:40:03
+
+Oh, before I get there, one point is… and I think somebody actually has a question about this in the chat, but this spec is not the prompt, okay? This spec is human-readable, right? It's for us to know what is happening in the system.
+00:40:12
+
+the whole point is that the prompt, it might be written by AI, probably will be written by AI eventually, but every rule in the spec should be covered by the prompt, and the spec is the thing that we are familiar with.
+00:40:26
+
+Okay, so let's talk about the first part, which is scope. So…
+00:40:39
+
+one way to go about building this agent is to collect all of the help requests or support requests the human support agents have gotten, you know, in the past 30 days, and just literally look at them and categorize them or cluster them into different types. So if we were to do that, based on
+00:40:43
+
+or based on looking at maybe an open source dataset, there are several different request types that could come. So, maybe the order status or delivery tracking, like, that's one cluster.
+00:41:02
+
+maybe return and refund requests might be another cluster. Maybe just questions about search, or questions about products specifically. Maybe there are questions that are specifically about accounts, like, let's change my email, let's change my password, let's change my shipping address, like, whatever. Maybe payment method updates, that could also go in account changes. Like, this is… there's no hard and fast, what is the clustering here?
+00:41:11
+
+So just think about in your head for, kind of, your application, what are the different clusters of requests that you might experience?
+00:41:36
+
+Complaints about other customers, I've made that up, but oftentimes you'll see a cluster that
+00:41:44
+
+kind of is small, and is a little bit silly or ludicrous, but I think it's important to capture that up front, because people are going to ask that to the agent, and then you want some way of being able to handle it in real time, rather than your agent just, like, saying something that you don't feel comfortable for it saying.
+00:41:51
+
+So here are just some request types. You might get more. Whenever we do synthetic data generation, which we'll talk about in the next lecture, typically we try to do at least 3 different request types. I try to go for 10. There's no hard and fast number.
+00:42:08
+
+Then for every single request type, think about, okay, is the agent going to handle it or not? Is it in scope, or is it not in scope?
+00:42:24
+
+So why do we have this, right? Because if we write this in the spec, we can immediately encode that in the prompt, and then the agent should refuse to do things. And how might you make this decision? Again, it's all business-specific, but…
+00:42:31
+
+If the cost of an error in this request type is high, so for example.
+00:42:45
+
+payment method updates, I don't know. Like, what if you accidentally put in the wrong credit card? What if your agent accidentally gives the wrong credit card number, or doesn't do the billing address correctly? Couldn't think of a number of mistakes there. That would be very tedious and very annoying. And…
+00:42:50
+
+Instead, an easy or simple thing might do… might just be, like, the agent provide a link to the account settings page, and then the user go and do that themselves, right? So just think about, for each one of your requests, should the agent be able to do it, or should it not do it?
+00:43:07
+
+And, one way to think about doing that is what is the cost of mistake, and what is the…
+00:43:21
+
+Batna is the term to come… that comes to mind, but what is the best available alternative, and is that good enough, or is that low effort enough? Does that make sense, kind of what I'm saying, Hamel?
+00:43:28
+Hamel Husain
+
+Yes, yeah, yeah.
+00:43:39
+Shreya Shankar
+
+Great. Other people, please ask clarifying questions, because… who knows, maybe I'm saying something totally off.
+00:43:41
+
+So think about the scope, you know, spend some time thinking about this. The other thing is product managers, this is something that's great for you to do. One mistake that we see is, you know, the engineer starts implementing all of this, and then they're like, oh, I don't know how to reason about these things, so they have to get other people involved in the room. These are things that product managers or other people can actually think about before going and implementing the agent.
+00:43:48
+
+Okay, the second thing is now around permissions. So the way that I like to think about permissions is to think about all of the different roles of people who are going to use the system, and let's just come up with three for this sake, a simple sake. We have shoppers, we have merchants, and then we have cartwheel support, which is employees of Cartwheel.
+00:44:13
+
+And then you want to think about… these are… you want to do an exercise thinking about what are the kinds of activities or tools
+00:44:33
+
+that the different users will want to have, and who should be able to use them, and what restrictions to have there. So viewing the orders, store orders, you know, searching products, policies.
+00:44:41
+
+So, these are, again, things that I've made up, but hopefully you get a sense for, okay, it's important to reason about these things up front.
+00:44:54
+
+Things that are good and things that are not good.
+00:45:03
+
+I won't go into these too much. I want to spend more time talking about tool contracts. Tool contracts. So again, this is not code. This is just us writing on a whiteboard, or writing down in a doc, product requirements doc.
+00:45:06
+
+what are the different tools that this agent would need to use? And you can think of this as, what are my human support agents? What tools are they already using? And then…
+00:45:20
+
+can we kind of encode them as tools for the agent? So maybe this is simple CRUD tools, so create, read, update, delete on order, so get order can be one of them, cancel order, other tools around refunds, products, policies.
+00:45:31
+
+Excuse me. So I'm just having 5 tools here.
+00:45:48
+
+And then you want to think about what specifically
+00:45:52
+
+is going to happen if the tool was successful, and what will happen on failure. So, what I mean by that is, what is the specific message that the tool is going to return back to the agent? So, on success, maybe getting the order will return the details of the order. On failure.
+00:45:55
+
+like, think about failures. The agent should return an error message, right? Either permission denied, or, order doesn't exist.
+00:46:13
+
+Or… I don't know, HTTP glitch, something. You want to think about this whole list up front.
+00:46:22
+
+So that way, you can actually encode that into your tool definitions. I will tell you, there are so many times I have seen
+00:46:31
+
+a tool return an empty string or an empty list, and the agent does not know what to do with this. Like, that is one of the chief failures I have seen in agents. This can be easily circumvented when you just think about what are the failure messages.
+00:46:38
+
+So let's do two more examples here. So, issue refund, right? What would happen on success? Okay, we can confirm that the refund has happened, and we can do this deterministically in the tool implementation.
+00:46:51
+
+And then on failure, what are the different ways that might fail, that the refund might not happen? Maybe the item is not eligible for a refund, maybe the item needs the store manager.
+00:47:04
+
+to be able to approve the refund, like, cartwheel support cannot do it, so it's queued for approval. Again, think about all of this for your agent.
+00:47:19
+
+Oh, sorry.
+00:47:28
+
+Hamel, do you have any stuff that you want to add here around, kind of, contracts? Maybe how might someone implement this in their tool calling code? Like, is it just as simple as, you know, raising an error with, like, a detailed string description? I think so, but I'm curious what you think.
+00:47:30
+Hamel Husain
+
+Yeah, I would keep it really simple for this homework. You know, again, you're gonna use coding agents. Don't get scared of this, this is very approachable. If you… it might seem… you know, we're just trying to prep you with all the information, but when you go to look at it, in the GitHub, which is also linked from the Google Doc.
+00:47:48
+
+for Homework 1, and we'll also show the link later. We also have… Antipa also does, like, a very detailed video walkthrough, and you can accomplish all of this with your coding agent. So, just in case you're wondering, like, oh, this is a lot of information, the key thing is, like, you just think about each of these things.
+00:48:06
+
+About, like, the tools, what they should do, what should they… what they should do, like, on success and failure, and just keep it simple, don't get too… you know, because the idea is we're going to set this up as a foundation for the rest of the class.
+00:48:25
+
+So that, you know, we can, like, break this together, and then you could do evals on it. That's the whole idea. We used to teach this class without having you do this.
+00:48:38
+
+But I think, you know, when we redid this, we're having you build this agent so you can, like, understand the mechanics.
+00:48:47
+Shreya Shankar
+
+Yeah, and prevent a lot of silly failures up front. Like, the other thing is, in a previous cohorts, the homeworks… all of these homeworks are, like, you know, in a sandbox world.
+00:48:54
+
+But when people go out into the world and build their own agents, right, all of these errors happen, like the empty list error, and the agent reacts badly to it, and that might not have happened in our clean data and our homework.
+00:49:05
+
+But it's gonna happen when you're out there building this agent, so you just want to kind of get ahead of a lot of this up front. Let me mention one thing, so one tool here around search products, right? Sometimes the empty result is actually the failure case.
+00:49:16
+
+So, think about, like, if we were to search for products that, you know, have a certain color, I don't know, like, search for shoes or something, like, if there were shoes.
+00:49:33
+
+then we would get a list of those shoe products on success, and if there were not.
+00:49:44
+
+we actually should get an empty list. And any other failures, such as, you know, not… there's, like, a network error or something, those should be described as another failure and not empty results. Okay, so sometimes empty results is the failure mode.
+00:49:49
+
+And it's important to specify that up front, because then the agent can adapt and handle it accordingly. Cannot tell you the number of times I've seen an agent look at empty list, and then the empty list was actually, like, a network error, like a permissions error, and then the agent says, oh, it doesn't exist. No. Like, that's not true, right?
+00:50:06
+Hamel Husain
+
+Yeah, one more thing is, like, try your best. You don't have to…
+00:50:24
+
+brainstorm all the errors up front. In fact, you shouldn't brainstorm all the errors up front.
+00:50:28
+
+you will miss something. That's the whole point. We're actually banking on the fact that you will miss something, because that's what we are going to… we have an entire process to help you find what is breaking very quickly. And so, you just want to have, like, a sort of a minimal, like.
+00:50:35
+
+you don't want to, like, boil the ocean on this and, like, try to think about every single thing. Just have a first, like, kind of best effort at it.
+00:50:52
+Shreya Shankar
+
+Yep.
+00:51:01
+Hamel Husain
+
+So…
+00:51:02
+Shreya Shankar
+
+Yep.
+00:51:02
+Hamel Husain
+
+Yeah, I just wanted to say that.
+00:51:03
+Shreya Shankar
+
+Cool. There are a couple questions around, do companies actually do this? Have a massive
+00:51:04
+
+chatbot or agent for a lot of different roles. I can't speak for all of the companies, but I will say, sometimes companies have, for example, 3 different agents for the diff… like, different agents for different personas that are gonna use the system, and then they quickly realize there's a lot of shared logic.
+00:51:08
+
+And they all kind of need to co-evolve.
+00:51:27
+
+And there's a lot of tool bloat, tool reuse, and it's not great.
+00:51:29
+
+So, it's kind of like software, right? When you're building software, one of the central part… challenges of building software is what's the right level of abstraction? How can you build the most abstract thing to service all of the users that you can? Reuse, share code.
+00:51:34
+
+I think that's gonna be the same thing that happens here. Like, I've seen people refactor and think, like, okay, like, I don't want to have separate agents, like, that's too much to handle. And sometimes Agent A will see an error or failure mode that actually also Agent B might have later on, so, like, then you have to think about fixing all of them together.
+00:51:50
+
+So that's why we're kind of saying everything is going to be in one, with the assumption that eventually people are going to start building that way in the first place, but, you know, who knows? Things could change very fast.
+00:52:10
+
+other question that I thought was interesting, where would you specify things like network error, again, in the spec. So there's no specific format of the spec, maybe I should have just mentioned a specific format. I think of it as literally a markdown file. I'll show you an example on two slides later, where for every one of… for these four, subsections, I just have headers for those, and I just kind of write a list.
+00:52:22
+
+Of, like, or make a table, even, and then just keep adding to that, and it's a living document over time.
+00:52:47
+
+network error, you can just mention it, kind of, like, on failure, like, some tools will have network errors, and some tools will not, right? Some tools are local tools, and those probably won't have network errors, so that's why we say network error, because, you know, think about errors that are going to be unique to that tool, I suppose.
+00:52:53
+
+Cool. How are side effects added to specs? Do we need to create an application integration ontology and a graphical representation of the workflow and added to the spec? That's a good question. I haven't…
+00:53:12
+
+So I imagine that that's useful. I don't think it will get encoded in the system prompt to an agent, but I imagine it's very useful for people within the company to kind of align on the mental model or representation. So I think it's, yeah, depending on where you're at, you know, if you're just a solo developer building your own agent, you're the only one who sees it, know it, maybe that's not helpful. If you're at a big company, or many people are working on the agent together, the whole point of a spec is to, like.
+00:53:26
+
+get your human colleague to understand what the behavior of your agent is, like, in 30 seconds of looking at it. So kind of think of that as the bar for the spec.
+00:53:51
+
+Alright, so last part of the spec is escalation. So, when do we say, agent not gonna do this, and then we're gonna have a human do this? So, I like to think of this abstractly in terms of, like, reads and writes. So, if something is a read-only query.
+00:54:01
+
+then I'm a little bit less worried about it. Now, there's some security issues, like, people should only be able to read the data that they have access to, but you can kind of implement this in real-level security and databases.
+00:54:21
+
+But the moment that we start getting to agents doing rights, like issuing refunds or canceling orders, before shipment, or applying promo codes or stuff.
+00:54:32
+
+Then, it's helpful to, at least in my mind, separate it into low risk and high risk, right? So, like, what is the cost of something going bad?
+00:54:43
+
+And then…
+00:54:51
+
+Think about, you know, in each case, whether a human should… it should be handed off to a human or not.
+00:54:53
+
+Another reason for doing a lot of this pre-thinking up front is because when you generate synthetic requests that we'll do in the next lecture, it will all kind of arise from this thinking that we've done here of, okay, we're going to have some requests that span some low-risk rights, we're going to have some requests that span some high-risk rights, so forth.
+00:54:59
+
+I'm gonna ask for lecture, maybe we don't ask questions, ask them in the chat, or ask them in Discord later, just so that we can kind of get to the end. Maybe we'll stick around a little bit longer and have a little bit of Q&A at the end.
+00:55:19
+
+Okay, so those are 4 aspects of the spec.
+00:55:33
+
+So, structured spec, at least on the left, is what something might look like. You know, I'm a very bullet points-y person, so I just like to write bullet points. It wouldn't look exactly like this. I might have, like, here are the different roles, bullet points.
+00:55:36
+
+Here's what each role is allowed to do, bullet points. I just wanted something more presentable for the slide. And then a system prompt is not going to look like that. It will be some sort of AI-generated, or I don't know.
+00:55:51
+
+Something that the…
+00:56:04
+
+AI is going to have. And I hate to say that, like, sometimes I don't know how it gets here, but think of it as, like, any time your agent is failing and you want to make a fix.
+00:56:06
+
+in your production code, so you will, like, add something to your spec, and then maybe your agent is going to figure out how to update the system prompt accordingly. And I have a feeling that that is how real-world system prompts evolve. So here are just codecs and Claude Code. They're super long, like, this is just a little tiny snippet of them.
+00:56:15
+
+Some of the things I find very fascinating are, like.
+00:56:33
+
+I'm pretty sure it's AI written, because if I were to zoom in here, like.
+00:56:36
+Hamel Husain
+
+100%.
+00:56:40
+Shreya Shankar
+
+Yeah, like.
+00:56:41
+
+Only use emojis if the user explicitly requested it. Avoid using emojis in all communication unless asked. Like, the second sentence is a repeat of the first sentence, right? Like, do we really need both sentences? I don't know. But I can imagine, right.
+00:56:42
+
+Anthropic or Cloud Code is probably doing some form of evals on their system prompt, and the way that they're doing it is just having AI propose edits to their system prompt, and then seeing which system prompt gets the highest score on the evals. So…
+00:56:57
+
+if that's the way that we're gonna do it, I believe that that's, like, a scalable way to try different prompt ideas, to have AI write prompts. So that's why I say, separate the spec from the prompt, and don't be alarmed, I guess, if your prompt ends up looking something like this, because if this is what the AIs are trained to do, then
+00:57:13
+
+We should not be too afraid of it.
+00:57:31
+
+Hamel, you have anything you want to add to this?
+00:57:34
+Hamel Husain
+
+Yeah, someone asked, like, should I make this application have, like, login flow, defend against PII, something like that? And the answer is no. Keep it very… keep it simple. There's gonna be a lot of complications.
+00:57:37
+
+That, plenty of complications without that.
+00:57:52
+Shreya Shankar
+
+Yeah, so for the homework, great, we're not, like, releasing it into the world, like, we're not all building e-commerce platforms. It's really a learning exercise, so do what you want, what you're excited by. Definitely do the things that we say as, like, the baseline, because that is…
+00:57:55
+
+we're gonna, like, teach you some of the tools to do all of this, but if you want to go above and beyond, do whatever things, you can if you want. We're not gonna stop you.
+00:58:08
+
+Cool.
+00:58:18
+
+Then there are many such system prompts that you can see out there. I think there's an awesome system prompts repo that if you, like, Google it, you'll find it. And if… so I'll tell you that I looked at all of these, like, a month ago, and I was, like, alarmed at the system prompts, and then I realized, okay, I gave in to it. Like, this is the new world that we're in.
+00:58:19
+
+a year ago, I would have been like, the whole point of prompts is to make it human-readable. However, I think that's not the case. So we have to have human-readable specs, and then we're gonna have prompts for AI.
+00:58:37
+
+Okay, so in the last few minutes, let's talk about different architectures for building an AI agent, and you're gonna spend a whole lecture on this, but I don't…
+00:58:50
+
+want to, please ask questions if you have them. And at a high level, there are 3 of them.
+00:59:01
+
+There's a very simple one. The first one is just a single call to a large language model. It is truly one input in, and one text input out. There's, like, no tools, like, none of all of this stuff.
+00:59:07
+
+It's a very low cost, low latency, extremely predictable thing. You should try to write all of your applications like this if you can, but, you know, not all of your appli… a customer support agent cannot be that way.
+00:59:18
+
+But… and I actually don't think many people are actually doing these single-call LLMs, most of the time. So, that was very popular, like, 2 years ago, and I think now we have moved on to Agentic world.
+00:59:30
+
+The middle ground architecture is what we'll call a workflow, and we're not calling it a workflow, like, Anthropic calls it workflow, like, Langshain, like, I think workflow is the standard term here. But the idea here is, like, a predefined graph.
+00:59:45
+
+or steps. Each step is a call to an LLM. It is not super low cost, like, the cost depends on the number of LLM calls, but at least it's predictable cost and predictable latency. I'll give examples in a bit.
+00:59:58
+
+And then the third architecture, which we will use in this course, because I think it's getting more and more popular, is an Agentic architecture. So here, the model is given a toolset, it's given some context, and it can pick tools, look… call the tools, see the outputs, and then keep iterating in a loop.
+01:00:11
+
+And in these cases, right, who knows what the cost can be? Who knows what the latency can be, because it's really all up to the agent. And so it's a little bit scary for us, but…
+01:00:28
+
+Apparently, these are quite powerful and…
+01:00:37
+
+I don't know, we all use them all the time now, they can write code very well, so it'll probably stick around for a while.
+01:00:39
+
+So some visuals on each of these, so for the single call, right, you literally have an input, model call, output. What are some examples here? Right, if you're Gmail, maybe you just want to do simple classification, classify the email as primary, social, or promotions.
+01:00:46
+
+something simple. Maybe you want to extract structured fields from a receipt or an invoice. When should you choose this? Well.
+01:01:03
+
+Whenever you can kind of express your task in one call, it doesn't need tools. And you imagine that you're going to do this at scale, right? So high throughput, low cost, your Gmail running this on all of your emails. And it can be done totally offline.
+01:01:12
+
+Fixed workflow is just a little bit more complicated, but the steps are predefined. You have an LLM run at every step, the order doesn't change. There can be loops if you want, but…
+01:01:27
+
+Typically, they're very fixed. So, for example, like Perplexity, or some search agent, right, you might have a tool to search… you might search the web, then take all those pages, feed that in context to an LLM, and then the LLM's synthesizing an answer.
+01:01:41
+
+Document pipelines are almost always these workflows, so there's, like, a chunking, then there's extraction, classification, maybe, like, a separate LLM call for validation.
+01:01:55
+
+So when should you choose this? You know, predictable cost, latency, you can, at a high level, the steps are the same every time. There's a lot of agents, actually, that can be expressed as workflows, and I just don't see people expressing as workflows. Maybe it's just easier to code up an agent.
+01:02:06
+
+One thing you can do is write an agent, look at, you know, what the agent is doing on many different samples, and then try to turn that into a workflow. We can get that… we'll get into that later in the course.
+01:02:21
+
+And then the third of this is the agent loop. So…
+01:02:33
+
+An agent… this looks quite complex, but it's actually pretty simple. You define your agent, which is the system prompt we talked about.
+01:02:39
+
+Then, you define a set of tools.
+01:02:46
+
+And all the agent is doing is, like, going through this loop of deciding what tools to call, calling the tools, looking at the results. Deciding what tools to call, calling tools, looking at results, until it's come up with an answer, and then gives the output.
+01:02:48
+
+When do you want to use this? When your next step depends on data from the previous step. And you're okay with this could take forever, this could take ages, this could cost me a lot of money.
+01:03:04
+
+Yeah.
+01:03:14
+
+Alright.
+01:03:15
+
+In this course, we're going to use the OpenAI Agent SDK for building the agent loop.
+01:03:17
+
+Why did I pick the Agent's SDK?
+01:03:22
+
+several reasons. One, I think it's quite encompassing, all-encompassing of a lot of different primitives, so you could do workflows in the Agent SDK as well. You can also use different models in the Agent SDK. It's quite lightweight. You can make it as complicated as you want.
+01:03:25
+
+this is kind of pseudocode for how you should think about the agent SDK. You define your agent object, it has some instructions, and it has some tools, and then you literally define, like, a dot run, which…
+01:03:44
+
+We'll take in some context about the user, and then just go until some max turns is defined. And I recommend that you read the agent's SDK guide here, I think it's a pretty good resource.
+01:03:55
+
+Sdk also handles multi-agent routing, which we're not gonna need in this course, but you and your company might need this, so it's a good tool to learn.
+01:04:07
+
+Inside the agent loop, I already mentioned this before, but you can think of, like, the agent having a hook or some calls of, like, what happens before, and then what happens after. That's how it decides whether to keep going on or not.
+01:04:17
+
+It's not super necessary that you know this stuff. I would just… I linked this here, because in case you're curious how the SDK harness works, you can look into this. I think LaneChain is a very good article.
+01:04:31
+
+But part of the homework that you're going to be doing, I guess we're running a little bit over time, hopefully everyone can stay 5 more minutes, we'll be okay. But part of the homework that we're going to be doing, right, is not just writing the system prompt, but also writing tool descriptions.
+01:04:44
+
+So, how does the SDK for OpenAI work? Well, you define your function, like, as a Python function, or it could be JavaScript, and it uses Python's expect module to then read the source code of these functions, and read any comments that you've made there, and then encode that as a string for the agent. So the function name.
+01:04:58
+
+is encoded as a string. The doc string in that function is encoded, parameter types, so, like, integers or so forth, also are encoded. So what this means is that you should write your functions to be human read… to be agent-readable. So don't say things like, oh, this is search V6.
+01:05:18
+
+or search V2, say things like this is searching for order, finding order, because otherwise it's complicated, the agent won't know. Write good tool descriptions. So for example.
+01:05:35
+
+Oh.
+01:05:46
+
+keep docstrings short and precise. One thing I've also seen is, people will have very, very long descriptions of the tools, because the agents wrote them, and then that kind of pollutes the context of their agent. That's a separate thing.
+01:05:47
+
+what might a tool look like here? So here's the find order tool on the left, and the OpenAI Agent SDK. You will decorate it with function tool. Again, read the SDK if you're curious. And then you can write a doc string, agent will see that, and then kind of write your,
+01:06:01
+
+Kind of code accordingly, and think about, okay, what are the error modes that could happen, and actually make sure that you're specifying that here.
+01:06:20
+
+One tip that I have here is to actually write, separate tools.
+01:06:28
+
+four separate, different patterns. So, what do I mean by that? So, concretely, like, imagine your user wants to do search.
+01:06:36
+
+So you can imagine there's so many different patterns or ways users want to search. So they might want to do a fuzzy search, or they might want to do search by exact order. So sometimes it's helpful to have different tools for that, because it's actually going to be implemented differently behind the scenes.
+01:06:42
+
+So you can think about that up front, but that also might emerge as you see failure modes later on.
+01:06:57
+
+Great! So, that's a whirlwind overview of what you'll be doing when starting an agent. You will write a system prompt, but before that, write your spec, and then you will write some tools.
+01:07:03
+
+So, here… the starter repo here.
+01:07:13
+
+this is linked in the course onboarding email, and I'll actually add this to the slides when we send out the slides after this. But we have a new repo where all of the codebase for the repo, or for all of the homeworks, is in here. It's called Cartwheel Homeworks, but we've only released Homework 1 and Homework 2.
+01:07:16
+
+Don't look at homework 2 now, and then be confused. Like, focus on homework one. If you want to get started on homework 2, you can. There's a lot going on in this repo.
+01:07:34
+
+You don't have to edit all the files, there's gonna be, like, a begin edit here and end edit here sections for your homework.
+01:07:45
+
+So, for Homework 1,
+01:07:52
+
+just take a look at the starter repo. There's a spec.md, there's 3 completed tools. Actually, it's gonna be… yeah, 3 completed tools. We're using OpenAI Agent's SDK, and you can also switch out the model depending on what API keys that you have.
+01:07:56
+
+The first part of the homework is just to implement 5 required tools in OpenAI Agent's SDK.
+01:08:11
+
+You can add more of your own, we encourage you to add more of your own, because that's more realistic.
+01:08:17
+
+Part B is then to write 10 or more test queries yourself to Cartwheel, so just pretend you're different roles, author different queries.
+01:08:21
+
+And then Part C is to kind of look at what happened in Part B, and then see, oh, maybe there was an instruction missing in my prompt, and I'm going to add that to my spec, and therefore my prompt, and see if that helped.
+01:08:29
+
+the failure not happen. So this is not very rigorous, this is just to get your feet wet in kind of implementing the system and starting with the evals.
+01:08:43
+
+Great, so this is the last slide.
+01:08:52
+Hamel Husain
+
+Oh, and by the way, look at Antaripa's video, it's very helpful. It's on the front page of the GitHub repo. If you scroll all the way down, you'll see a link directly to a video. It's like an unlisted YouTube video. Take a look at it, it's extremely helpful.
+01:08:54
+
+And just watch it carefully. And, by the way, this homework is very approachable, basically asking you to write a spec, which is, like, mostly, like, this markdown document.
+01:09:09
+
+Which is well within the abilities of everyone, I promise you. You know, it's good to think about all these details and what these sections of the Markdown spec mean.
+01:09:20
+
+But… Watch the video, we'll be around to answer questions, so… just want to set expectations.
+01:09:32
+Shreya Shankar
+
+Yeah, I think I mentioned this on the slide, so next lesson's on Wednesday, do homework before then, read background in Module 1 in the course reader, it's already out. We have not covered all of Module 1 today, so when you read Module 1, you're like, we didn't talk about this, don't worry, we're gonna talk about it.
+01:09:43
+
+in, like, Lesson 2 and Lesson 3. And then also, watch, yeah, Antaripa's walkthrough video.
+01:10:01
+
+Cool! I guess that's it. Here's what's on the calendar for next, and really excited to hear from you folks in Discord.
+01:10:08
+
+Okay, there's… maybe we'll take…
+01:10:19
+
+So folks can feel free to leave now. Maybe I'll spend, like, 2 or 3… Hamel, you have a couple of minutes, we can just answer some questions in the chat.
+01:10:22
+Hamel Husain
+
+Yeah, I think Aneesh.
+01:10:29
+Shreya Shankar
+
+chair.
+01:10:31
+Hamel Husain
+
+Aneesh, Datta had a question? Let me see… If I can…
+01:10:31
+
+Allow him to ask the question.
+01:10:40
+Aneesh Datta
+
+Yeah, just a quick question regarding, the re… under the reading, like, the Module 1 in the course reader, are you referring to the, I have it here… this is the…
+01:10:42
+
+the… the application-centric AI evals for engineers set.
+01:10:54
+Shreya Shankar
+
+Oh.
+01:10:58
+
+Mave… there's… there's an old version of the course reader, and there's a new one. Maybe we'll send a clarifying email after this with, the new version, so probably the… if you got an intro onboarding to the course, there's, like, an email… like, there's a Google document.
+01:11:02
+Aneesh Datta
+
+Beautiful.
+01:11:18
+Shreya Shankar
+
+of the things that you need to know. So, in there, there's a link to the live version of the course reader as it's going to update. So, check that out, but otherwise, we'll send an updated email with old version and new version. We decided not to take away the old version, because if you want the old version, you should have it.
+01:11:18
+Hamel Husain
+
+Yeah, it's safe to assume, like, just read… we're gonna incrementally give you the course reader, so whatever is there, feel free.
+01:11:36
+Aneesh Datta
+
+Gotcha.
+01:11:43
+Hamel Husain
+
+read it, so we're… it's not the whole course reader right now, it's only, like, the first few chapters.
+01:11:44
+
+And so we'll just keep appending onto it as time goes on.
+01:11:49
+Shreya Shankar
+
+Thank you.
+01:11:53
+
+A bunch of people ask, can I add X or Y or Z to the homework? Yeah, the homework is for you, right? Like, there's no grading.
+01:11:54
+
+Please do whatever you like.
+01:12:02
+Hamel Husain
+
+comes up, and I just want to clarify, this is professional education, so we're not getting a degree…
+01:12:04
+Shreya Shankar
+
+College, yeah.
+01:12:09
+Hamel Husain
+
+Yeah, like, there's no… it's supposed to help you, maximally, and sometimes I tell people it's totally fine to bring your own problem, like, if you're working on an AI product, you can feel free to just, like, completely ignore the homework, and just take what we're telling you to do and think about your own product.
+01:12:10
+
+So either way, it's just there for you if you want to dive into something, and you don't have something readily to… to work on.
+01:12:27
+Shreya Shankar
+
+Cool. Another question that is here, what do you mean by high throughput for single call architectures? Let me go back to the single call slide. All I meant by high throughput is just you have a bunch of requests that you want to, like, execute. That's it. Let me…
+01:12:38
+
+Find it…
+01:12:54
+
+Yeah, you just have a bunch of these. So imagine your Gmail, like, classifying a bunch of emails. You want to use an LLM, you have hundreds of millions of emails, that's what I mean by high throughput.
+01:12:57
+
+Okay.
+01:13:11
+
+Any other questions, Hamel, that come to mind from here?
+01:13:13
+
+I create visual specs in my sketching tool. Yes, we love sketching tools.
+01:13:18
+Hamel Husain
+
+Yeah, visual specs are great. A lot of times, the visual spec, if you want to draw it on a napkin, or the modern equivalent of a napkin, like an iPad, whatever, and then, like, use that to help you create the spec, it's totally, like…
+01:13:24
+
+You could totally do that as a starting point.
+01:13:36
+Shreya Shankar
+
+good question. What is the nuance when building enterprise B2B agents when you can't look at your data due to PII or sensitive data?
+01:13:40
+
+That is also another motivation for why we have a lot of this upfront reasoning about what failure modes might happen, or how to structure your spec, because it might be limited in what data you're able to look at.
+01:13:49
+
+So if you have a good process for trying to think about and defining failure modes in your spec, you can hope that the agent will carry that out for you, and not have those failure modes arise later, only when you've looked at the data.
+01:14:00
+
+I would say in these cases, success that I've had is trying to have, like, some organizations or, like, a subset of data that has agreed to let you look at that data, so that way you can look at something, so you don't have to look at all or nothing. Or have test users, or synthetic data
+01:14:12
+
+But it's… it's difficult. Like, I think you have to temper your expectations with how much data you're able to look at. Maybe, Hamel you have some.
+01:14:31
+
+thoughts here.
+01:14:39
+Hamel Husain
+
+Sorry, I was trying to answer a question in the chat.
+01:14:40
+Shreya Shankar
+
+So, I just talked about, like, evaluating data, or evaluating when you can't look at the data because of PII.
+01:14:43
+Hamel Husain
+
+Yeah, we're gonna get into this. So, it comes up a lot, like, what if you can't look at data?
+01:14:53
+
+And, we're gonna cover that concept a bit when it comes to simulation and, like, generating synthetic data of how… what is the next best thing you can do. It's not great, to be completely clear. Like, if you can't look at data, you have a severe handicap, but you can still do something.
+01:14:58
+
+And you're gonna want to think very carefully about your synthetic data, and we're going to cover how to do that properly in a later module, so you're gonna want to pay attention to that.
+01:15:18
+Shreya Shankar
+
+Cool.
+01:15:30
+
+Alright.
+01:15:31
+
+Let's call it, and please ask on Discord any other questions. Thanks for attending the first lecture, this was really fun, and give us feedback.
+01:15:34
+
+If there's anything you want added or changed, because this course is for you.
+01:15:42
+Hamel Husain
+
+Yeah, please ask on Discord, don't be shy, we actually, like, seriously, we go through all of them.
+01:15:47
+
+And we have really detailed responses, so don't be, don't be shy. If you don't know what channel to post in, just post in whatever you want, and then we'll figure it out. We'll see it, don't worry.
+01:15:53
+Shreya Shankar
+
+Right?
+01:16:08
+
+Bye, everyone.
+01:16:11
+Hamel Husain
+
+Alright, thank you.

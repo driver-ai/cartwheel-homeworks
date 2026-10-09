@@ -1,0 +1,1701 @@
+Shreya Shankar
+
+Y.
+00:02:50
+Hamel Husain
+
+Yeah, how's it going?
+00:02:52
+Shreya Shankar
+
+Good.
+00:02:54
+Hamel Husain
+
+Login? Not working?
+00:02:55
+Shreya Shankar
+
+No. Okay, can you, later on just add, like, all two of my Zoom accounts, so that way I can just join from whatever account? Okay, awesome.
+00:02:56
+Hamel Husain
+
+I have to add another license.
+00:03:08
+Shreya Shankar
+
+Oh, then never mind, okay.
+00:03:10
+
+I'll just be more diligent.
+00:03:13
+
+I have 3 Zoom accounts, so…
+00:03:16
+Hamel Husain
+
+Oh my god.
+00:03:18
+Shreya Shankar
+
+I'm very bad, yeah, it's a business.
+00:03:19
+Hamel Husain
+
+A lot.
+00:03:21
+Shreya Shankar
+
+-Oh.
+00:03:22
+
+Anyways, alright, let me share my screen first. That's not my calendar. I don't want to share my calendar.
+00:03:23
+
+Share… My computer is quite slow today, and I have a feeling it's because of, odd code, actually.
+00:03:31
+
+Running this, like, monitor skill.
+00:03:40
+Hamel Husain
+
+Yeah, your videos are choppy.
+00:03:47
+Shreya Shankar
+
+Yeah, I don't know how to solve this problem of loud code monitor scale, just, like, taking up a lot of stuff. I can try to exit out of some applications that… okay, maybe let me exit out of Keynote. That one I know I don't need.
+00:03:50
+Hamel Husain
+
+I can hear you.
+00:04:05
+Shreya Shankar
+
+out of…
+00:04:06
+Hamel Husain
+
+Pretty well, so that's… that's good.
+00:04:06
+Shreya Shankar
+
+I'll exit out of messages. I'm just exiting out of a bunch of applications, because I feel like…
+00:04:09
+
+You know… Maybe that'll help.
+00:04:15
+Hamel Husain
+
+Okay, should I…
+00:04:20
+Shreya Shankar
+
+Is that helping? You can, you can start the thing, that's fine.
+00:04:21
+Hamel Husain
+
+Okay, cool.
+00:04:25
+Shreya Shankar
+
+As long as you can hear me in, like, you can kind of see me…
+00:04:26
+
+Yeah, I think that's probably the most important thing. It's okay if I'm, like, really slightly laggy.
+00:04:31
+
+Yeah, I'll quit Discord, that takes up memory, so sorry to folks who are messaging me on Discord at the current moment.
+00:04:36
+
+Okay. Let's hope this works.
+00:04:44
+
+Okay.
+00:04:48
+Hamel Husain
+
+I can hear you.
+00:04:49
+Shreya Shankar
+
+Cool.
+00:04:50
+
+Hey, everyone! Happy Wednesday!
+00:04:51
+
+I don't know what day it is going to stay.
+00:04:54
+
+Excited to start Lesson 4, so today we're going to talk about error analysis a little bit more, and specifically more open coding and axial coding that we were talking about in Lesson 3 in the end.
+00:04:56
+
+Before we get started, let's…
+00:05:09
+
+recap a little bit of what we talked about last time. We focused most of the time on generating synthetic data or synthetic traces, so you can't really figure out what… you can't do evals before you read your data, and you can't read your data before you have data, so we talked about how we can synthetically generate data if you don't have it. And we talked about, hey, maybe we shouldn't directly ask a large language model
+00:05:12
+
+For data. Instead, we can indirectly use a language model. We can ourselves generate some dimensions of the problem, and then hypothetical but realistic values for each dimension, and then use an LLM to help us generate some synthetic requests.
+00:05:36
+
+for each tuple that we generate. Please watch Lecture 3 if I'm speaking gibberish, because that'll make more sense there.
+00:05:53
+
+One particular point of confusion that became very apparent in Discord is this expected outcome idea that we talked about. So specifically, let's not talk… think about the phrase expected outcome. I'm gonna try re-teaching that concept.
+00:06:02
+
+Basically, what we talked about is when we generate some synthetic data, such as this tuple here, some of the attributes in this… some of the dimensions here are things that we might want to hide in the request, the synthetic request that's given
+00:06:19
+
+So, for example, in this tuple, maybe the synthetic request generated is, can I return the vase I got a while ago? I never used it.
+00:06:33
+
+And as part of our tuple, we know, okay, it's been 45 days since delivery, but maybe we want to be a little bit more realistic in generating our user request.
+00:06:42
+
+45 days isn't actually explicitly mentioned in the user request, so…
+00:06:52
+
+if we were just to log this trace and the user request and try to review it in a dashboard or in length views, right, we would miss this 45 days since delivery. So…
+00:06:58
+
+expected outcome, to me, what I was thinking about before, I found it's just really helpful to log all of these dimensions, basically this entire tuple, but…
+00:07:10
+
+expected outcomes of phrase is very confusing, so maybe let's call it extra metadata. Basically, any data that you used in your synthetic data generation process that might not have made it directly into the request because you're trying to probe or adversarially test an LLM's behavior, you should definitely still show that in your error analysis UI. And we'll talk… we'll show that today when we do some more error analysis.
+00:07:21
+
+Hamel, you have any other things you want to add to this? I know we also went back and forth talking about, you know, how best to communicate any extra metadata.
+00:07:46
+Hamel Husain
+
+Yeah, I mean, really, it's just, like, you could think of it as notes you might want to have in front of you when you're reviewing data. That's the… that's the main thing. Don't… yeah, don't get confused by the word expected. And people see the word expected, sometimes their brain goes to, oh, I'm gonna write a test.
+00:07:57
+
+With this right now, and that's not the… that's not the point of that.
+00:08:14
+Shreya Shankar
+
+No, but it is very helpful to log any metadata you generate, because it will just help you review your traces a lot faster when you do Error analysis.
+00:08:18
+
+Awesome. Okay, so what are we going to talk about today? Well, last time we talked about creating the trace dataset.
+00:08:30
+
+Today, we're going to go through this cycle of reading and what we call open coding traces.
+00:08:37
+
+Then, how do we do axial coding, which is essentially clustering our open codes into a taxonomy, where each node in that taxonomy corresponds to a distinct failure mode we want to create evals for. And then we will…
+00:08:43
+
+Talk about how we need to go through this in a cycle, because as we're reviewing traces, there's probably stuff that we're going to miss, when we review a trace for the first time.
+00:08:58
+
+And…
+00:09:08
+
+This process is very voodoo magic, as you'll see Hamel and I do. Like, this is the process where you infuse your taste into the product that you're building. So if Hamel does this process separately, and I do this process separately, it's very possible we come up with two different taxonomies, and that's okay, that's good.
+00:09:09
+
+that means our products are going to be distinct, so don't feel weird about that. Just lean into, you know, what your opinions are. And one…
+00:09:29
+
+kind of way to know that, okay, maybe you have achieved success from this process is you have, like, a pretty high confidence set of 5 to 8 different failure modes.
+00:09:38
+
+And, you've kind of cycled through this process of open coding and then clustering your open codes, as we'll talk about. You've done this a few times, and you've seen that there are no new failure modes that emerge. So it's something called theoretical saturation in the literature of qualitative analysis. Don't worry about the fancy terms here, but think about this as we want to continue reviewing traces until we don't see any new failure modes.
+00:09:48
+
+So with that, maybe let's go back into the error analysis that we were doing last time. Hopefully people can see my screen here.
+00:10:14
+Hamel Husain
+
+I can.
+00:10:23
+Shreya Shankar
+
+Yes, let me make sure that… yeah.
+00:10:24
+katrinawalker
+
+Okay, so…
+00:10:28
+Shreya Shankar
+
+Someone is talking… sorry, just so you know that you're talking out loud.
+00:10:31
+
+Okay, so we'll do some open coding. We do have an error discovery skill that we'll be using in generating this dashboard, so I have already told my coding agent to use this skill and create the dashboard that I'm going to show you, so that I save some time in lecture, but part of the homework that you'll do today in Lecture 4 at the end is to use this skill.
+00:10:37
+
+yeah.
+00:10:59
+
+Cool! So here's the dashboard. Please tell me to zoom in if the text is too small. And so what we're gonna do first is spend around 15 minutes or so
+00:11:01
+
+Just looking through the traces, and finding…
+00:11:11
+
+points of failure modes that we see. We're gonna pretend that we're a user, and then just experience the product as they are. So this is the cartwheel fictional e-commerce platform that we've been building. So we'll start out with this one. So you'll notice that I have this extra metadata here.
+00:11:15
+
+Right? Part of these dimensions around this shipped status, this order is already shipped, so we would expect that the agent has… is able to find that. Again, not in the user message, but just there for us to look at. We know that there's just one lookup of the tools.
+00:11:31
+
+Then something we synthetically generated.
+00:11:49
+
+Just as a shopper.
+00:11:51
+
+Alright, so I'll start by doing this one, and then maybe Hamel can also add in with this. So, the user said, hi, I ordered a Bluetooth speaker a little while ago, I'm wondering if it's been shipped yet.
+00:11:53
+
+And then the agent says, I'll search your recent order so I can find the right order, check its shipping status, okay. Part of this dashboard, it's really nice to be able to see everything that happened, so it's good that the tool actually found something, I suppose, and it found two things.
+00:12:05
+
+And… I guess one of them is from Cascade Audio, so… found that one.
+00:12:22
+
+And then the assistant said, yes, I found your Cascade Audio order, and then it says all of this metadata, it's been shipped, but it hasn't been marked as delivered. Okay, so the first thing that comes out to me is I think, like, oh, there's a lot going on here that…
+00:12:31
+
+you know, I don't know if the user really needs all of this information, but we could.
+00:12:48
+
+make this…
+00:12:53
+
+You know, we could write a note here saying that, like, use this might be too much information that the user didn't ask for.
+00:12:55
+
+Again, we're not trying to figure out, hey, should we fix it at this current moment?
+00:13:06
+
+But we're just kind of externalizing what we think and moving on.
+00:13:11
+
+Hamel, is there anything that kind of jumps out to you? Or maybe we.
+00:13:16
+Hamel Husain
+
+Yeah.
+00:13:20
+Shreya Shankar
+
+Not even have this note, and just move on.
+00:13:20
+Hamel Husain
+
+No, Mo, it jumps out to me. I would mark this as a failure, like, a strong failure, because…
+00:13:22
+
+Okay, like, let's put our product hat on. Someone's asking for, hey, like, is this thing delivered yet?
+00:13:28
+
+And then the AI assistant is just telling you an order ID, like, just, yeah, it's just telling you your order ID. That's not what you want to know. You want to get, like, a tracking number. Give me a tracking number, I want to see, like, where it is in FedEx, I want to see, like, what's going on.
+00:13:34
+
+I wanna, like, have some more confirmation that, like, this is my order. Maybe, like, linked to the order page?
+00:13:48
+
+where I can see the information, do something. So I would say, like, this is not helpful if, like, from an AI assistant perspective, so I would… I would probably make a note.
+00:13:55
+
+Around something like that.
+00:14:05
+Shreya Shankar
+
+I re… I really like what you added here, because
+00:14:06
+
+it's not just important to say, like, okay, this is too much information, like, I don't like it. A lot of people ask, should we just thumbs up, thumbs down these? And my answer to this is no, add as much information as you possibly have in this moment in the open code. So, Hamel said something like, we also want to add a link.
+00:14:09
+
+To the tracking page.
+00:14:30
+Hamel Husain
+
+I'm sorry, where's your… where are you adding the note? The screen went kind of gray for me.
+00:14:33
+Shreya Shankar
+
+Can you see it? I clicked edit, and then, since this is vibe coded.
+00:14:38
+Hamel Husain
+
+Oh, it's a… I think the pop-up isn't showing, that's what it is.
+00:14:43
+Shreya Shankar
+
+Oh, no, okay. Alright, so…
+00:14:46
+Hamel Husain
+
+In the Zoom sharing, it may not be picking up.
+00:14:49
+Shreya Shankar
+
+I see, I see. Okay, imagine that there's a pop-up, and I just edited it, and then it came back here, don't worry. We also want to add a link to the tracking page,
+00:14:52
+
+Yeah.
+00:15:02
+
+So I think that's good.
+00:15:04
+Hamel Husain
+
+Yeah.
+00:15:06
+Shreya Shankar
+
+Yep. I think that's good. So, yeah, lesson here is add, kind of, every opinion that you have, and then move on, right? Don't dwell on it too much.
+00:15:06
+
+they're gonna be things that you immediately jump to as like, I need to fix this in this current moment. I mean, you could make any fixes to the prompt or whatever if you wanted, but my recommendation is to, like, really just try to get in a flow here of reviewing.
+00:15:17
+
+So here's another one.
+00:15:31
+Hamel Husain
+
+And we already know, we already know what I'm gonna say.
+00:15:33
+Shreya Shankar
+
+desk lamp order. Alright, it's something…
+00:15:37
+
+you know, simple as this. So, it's the same code. I think it's fine to put the same code here, so you can say, like.
+00:15:39
+
+Too much information… What is Hamel gonna say? I don't know, I can't read his mind.
+00:15:49
+Hamel Husain
+
+I'm just gonna say, like.
+00:15:57
+
+Should give you, should give you tracking info.
+00:15:59
+
+And link you to the order page.
+00:16:03
+Shreya Shankar
+
+Links to tracking info and order page.
+00:16:06
+
+Another question that we commonly get in this
+00:16:12
+
+course is also, what if you see things that you like, right? What should you do there? So one thing that I… that is… might be nice is that the assistant offers, like, I can help you open a support ticket if you didn't receive it. And it's totally fine to, like, add open codes here in terms of positive things, like.
+00:16:15
+
+Good to ask in that follow-up step.
+00:16:34
+Hamel Husain
+
+Yeah, it's optional, like, I usually don't add good things, I focus on the negative, just because the negative is where you want to find the problems, but it is good…
+00:16:39
+Shreya Shankar
+
+It's more important, too.
+00:16:49
+Hamel Husain
+
+for your mind, sometimes, to, like, notice the positive. So it's totally up to you, you can do whatever you find is most helpful.
+00:16:50
+Shreya Shankar
+
+Yup.
+00:16:58
+
+I agree, negative is more important than positive, but as you'll see when we get to the clustering step, it'll be good to have… you will appreciate having some positives, at least, because maybe it'll help you steer your AI into a better direction.
+00:16:59
+
+Cool. I placed an order for olive oil, can you tell me when it'll ship? So some of… I guess I didn't order these traces very well here, because some of the harder ones are towards the end in my set here. But anyways, we'll just keep.
+00:17:15
+Hamel Husain
+
+And there's some questions, like, where do you annotate? Like, is it important, like, that you annotate the tool, or whatever? Like, notice how I try to find the macro problem about this user interaction, and I just zoned in on that. Because I try to make a determination, like.
+00:17:30
+
+what is the most important problem surfaced by this trace? And I just take a note of that and move on. It's a judgment call.
+00:17:45
+
+You don't have to, like Shreya says, like, overanalyze it, or you don't want to overanalyze it, you'll get stuck in this forever.
+00:17:53
+
+You want to try to notice, like, what is the first thing you see that is wrong, and then just move on.
+00:18:01
+Shreya Shankar
+
+Absolutely.
+00:18:07
+
+Alright, so let's keep going. Let's do about 8 of these, and then let's get to some harder ones. I just… I want to get in reps in this lecture so that people just really see a lot of reps. Okay, I placed an order for olive oil from Golden Hour Coffee, can you tell me when it'll ship?
+00:18:10
+
+And the AI says they're gonna search for recent orders to check the current shipping status. I think that's fine, that's good.
+00:18:26
+
+Here's some tool results, it got something, and then it said, I found some golden hour coffee order, but the product name doesn't match olive oil.
+00:18:34
+
+So I'll do one more search, okay, by the product name alone, to give… avoid giving you the wrong order details. So my immediate thought here is, like, this is, like, too much detail, you know, you don't want to be excessively verbose to the user if you're building a support agent,
+00:18:43
+
+So, I might say something like, We don't need to, give excessive… Reasoning, Or spend excessive tokens.
+00:18:59
+
+on things… That the user…
+00:19:16
+
+doesn't need to know. And you'll notice that, like, I didn't think too much when writing this, right? I, like, just wrote something that came to my mind, and I moved on. And then the assistant said, couldn't find an olive oil order, here's what I did find. So I do like that the assistant actually found something.
+00:19:21
+
+However, I think this formatting is a little bit strange to me, so…
+00:19:42
+Hamel Husain
+
+Yeah, I actually didn't mind the reasoning trace that much. I'm like, it's okay, like, it is what it is. I do take issue with the final answer, though. I think it's not that helpful.
+00:19:46
+Shreya Shankar
+
+Well, tell me more about what you think would be more helpful.
+00:19:57
+Hamel Husain
+
+Yeah, so, like, if an AI assistant is telling me, hey, I found this, like, walnut olive oil from Saltback Box Pantry, and then, you know, this Travel Jam Trio, I might not remember what the hell that is, like, I don't remember names of products. I mean…
+00:20:01
+
+okay, I try not… I don't buy that many things, but still, like, my memory is not pristine, like, I wanna, again, get, like.
+00:20:18
+
+some… it would be good to have a link to an order page. I don't… I certainly don't need to know the order number, I don't think, in this situation.
+00:20:25
+
+So, yeah, it's going back to the links. And you notice, like, how I'm noticing the same problem. It's totally… like, that will happen a lot when you're doing error analysis, is like…
+00:20:36
+
+You might go… start doing error analysis, and the first 10 traces you see, you're like, you're just noticing the same problem.
+00:20:46
+
+Every single time. That is totally… that happens a lot. Like, that's the whole point of error analysis. You're gonna find low-hanging fruit. And it might be the case, like, after annotating 10 things, you just stop everything you're doing and go fix it.
+00:20:54
+
+It's totally fine, that's part of… the process.
+00:21:06
+Shreya Shankar
+
+100% agreed.
+00:21:11
+
+Let's keep going.
+00:21:13
+
+So you can see the pace that we're going in as well, like, this is a totally normal pace. You might be like, it's too slow, it doesn't scale, don't worry, it gets faster.
+00:21:17
+
+So again, some synthetic request. I ordered seed kit. Has it arrived or what?
+00:21:26
+
+should have arrived already. I can help check for next steps or missing delivered order. I feel like this is, you know, the same thing that we've been saying on and on. Maybe one thing that we can do is start reviewing other traces.
+00:21:36
+
+that we know have some different dimensions. So right now, like, all of these are kind of similar dimensions. So let's see…
+00:21:49
+
+Let's get to… Here, cancellations, that could be interesting.
+00:21:58
+
+So again, this is why you want to have your extra metadata, is to help you, like, quickly go review traces of different types. Cancel my Jam order, I don't want it anymore, and then it says I look for your recent order, I'll confirm the exact order and whether it can be canceled.
+00:22:04
+
+I'll check the cancellation policy. So here, I would want to say something like.
+00:22:22
+
+Don't check the overall platform.
+00:22:28
+
+Cancellation policy.
+00:22:33
+
+Check the store cancellation policy.
+00:22:36
+
+So that's something that, like, the AI might not know or realize, this hierarchy of, like, actually stores have their own cancellation policy.
+00:22:41
+
+I'll also look up the return policy.
+00:22:51
+
+So, yeah, we got the question about, like, should we annotate the tools, tool results? You can, it doesn't… it's not super important where you annotate. Like, if you annotate here, you annotate…
+00:22:55
+
+in here, looks, like, totally fine, because you'll see later on how we do the clustering and how we ask AI to help us cluster. As long as, you know, the note is close to where the error was, it will be okay.
+00:23:07
+
+Okay, so this is, like, so much is happening here. I'll also look up the return policy, like, again, this is, like, too much information.
+00:23:21
+Hamel Husain
+
+And there's an art to doing this, like…
+00:23:31
+
+you can certainly look at the trace, or sorry, look at the tool results, look at the reasoning, but you can kind of… there's some shortcuts, like, sometimes I try to look at the final output and get a sense of, like, what happened.
+00:23:34
+
+And then see, okay, like, is that blatantly wrong? Because if it is blatantly wrong, then, like, I know. Okay, like…
+00:23:48
+Shreya Shankar
+
+Like, yeah.
+00:23:56
+
+I… let's do that in the next one. Let's give some more failures that we find here, which is, let's…
+00:23:58
+
+Not sight. Internal.
+00:24:05
+
+documents or data.
+00:24:08
+
+I see this happen a lot, actually, for AI agents, where it's like, I think these have been post-trained to, like, not hallucinate, so to try to actually point to the sources, or cite the sources. Like, I see this in Gemini all the time, so…
+00:24:10
+
+Sometimes, you know, you gotta look out for these.
+00:24:24
+
+If you like, come back once it arrives, and I can help you start the return process. I feel like that is, like, pretty strange.
+00:24:29
+
+We don't.
+00:24:36
+Hamel Husain
+
+Yeah, I wouldn't like…
+00:24:40
+Shreya Shankar
+
+Beautiful.
+00:24:41
+Hamel Husain
+
+Yeah, like a public citation. I would say, like, hey, we need to have some document that we're giving the user.
+00:24:42
+Shreya Shankar
+
+I'm just thinking…
+00:24:47
+Hamel Husain
+
+Check.
+00:24:48
+Shreya Shankar
+
+That's a good idea. I'm editing the code, sorry, it's all gray, so what I'm saying is, there should be link to…
+00:24:51
+
+public documentation.
+00:25:00
+
+Okay, so you can see that, that's the editing.
+00:25:03
+
+Can't spell, but… oh well. So this is another example of, like, it's helpful to have these little features, like edit, delete, like, to highlight and then annotate.
+00:25:07
+
+I've just found that that's useful for myself. All of this is in the skill, by the way, so if you use the skill to create your Error Analysis Dashboard, that'll work for you.
+00:25:17
+
+Let's keep going. So, Hamel had a really good heuristic, which is, like, maybe read the user message, and then skip to the end to see if, like, immediately there's something bad. So, how long do I have to return something I bought on Cartwheel?
+00:25:27
+
+You have 30 days from the delivery date.
+00:25:41
+
+Items also need to be in the condition described in the store's listing. So again, this is, like, the same issue, which is the external
+00:25:44
+
+Source, not internal source.
+00:25:52
+
+one caveat, individual stores can set their own return window or fees if they state it in their store policy page. So I feel like that makes sense. You know, if I were a product person.
+00:25:58
+
+I don't know if I would love the word saying one caveat, like, I might… Just say, like.
+00:26:10
+
+you know, the global platform policy is 30 days, however, individual stores can set their own return window. But maybe that's just, like, me being super nitpicky, like, I don't like the way that AI speaks, so… I'm not gonna.
+00:26:17
+Hamel Husain
+
+It's good to be nitpicky if you… yeah, if it's important, you know. And that's where your taste…
+00:26:30
+
+You're, like, externalizing your taste into these annotations, that's the important part.
+00:26:36
+Shreya Shankar
+
+I'm not gonna write that one down. Sometimes you might have thoughts that you don't want to write down. Again, write voodoo magic. The takeaway from this is, like, this is bespoke magic that is gonna make your product better.
+00:26:43
+
+So, if I want a refund on something, how does that work exactly? Do I get it back on my card, or what? And then I said, I found the likely refund policy, I'll open it to confirm the exact rules.
+00:26:55
+Hamel Husain
+
+That's a really good synthetic, synthetic query, that's really realistic.
+00:27:05
+Shreya Shankar
+
+Well, some of them are great, and some of them are bad. That's the deal with synthetic data.
+00:27:09
+Hamel Husain
+
+Yeah.
+00:27:15
+Shreya Shankar
+
+So, it can say yes if a refund is approved, goes back to your original payment method. 5 to 10 business days after approval.
+00:27:18
+Hamel Husain
+
+Hmm.
+00:27:25
+Shreya Shankar
+
+And then this… all of this seems unnecessary. Like, we look up the order first.
+00:27:26
+
+I guess a $100 or less thing is very useful to…
+00:27:32
+Hamel Husain
+
+I would, I would actually… so, okay, I'm putting my product hat on again.
+00:27:36
+
+And I would say, like, I don't want to…
+00:27:40
+
+I don't want to repeat language with confidence.
+00:27:44
+
+about a policy and a AI output, because then someone can take that and hold me accountable for that. I wanted to, like, link to the policy and say, like, this is our understanding, but check the policy
+00:27:49
+
+Or something to confirm. That way, if there's some mistake, if the AI is making some mistake in summarizing the policy or repeating the policy.
+00:28:01
+
+It's not, like, a liability for me.
+00:28:10
+
+And I guess, like, you see how it is, right? Like, this is all very freeform, like, you have to try to notice and think about, hmm, is this what I want? You have to…
+00:28:18
+
+simulate the user, you have to think about, okay, what is going on? Is this… sort of…
+00:28:28
+
+Is this really what I want, here?
+00:28:34
+
+And it takes some practice to get there.
+00:28:37
+
+As you see, like, Shreya and I have different lenses on things as well.
+00:28:40
+Shreya Shankar
+
+Yeah, another one that I want to add, and again, like, I'm probably not highlighting in the right place, but I just want to externalize things as I have a thought, which is, this response doesn't need 4 parts.
+00:28:48
+
+all the… matters.
+00:29:02
+
+Is the $100 flag.
+00:29:05
+
+the… Original payment method… And 5 to 10 business days.
+00:29:10
+
+Yeah.
+00:29:22
+
+And then, personally, another thing that I really hate is, like, unnecessary offers at the end.
+00:29:24
+
+this all the time.
+00:29:31
+Hamel Husain
+
+Yeah, that's like the… that's the RLHF. It's like, let's try to be helpful, so let's…
+00:29:32
+
+Yeah, it always does that.
+00:29:37
+Shreya Shankar
+
+It's super annoying.
+00:29:38
+
+I'm like, these were things that can just be fixed and prompting, but I never… no one ever thinks to, like…
+00:29:40
+
+Drop this way.
+00:29:45
+
+Okay.
+00:29:47
+
+So, let's keep…
+00:29:48
+
+Skipping more… hmm, let's go to a different coverage policy question merchant. Okay, nice. We're, like, in totally different dimensions.
+00:29:50
+
+Alright, so some extra metadata, there's some specific policy that we want to base,
+00:30:00
+Hamel Husain
+
+And by the way, like, okay, I know, like, some of this is synthetic data.
+00:30:06
+
+You want to, just as a reminder, you want to try to look at real data whenever possible, and like, when you're looking at real data, you might not have the dimensions because you didn't synthetically generate it, but you can cluster your data
+00:30:10
+
+get those, like, kind of reverse engineer what those dimensions are, so you can filter things. We'll be talking about that later.
+00:30:22
+Shreya Shankar
+
+Absolutely. I love that I'm just checking some of the comments, people are adding some more thoughts and opinions that they have about Cartwheel, like, don't even mention the cartwheel policy. Like, great! Put that in your open codes, right? Now you can see, if you keep doing this process, injecting your opinion is going to be highly different from what somebody else does.
+00:30:31
+
+Okay, what's our store's return window? I want to be… make sure I'm telling customers the right thing.
+00:30:48
+
+And then, again, right, like, Hartwheel's return policy is not helpful, right? Don't do this.
+00:30:55
+
+Check the store.
+00:31:02
+
+Yeah, it says, I'm gonna check the store-specific return override as well, right? But, you know, it could have just… this first tool could have been totally shortcut.
+00:31:08
+
+I'll open the main return policy. This is also just not relevant.
+00:31:17
+
+No need for unnecessary… tool calls.
+00:31:23
+
+for questions.
+00:31:28
+
+Like this, just check the store.
+00:31:30
+
+I don't know about you, but sometimes when I ask agents, it just lets to give, like, 10x unnecessary tool calls.
+00:31:36
+Hamel Husain
+
+Yeah, I am noticing something now.
+00:31:41
+Shreya Shankar
+
+Another one…
+00:31:42
+Hamel Husain
+
+We've done some error analysis, and we've hit this return policy thing a few times.
+00:31:43
+
+now with my, take my product hat off and maybe put my engineering hat on, I'm like, this is a very, like, cumbersome way to check for a return policy. Like…
+00:31:49
+
+Can this be, like, one tool call? There's, like, something that can make this easier for the AI that could, like, just resolve all of these things? There has to be something, like, I would… I would, like, definitely take note of that and say, like, hey.
+00:31:59
+
+This is just adding a lot of latency, a lot of hops, like, what is going on here?
+00:32:11
+Shreya Shankar
+
+Absolutely. Yeah, and I'm pretty sure all that was said was, what is our store's return window?
+00:32:15
+
+Right? So, like… Why you need this money? I don't understand why we're, like…
+00:32:21
+Hamel Husain
+
+Yeah, it's real.
+00:32:27
+Shreya Shankar
+
+It's really churning. We, yeah, don't need to… Search products for this query.
+00:32:28
+
+Anyways, okay. So, another thing you should notice here is, like, I'm not trying to fix the problem now, I'm not trying to hypothesize why the agent is making a mistake, I'm just externalizing the mistake so fast. I'll search the product head again, like, we don't need to do this. Don't do a broad product search, like, this is crazy.
+00:32:37
+
+Oh, it looks like we… exhausted…
+00:32:56
+
+The tool call limit and failed?
+00:33:01
+Hamel Husain
+
+Mmm.
+00:33:06
+Shreya Shankar
+
+No response to user.
+00:33:08
+
+Okay, well, that was crazy. That wasn't even a challenge case. So, when you do the homework, you'll realize this. You'll be like, oh wow, we're using GPT-55 or 5.6, and we still get these.
+00:33:15
+
+you would think that you don't get these failures, but you do get them. Oh, another thing that I…
+00:33:26
+
+wanted to call out is, I always like to put the latency, the number of messages, and I also like to have the AI compare it to the distribution of message… or the distribution of traces in our dataset. So here, already, off the top of our head.
+00:33:32
+
+we should have realized, oh, wow, this is an outlier, right? There's more messages than 99% of traces in this dataset, so probably something's off here. So, look at outliers, like, look at, you know.
+00:33:47
+
+Traces that are different from the others.
+00:33:59
+
+Let's keep going, how long is our turn window here for Nordswood Books?
+00:34:03
+
+I found one, I'll open the full policy, I guess that's fine.
+00:34:11
+
+Okay, so again, unnecessary… detail here.
+00:34:18
+
+Like, this is the obvious from the previous sentence.
+00:34:25
+Hamel Husain
+
+Yeah, I mean, there's, yeah, it's like, citing… it's like that policy is…
+00:34:29
+
+Being cited, like, in a weird way.
+00:34:33
+
+It's, like, internal… And then it's also ga- it's also… Repeating the policy?
+00:34:37
+
+Instead of…
+00:34:45
+Shreya Shankar
+
+Yep.
+00:34:47
+Hamel Husain
+
+That's the problem.
+00:34:48
+Shreya Shankar
+
+Alright.
+00:34:51
+Hamel Husain
+
+So, by the way, folks, like, okay, so this is the most…
+00:34:55
+
+like, one of the most powerful… I would just say this is the most powerful, kind of, part of what we're teaching you, is to look at the data. So when you… if you search the internet, and you're, like, trying to figure out how to do evals, nobody is telling you to look at data.
+00:34:59
+
+And this is kind of something that is going to make you very effective when you're doing evals, if you come at it first from looking at some data. Because when you look at this data.
+00:35:16
+
+You're gonna… you're gonna understand how your application works, like, better than anyone else. And you're gonna know, like, what errors are actually important. That will inform, like, what evals you should write.
+00:35:26
+
+And by this point, and then, like, you know, we're gonna do some analysis on this.
+00:35:38
+
+But already, you should have in your mind, like, you already know, like, some burning problems already. Like, you should be itching, be like, I need to fix this. This is really bad. You know, this, like, return policy thing, the order thing. So that's exactly what we're trying to get to here, is, like, inform you of…
+00:35:44
+
+What is happening?
+00:36:01
+Shreya Shankar
+
+Yep, exactly.
+00:36:04
+
+Yeah, you cannot tell the number of… like, every time I look at someone's traces, I'm like, you can find errors.
+00:36:06
+
+Even if you have spent so much time writing the prompt, you'll find errors, so definitely look at them.
+00:36:14
+
+Let's get to some more challenging ones. We have a few more minutes before I want to get into Excel coding.
+00:36:21
+
+Let's see… Maybe… no, we've already done… let's do a, yeah, product search. No.
+00:36:29
+
+There's only 3 tool calls there.
+00:36:38
+
+I wanted to get to some more outlier stuff.
+00:36:43
+
+Okay, no, now we're in the challenge.
+00:36:47
+
+Okay, so here is a big latency issue.
+00:36:52
+
+I don't know what happened. Maybe just the AI was really high latency.
+00:36:55
+
+Hey.
+00:37:00
+
+Alright, well…
+00:37:03
+
+Let's do this one, and then we'll do some challenge ones. So, I'd like to return a field guide I got from Northwind Books, it's not what I expected.
+00:37:06
+
+And the agent said, okay, let's try, I'll look it up, try to see…
+00:37:13
+
+I found the likely order, I'll pull the full return policy, So, again, like, Just say, Return policy.
+00:37:18
+
+Don't… Give details about all these other Policies.
+00:37:30
+
+I'll open the order details.
+00:37:42
+
+Again, yeah, just… Mentioned the policy.
+00:37:50
+
+for Northwind Books.
+00:37:55
+
+oh, here's another one, putting my product hat on. This is a pretty bad, reason to do a return. So, if I were a product person, and the user wants to do a return, I would want to ask them for more details, right? So maybe…
+00:38:02
+
+expose a form for Y.
+00:38:17
+
+The user might want to return.
+00:38:22
+
+Not just any pig.
+00:38:26
+
+It sunk.
+00:38:29
+Hamel Husain
+
+So this is actually, like, I would stop here also and say, like, this is really bad product design in general. Like, if you have an e-commerce store, and you have all these actions you can take, like buying something, returning something, etc, you don't want to just, like, only use text.
+00:38:30
+
+you want to be able to say, okay, if you're returning something, your system, like, let's say you're not using AI, you should be able to go into the UI and, like.
+00:38:47
+
+press a return button and go through that like you would on Amazon, right? And so what you would want to do here is, I would say, like, you know, I would want to expose a widget that is in sync with whatever the UI is in the database that, like, exposes the return policy and gives the person, like, a button to press.
+00:38:56
+
+And that also minimizes my liability, too. Like, if, again, like, I'm paranoid, like, what if the AI is, like, telling the user something that we can't do?
+00:39:15
+
+Or promising something we can't do. You want to, like, avoid all that craziness, and you want to, you know, and, like, it doesn't make sense, right? It's like, you want some visual confirmation, actually having a button, seeing your order, seeing a little picture of what you bought. You know, these are all.
+00:39:25
+Shreya Shankar
+
+Yeah.
+00:39:39
+Hamel Husain
+
+Like, help you gain trust in what is happening.
+00:39:40
+Shreya Shankar
+
+More extra metadata.
+00:39:43
+Hamel Husain
+
+Yeah, you want to think about that.
+00:39:44
+Shreya Shankar
+
+Great points. Some other good questions that have come up in the chat are.
+00:39:47
+
+do you need this UI and LangFuse, or is just one good enough? So, you can't do this in LangFuse, you can't do all of these great features of, like, hotkeys for left and right to navigate traces fast, the highlighting, and then the feedback coming in, so all of that is reasons why, you know, the whole goal of building your own interface is to have a really ergonomic experience of looking at the data and annotating.
+00:39:53
+
+So, that's why I always recommend, you know, people try to code their own, or use a skill to have an agent coding their own.
+00:40:15
+
+Langfuse even has a blog post on how to code their own interface, and then you can use just LangFuse as, like, a database, honestly, to store the traces.
+00:40:22
+Hamel Husain
+
+Yeah, for example, like, when it comes to that widget I was just talking about, Langview's not gonna render a widget for you. But you can totally do that if you wanted to here. You could see exactly what the user sees.
+00:40:31
+Shreya Shankar
+
+Yep. Format of this annotated trace, it's up to you. In the skill, we specify JSON, so these traces are in JSON, and then the annotations are also in JSON, and they're attached to a turn, as I'll show you when we do the axial coding.
+00:40:40
+
+But honestly, you can put in a database, like, think about whatever data model you might want to have.
+00:40:58
+
+Another question around, are we supposed to comment on reasoning? Most of the times they get hidden. So, it is up to you and your application. I'm commenting on reasoning because this reasoning here is exposed to the user. I'm imagining if we're building a help agent, right.
+00:41:03
+
+The agent is reasoning out loud to the user.
+00:41:20
+
+So I'm gonna comment on it. I'm gonna comment on anything that's user-facing. Sometimes I like to comment on things that are not user-facing as well, because that might be helpful context to improve the accuracy of the agent, if the agent happens to be low of accuracy. Generally, I want to comment on anything that I can, because ultimately, all these open codes, we're gonna do them, or not in this session, but you should do them for, you know, 100 traces, and then you will feed all of that context in into an agent.
+00:41:23
+
+it to help you propose a taxonomy of failure motives.
+00:41:48
+
+And then the last question that I'll answer before I keep going is, if you keep finding the same error over and over again, do you keep writing open codes for them, or is one good enough?
+00:41:52
+
+I like to write the same open code at least 3 or 4 times, as you've been seeing. Like, we are writing the same open code. And that's because it's just more examples of where I'm seeing this issue, and then when I do ask an agent later to help cluster these failure modes.
+00:42:01
+
+Maybe I can also ask the agent, like, take some of these failure uploads, modes that occur frequently, and try to find other instances of those traces in the dataset. And you'll see there, you know, having a lot of different examples of them annotated by us already is going to help the agent find even more examples.
+00:42:18
+
+Great. So I'll keep going. We'll, again, keep doing this. So a general rule of thumb is to keep doing this until you've hit… I'm making up a number of 100. In the homeworks, we ask for 250, because, you know, you never… always generate more than you're going to annotate. You don't want to, like.
+00:42:36
+
+run out of issues. Some of these prompts are going to be unrealistic, so you want to have more that you're looking at. But also, just keep going until you're not learning any new failure modes, so you've kind of covered all of your traces, and you're not learning anything new.
+00:42:54
+
+Let's get to some challenge scenarios that we made.
+00:43:08
+
+Here. Good stuff. Alright, so why was this a challenge one based on our extra metadata when we were doing synthetic data generation? So there's a missing delivery date. So the order has a data quality issue, there's a delivered status, but no delivery date, or a null delivery date in the database.
+00:43:12
+
+And the user asked about it, so… I got this pencil set, I think it came, but I'm not sure when it showed up. I want to return it.
+00:43:31
+
+The agent tries to look it up.
+00:43:40
+
+Kinda made sense, so it issues two calls simultaneously. I found this likely matching order.
+00:43:43
+
+Again, just say, return policy.
+00:43:51
+
+Because the order shows delivered, but no delivery date recorded, I'm gonna open a human support ticket to review the return request manually. I know Hamel has thoughts here.
+00:43:58
+Hamel Husain
+
+Yeah, I mean, it's kind of the same issue. I mean, the main issue to me is…
+00:44:15
+
+I mean, there's… okay, there's several things. One is, whenever you escalate to human, I like to ask myself, is that really necessary?
+00:44:24
+
+I mean, I like to just…
+00:44:31
+
+In general, I like to avoid meetings that I don't need to have. This is my mindset as a human being. So, like, do we really need to be escalating to a human being? I'm not sure, like, this…
+00:44:33
+
+It says, like, it has no delivery date recorded, it's marked not refund eligible,
+00:44:44
+
+I would want to dig into this one, and say, like, can I avoid this escalation? It's not super clear to me.
+00:44:50
+
+that it… this is needed. It could be a product design issue, or a workflow design issue, or something like that?
+00:44:58
+Shreya Shankar
+
+Yep. The other thing I was gonna say is, for me, I don't know if we want to expose the fact that we might have a data quality issue, or, like, someone accidentally deleted a table, or something's going on, some, like, some data job failed. So maybe I, like.
+00:45:06
+
+Don't give details on the data.
+00:45:23
+
+Quality… Issue, or any internal bugs in the codebase.
+00:45:28
+
+say that…
+00:45:35
+
+Actually, I don't know what I would want to say here. I'm not a product person, so… probably there's some legal thing that we would want to say here. We definitely don't want to tell everything, that's all.
+00:45:38
+Hamel Husain
+
+So, like, okay, so it did tickle my curiosity, this escalate to human. I'm like, hmm, escalate to human.
+00:45:49
+
+So, what I would do in this situation, if I was doing error analysis in real life, is I would ask my coding agent that I'm using to create this annotation app. I would say, okay, show me all situations where there's an escalate to a human. I would just…
+00:45:56
+
+look at the next… I would look at, like, 20 or 30 traces where you escalate to a human, because now you triggered…
+00:46:11
+
+Yeah, like, this, like, looking at this, I'm like, there might be something wrong with this, like, let's go, let's go check this out, let's dive deep into this specific problem.
+00:46:18
+
+So you want to pay attention to, like, what do you observe, what do you notice, and don't, like, ignore anything, and kind of take note, and you want to go investigate those, annotate those.
+00:46:26
+Shreya Shankar
+
+I really like that point, and when we talk about how you might sample traces automatically to review, so one common question we get is, oh, I don't want to review everything, how do I sample which traces to review?
+00:46:37
+
+look at a random sample, and then as you're, you know, creating notes, do exactly what Hamel said, which is, oh, something piqued your curiosity, ask your coding agent to find more examples of that for you to review.
+00:46:48
+
+Another one here.
+00:47:01
+
+There's some issue here around… This order is filed under the wrong store.
+00:47:07
+
+And the agent must… Escalate the inconsistency.
+00:47:14
+
+However, I probably did not. Can you look at the Jam Trio I ordered?
+00:47:19
+
+Interesting. So… I don't know how it's supposed to know that… the… Store is wrong.
+00:47:27
+
+In find order.
+00:47:36
+
+So, maybe I'll leave this one.
+00:47:40
+
+So sometimes you might make some challenge scenarios for your agent and realize the agent didn't discover it, and then you might also think, okay, is this something that I need to address? How so?
+00:47:43
+
+So we might say something like, This is not…
+00:47:54
+
+We would have hoped that the agent flagged, like, This is suspicious.
+00:48:00
+
+This ceramic store.
+00:48:07
+
+Doesn't. So… Jam.
+00:48:10
+
+Again, this is, like, going to data quality issues that we have artificially generated in this
+00:48:14
+
+In the database, so we want to try to trigger some failure modes from the agent, or see how the agent responds to it.
+00:48:21
+
+So maybe let's do a couple more, and then we'll move on to axial coding.
+00:48:28
+
+Interesting. I'm looking for a heavy-duty vase, how much is it?
+00:48:34
+
+So here's another example of, like, I know exactly what Hamel's saying, which is, Please show photos.
+00:48:38
+
+Of each product.
+00:48:45
+
+being recommended.
+00:48:48
+
+Because I've seen him give that open code for a different one.
+00:48:52
+Hamel Husain
+
+Yeah, you have to have widgets in your app, like, don't… this is, yeah, this is… the text thing is… I mean, I know this is, like, a toy example and whatever, but we just try to make it real of what we would say if this was in real life.
+00:48:58
+Shreya Shankar
+
+Yeah, so probably there's some data quality issue here.
+00:49:13
+
+Fixed in some way.
+00:49:18
+
+Alright, let's do… One more that's not… that's some other store.
+00:49:20
+
+I don't know.
+00:49:26
+
+Here.
+00:49:28
+
+I think I ordered something from one of the toy stores, like a gamer puzzle, maybe?
+00:49:30
+
+Okay, your order list shows product and store IDs, but not names, so search your orders for game and puzzle. Okay, so this is a great scenario where, if you're a developer.
+00:49:35
+
+And you're really interested in optimizing your agents, You might think.
+00:49:46
+
+oh, this is inefficient. The agent has to call a bunch of different tools to get to the answer. Maybe you want to say something like.
+00:49:52
+
+The order name should be in the list by…
+00:50:00
+
+Orders tool, so that we don't need extra game calls.
+00:50:05
+
+Or, sorry.
+00:50:12
+
+Extra.
+00:50:13
+
+tool calls.
+00:50:14
+
+This I see all the time. Like, MCP, often not optimized for agents, not token efficient, or people… agents need to call, like, 6 or 7 different tools, and they… ideally, you could just design one for it.
+00:50:18
+
+I didn't find any orders matching puzzle.
+00:50:31
+Hamel Husain
+
+Yeah, I don't like it. Like, okay, so when I saw the user query, I automatically started simulating in my mind what would be the best kind of response for a user. Like, what would I want to see? And I would want to see, like, a table of orders
+00:50:37
+
+Maybe filtered by toy stores? I just want to see all of them.
+00:50:51
+
+And then, like, have the AI tell me which, like, what are likely, sort of, things.
+00:50:55
+
+this thing where it's, like, just sending me one match, I'm like, that's not great, because the query was very vague, like, hey, like, I don't know, I have this vague memory of ordering something from a toy store, but I don't really know what it is.
+00:51:04
+
+So… Yeah, that's what I wanted to see.
+00:51:16
+Shreya Shankar
+
+Don't like that the formatting is strange and inconsistent. Bolding.
+00:51:23
+
+Okay, I'll keep going.
+00:51:31
+
+That's the one, can I get a refund?
+00:51:33
+
+Again, same issue of, like, just so many tool calls.
+00:51:35
+
+Wow.
+00:51:40
+
+Okay, I'm not gonna give this comment, because I just feel like…
+00:51:42
+
+Oh, this is the worst. If you can, include a brief reason, but, like, change my mind. Item not needed, or problem with item.
+00:51:46
+Hamel Husain
+
+Yeah, that's where.
+00:51:53
+Shreya Shankar
+
+Very bad.
+00:51:53
+Hamel Husain
+
+Yeah. You have to exit the text, you know, you have to be like, okay, this is time to expose widgets, like, get the person onto the U… like, a UI of some kind, or expose the UI inside this, you don't wanna… this is a really…
+00:51:54
+
+Insane surface area to try to expose.
+00:52:05
+Shreya Shankar
+
+And I have to say, like, this is GPT 5.5, okay?
+00:52:10
+
+Frontier models are making these mistakes from product perspective. Like, they're gonna say all these random things that you're not going to want in your application. You have to do this process. And most of the things you'll actually find up front in this process.
+00:52:15
+Hamel Husain
+
+You might be wondering, can you get an LLM just to do this for you? Like, why are we doing this? Why are we looking at the data? LLM is not gonna find a lot of this stuff. Like, a lot of this stuff that we talked about right now is product judgment. Of like, hey, this is not really good. Or like, hey, we shouldn't be showing orders this way, or this is confusing.
+00:52:29
+
+LLM's not gonna know that. Like, if LLM reads a lot of this stuff, be like, okay, it seems like…
+00:52:47
+Shreya Shankar
+
+Is that…
+00:52:52
+Hamel Husain
+
+Yeah.
+00:52:53
+Shreya Shankar
+
+it said the answer, good job, next, right? Like, LLM is, like, the most tasteless thing, so… Yeah.
+00:52:53
+
+Okay, let's…
+00:53:01
+
+move on to axial coding. So, axial coding is a very fancy name, but there's not much to it. It's just, now, given all of these failure modes.
+00:53:03
+
+Okay, so, like, these are all of the notes that we have created so far. You're gonna have a lot more when you do the homework. And actually, just in, what, 45 minutes, we were able to come up with this number of notes, like.
+00:53:16
+
+And you can see that we will get much faster. Like, every 20 seconds, you will have a note to add. Things will get really fast. So we have all these notes. I also have a tab here called Map.
+00:53:28
+
+And this is just… I like to have my agent just show me, like, based on my dimensions, you know, what are the different records that we have.
+00:53:38
+
+there's nothing good to get out of this other than it's, like, a fun visual, and you can kind of hover over specific traces, and then perhaps click on them and go directly to them. So now, what we are going to do is we're going to ask our agent to propose a taxonomy, given all of these failure modes.
+00:53:47
+
+And I'm going to move to my… voting agent.
+00:54:04
+
+So, where… Oh, I screen share it once more.
+00:54:10
+
+Share… Terminal.
+00:54:19
+
+Okay, so… As you can see here.
+00:54:25
+
+I had a coding agent open, it was…
+00:54:30
+
+serving this dashboard that I was putting in notes. And then I also have this monitor event tool that the skill that I talked about earlier uses, and essentially watches the annotations for any new open codes, and apparently in the process, the server was killed due to low memory, so…
+00:54:33
+
+So be it, maybe because I'm running Zoom. Okay, so what I'm gonna do now is say, given…
+00:54:52
+
+All my open codes.
+00:54:58
+
+So far…
+00:55:01
+
+Let me cluster them into failure modes.
+00:55:06
+
+And since we wrote some positive things, Positive.
+00:55:11
+
+instances.
+00:55:16
+
+And the agent's pretty good at this, honestly. Like, you know, people are like, can I use agents for error analysis? And absolutely, you know, use it in this step after you do open coding.
+00:55:19
+
+Might take some time, unfortunately.
+00:55:31
+Hamel Husain
+
+And that's the key part, use it after looking at data. The number one mistake people make is they just go straight in with the Edlund, they're like, go do this for me, and that's not gonna go well. You need to do some level of annotation, some looking at the data before you get an agent to help you.
+00:55:35
+
+But an agent can help you. An agent can help you, like, expand what you've annotated, and you can see, like, what's going on right here.
+00:55:50
+Shreya Shankar
+
+Yes. Oh, unfortunately, it also… I practiced this lecture yesterday, and I created another invitations file, so it's seeing both. Sorry to everybody.
+00:55:59
+
+So anything that is this DE demo?
+00:56:12
+
+is stuff that I have done outside of this lecture.
+00:56:14
+
+myself. But okay, pretend that, you know, we have double the number of codes, that's great and fine. So you can see here, right, like, information overload, verbose responses, right? Think about the number of times that we said that. Signing internal documents instead of linking public sources, yup.
+00:56:19
+
+Wond Policy Scope, This one, so this is… you should always check what the agent said.
+00:56:37
+
+Here, because it's not… I don't think the error was that they applied the wrong policy. It was that, we shouldn't mention that there were multiple different policies.
+00:56:44
+
+Does that make sense, Hamel?
+00:56:57
+Hamel Husain
+
+Yeah, I would almost, like, yeah, like, maybe we need to fold number 3 into number…
+00:56:58
+
+2, or 1, or whatever it is. Like, sometimes you might need to combine these, and be like, like, this thing, this, like,
+00:57:03
+
+Okay, so just to zoom out, like, what are we looking at? We're looking at the categories. Like, if we were to classify each of the notes into categories, that's what we're showing here on the screen. And so, you kind of have to look at it to see if it makes sense. And what we're saying is, maybe these categories, maybe we would, like…
+00:57:10
+
+Combine two of these together, or maybe delete one, or reword it, or whatever.
+00:57:27
+Shreya Shankar
+
+And like that the agent was mentioning multiple policies.
+00:57:35
+
+In the first place.
+00:57:43
+
+Place… combine… That's with number one.
+00:57:47
+
+Okay.
+00:57:56
+Hamel Husain
+
+And the higher quality your open codes are, the better this will go. Like, if your open codes just contain, like, this sucks.
+00:57:59
+
+then…
+00:58:08
+
+the AI won't know what that means. Like, I won't know what that means, right? And so you need to have, like, enough, you know, context in your open code
+00:58:09
+
+In your notes, like, it can try to do a good job of categorizing it.
+00:58:18
+Shreya Shankar
+
+Check this out, Hamel.
+00:58:26
+
+Look at this beautiful taxonomy.
+00:58:28
+Hamel Husain
+
+Nice.
+00:58:33
+Shreya Shankar
+
+I wouldn't call this suspicious retrieval, I would just call this missing media.
+00:58:34
+
+And also, I would split this into two things.
+00:58:39
+
+So, again, this is… you should definitely ask your agent to group this together, but of course…
+00:58:42
+
+Read over it, because agents just make mistakes.
+00:58:49
+
+I think… These are two… different quotes.
+00:58:54
+
+I'm always nervous when I, like, prompt in front of other people, like, people judge how bad of a prompter I am, but…
+00:59:00
+
+Oh, wow.
+00:59:06
+Hamel Husain
+
+Not at all.
+00:59:07
+
+Alright.
+00:59:10
+Shreya Shankar
+
+So…
+00:59:11
+
+Again, one should look at this in great detail, just make sure they agree with it, like, information overload, setting internal docs, okay, makes sense. And, you know, don't just do this for the number that we did, actually do this for 100 traces until you feel like, okay, nothing new has arrived. I have looked at a sample, I feel pretty confident.
+00:59:12
+
+And in the next lecture, we will talk about, okay, how we can turn this into evals. So, hang tight there, don't just be like, this is it, we finished evals. Like, as Hamel mentioned, you know, some of these things are things that you obviously know, I gotta go fix my prompt. Like, I've got to say something about, you know.
+00:59:32
+
+citing the public links. Like, this is such an easy fix, so you can absolutely go run and do that. Some of these will be more difficult to do, like, for example, like, the unnecessary or wasteful tool calls, not immediately obvious how I might solve that, but that's okay, right? Like, it's good that we know this, and this is going to be… some of these are going to be north stars that we try to optimize for.
+00:59:51
+Hamel Husain
+
+And the count is really for you to just kind of help you review what happened yourself. Like, you might already know in the back of your mind, like, okay, these are the top two things I need to go solve right now.
+01:00:11
+
+But the count just helps you sort of solidify, like, what's there, and you don't have to go strictly by the count, you can… you don't have to, like, necessarily, like, tackle the thing that is, like, the top count. There might be something that happens less that is way more important. It's totally fine, it's just for you to understand what's going on.
+01:00:23
+Shreya Shankar
+
+Cool. A bunch of questions came up, and I think please ask them in Discord, these are really great, and maybe one thing I'll mention is, like, how do you do this collaboratively with other people? Do it exactly how Hamela and I are doing. Literally have two people talking.
+01:00:41
+
+And pair… pair coding, pair open coding, pair axial coding, and then you can kind of discuss out your disagreements. Like, a lot of this will just elucidate things for your product spec as well.
+01:00:58
+
+We did this, don't worry, we already axial coded. I want to spend a little bit talking about, you know, what… you imagine you have a fire hose of traces, you know, you actually have real traces in production that you should be looking at, but how do you determine which ones to look at? So there are four
+01:01:08
+
+strategies that I've used in the past. I'll briefly go through each of them. One is uniform random sampling, so if you've taken Data 101, you know exactly what this is, and it's very simple, it's just
+01:01:26
+
+Pick the traces at random, so if you have, 1,000 traces and you can only view 100, just pick 10% of them at random.
+01:01:38
+
+Something that's good about this is very simple. Something that's very bad about this is that, unfortunately, if, you know.
+01:01:47
+
+If your agent is good, most of your traces are going to be fine, and so you have to read a lot of traces to find very, very few failures.
+01:01:54
+
+So one thing that you can do to be a little bit better here is some form of clustering and then sampling. So what I like to think about is, what are the different extra metadata, right, as we showed in the dashboard. So maybe things like turn count, tool call count, the number of distinct tool used, what the user role is.
+01:02:02
+
+and feed this into some sort of clustering algorithm. And I won't go into specific details on what clustering algorithm to use, like, honestly, you can just ask your agent. You can take a screenshot of this slide and ask your agent to do sampling in this way. A pro here.
+01:02:22
+
+is that it covers some sort of variety across the different clusters, but unfortunately, right, these clusters don't necessarily reflect actual failure modes, they're just… we hypothesize that, okay, things with traces with more turn count, higher turn count, might have more failures, so…
+01:02:38
+Hamel Husain
+
+And you don't need to take a screenshot, like, the skill that Shreya mentioned earlier has a…
+01:02:55
+Shreya Shankar
+
+JL has this.
+01:02:59
+Hamel Husain
+
+It's on clustering, so don't worry.
+01:03:00
+Shreya Shankar
+
+Yeah, so you can literally ask, like, can you do clustering for me? And then the skill has some details there.
+01:03:02
+
+A third one that I like to do, which is honestly similar to the second one, is just make your clusters based on your dimensions. So pick one dimension that you think is really important. For example, like, the user role, like, all the store merchant choices, and then review all traces of that particular dimension.
+01:03:09
+
+You can also…
+01:03:28
+
+just review all traces of a particular, so, remember when Hamel said, like, oh, anything that invokes the human, like a tool that escalates to a human, I want to review all traces of that human, right? This is a great way of sampling more failure modes.
+01:03:30
+
+And the last one is, some form of depth-first search. So really, it's like, you know a confirmed failure that you have. Like, for example, one of our failures,
+01:03:47
+
+I don't know, that we… that we were citing the internal documents, except for the external documents. So what we could do is try to find all traces that cite internal documents. We can ask our coding agent to do this.
+01:03:58
+
+And then review each candidate, right? And the hope is that the more we review, the more we learn about, okay.
+01:04:10
+
+in what scenarios does the agent cite the internal document or exhibit this failure mode? Of course, don't only rely on this method, right? Don't look at your first failure and then tunnel vision directly on that first failure. Like, this is an art, really. You want to balance… you want to do multiple of these methods, essentially.
+01:04:16
+
+Okay, so, promise you, we're almost done. This is the last slide before the homework. So, one question that keeps coming up is, how often do I do error analysis? And my answer to this question is, do it
+01:04:37
+
+Very, very frequently, like, do this every week, and you will find that you're going to add new failure modes.
+01:04:51
+
+So, for example, maybe if I do error analysis on a new set of traces, or on production traces, I might get these two bottom failure modes here. And don't overcomplicate it. Just, you have your existing taxonomy. When you're doing error analysis on new traces.
+01:04:58
+
+just, you know, find, are there new examples of existing failure modes, or are there new failure modes? Sometimes you want to redo axial coding, so you might… sometimes you want to merge and rebalance within the existing taxonomy.
+01:05:13
+
+A good rule of thumb for the taxonomy is the nodes are distinct, and they each cover, like.
+01:05:27
+
+more than one, trace, so it's not, like, super bespoke. So there's diversity, and there's a number of traces in each failure mode.
+01:05:34
+
+One thing that I found that I need to do for some applications is, like, just entirely redo error analysis from scratch. I think it's very difficult to do LLM-based clustering, like, in a stateful way, or do this over time.
+01:05:44
+
+And I don't know how many folks are familiar with some of the work that Teresa Torres does. She has a really great article on how she uses LLMs to help her, rebalance… she calls these opportunity solution trees, but essentially they are
+01:05:59
+
+you know, clustering on open codes. So she talks about how this is also a very difficult problem, and so I've included this link here if you want to learn more about that.
+01:06:14
+Hamel Husain
+
+And someone asked, what does this table mean? Basically, this table is showing the prevalence of this failure mode across time. Yep. So as you try to chase down this error and minimize it, like, how it might look. Just to illustratively.
+01:06:24
+Shreya Shankar
+
+Yep. Yeah, super illustrative. Sometimes you'll… you'll knock out the failure mode, like.
+01:06:37
+
+your engineers will fix the failure mode. Like, if you're a PM, and you hand your engineers a table like this, I mean, you won't have V1, V2, V3, but you might just have only V1, and the prevalence is for that. This is amazing. You're gonna unblock your engineers so much, like…
+01:06:42
+
+I cannot even… I'm sure Hamel also resonates with this a lot, but essentially, at some point, you know, some of these failure modes are going to go away, because they will get fixed, and new ones will arise. And that is totally fine, that is par for the course. It's very strange, it's not like software engineering. It's, you know, very fuzzy.
+01:06:58
+Hamel Husain
+
+Yeah, one key difference here with, evals is, okay, with, you know.
+01:07:16
+
+Your evals are going to change a lot over time, because one of the major, kind of, purposes of evals is to give you some challenge to hill climb towards. And you want that challenge to be, like, meaningful, so that you are always improving, which means you're going to be retiring a lot of evals and bringing new evals in.
+01:07:21
+Shreya Shankar
+
+Yep.
+01:07:40
+
+Absolutely.
+01:07:41
+
+All right, so that concludes today's lesson. Homework 4 is out, so the link is going to be here. Don't worry, we will post the slides in Maven ASAP. One thing that I… we didn't talk about in lecture today, but I'm super excited for you guys to do, is use this tool called Raindrop Workshop. Raindrop Workshop is an open source tool, it's linked in the homework.
+01:07:44
+
+And it essentially helps you use agents to discover new failure modes. Now, I've used this in the past. I think it's great. It doesn't replace my human judgment, for all the reasons Hamel and I have mentioned.
+01:08:05
+
+But I do like it to try to find failure modes that I might have missed in my error analysis, so that's part of the homework as well, so you can get experience with that. And you'll.
+01:08:18
+Hamel Husain
+
+We are, bringing them in for a guest lecture. Keep your eye out on the calendar for that. We haven't scheduled it yet, but we're gonna… yeah, just…
+01:08:30
+
+Keep an eye out.
+01:08:38
+Shreya Shankar
+
+Yep.
+01:08:39
+
+Awesome! Alright, well, we will see folks in 20 minutes, and please ask questions in Discord.
+01:08:41
+
+Thanks, everyone.
+01:08:47
+Hamel Husain
+
+Thank you.
+01:08:50

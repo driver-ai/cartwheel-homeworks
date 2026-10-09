@@ -1,0 +1,1384 @@
+Hamel Husain
+
+Hello!
+00:02:39
+
+Welcome, everybody. We're just gonna need a few more minutes, Shreya, to reset her computer.
+00:02:41
+Shreya Shankar
+
+I… actually, no, I think we're good.
+00:02:49
+Hamel Husain
+
+Oh, okay, there you are.
+00:02:51
+Shreya Shankar
+
+My computer crashed literally 2 minutes ago, and I freaked out, because I'm running, like, 3 servers to serve everything.
+00:02:52
+
+But I've just restarted all of them. Okay, the error analysis is up.
+00:03:00
+
+Gosh, probably some… I'll have forgotten, there's gonna be something that I'm missing.
+00:03:04
+
+Oh, I'm not signed into Maven or something. Anyways, we'll figure it out. We'll figure it out as it goes. Hi everybody. Let me share my slides…
+00:03:11
+
+We are in Lesson 3.
+00:03:22
+
+Alright, can folks see my slides?
+00:03:25
+Hamel Husain
+
+Yes, I can see it.
+00:03:27
+Shreya Shankar
+
+Awesome.
+00:03:29
+seansavage
+
+Yes.
+00:03:29
+Shreya Shankar
+
+Cool! Excited to start today's lecture. Just a quick…
+00:03:30
+
+update that the reader, the course reader, I know we're… said we're, releasing it kind of in modules, so the new version of the reader with Module 2 is already out at the same link, the doc send link, so, you know, just re-download it. You don't need to read all of it today, it just… it's ready, so I decided to share it with everyone. It is, like, 60 more pages, and it is far more technical than Module 1.
+00:03:35
+
+So, you know, don't freak out if you read it, and you're like, oh my gosh, I don't understand what's happening here. Don't worry, we will go through what you need to know and what you don't know. You know, it's just for folks who really want to go in and understand the technical stuff of error analysis, evals, metrics, and so forth.
+00:04:00
+
+So where are we in the course? Last couple of lectures, we were really getting our feet wet. We have an agent that we're building, we built a… we instrumented it for logging, and we built a custom viewer to view those logs very briefly. We'll explore that more today. We also read a trace
+00:04:17
+
+We saw that these traces can fail, in part because in our application, as some of you have pointed out in Discord, we have injected some bugs and data quality issues into the data. So many of you are actually finding this when you're doing Homeworks 1 and 2, which is quite exciting, but you're going to find that more when you actually do error analysis. So what we're going to do today is go through more traces, we're going to figure out how to generate more traces.
+00:04:36
+
+And then we're going to start by doing some error analysis on these traces. So we're going to go through how to generate these traces synthetically. Many of you already might have traces from your actual users. That's great, you should absolutely try to do error analysis on those, but many of you might not have
+00:05:01
+
+traces, at least every time that I start building an agent, or Hamela and I start doing something together, we're like, oh gosh, we've got to bootstrap these traces so that we can actually go and review them. So we're going to talk about how we do this.
+00:05:20
+
+We're also going to figure out, okay, we're going to talk about how we can use a coding agent to help us synthetically generate this data, and then we're going to actually do some of these error analysis. So error analysis is just a process of looking at the traces and systematically figuring out what's going wrong, and we're going to start doing that today.
+00:05:32
+
+Hamel, anything that I'm missing before we start getting into the content?
+00:05:49
+Hamel Husain
+
+No, just a reminder, if you want… if you have a question in the middle, try to drop it into Discord if you can, because then it won't get lost.
+00:05:55
+Shreya Shankar
+
+Yeah.
+00:06:03
+Hamel Husain
+
+We can… we can answer.
+00:06:03
+Shreya Shankar
+
+Good point. I actually, for some reason, cannot see anything in the chat, so maybe no one's seeing anything in the chat.
+00:06:06
+Hamel Husain
+
+No, they're not.
+00:06:12
+Shreya Shankar
+
+AI is transcribers… okay, great. So, we'll periodically look at it, but yeah, no guarantees, your question may get lost to the ether if you put it in Zoom.
+00:06:13
+
+Okay, so… Let's talk about synthetically generating traces to review.
+00:06:23
+
+The number one mistake Hamel and I see is that people simply ask their AI coding agent, very naively, they're literally just like, hey, I'm building this e-commerce support agent, generate, you know, a handful of questions.
+00:06:28
+
+For me, and then I will run these questions through my code, my support agent that I'm building, and then that will generate all of these traces that I can review. This is not very good, because what happens is whenever you look at the output of this prompt.
+00:06:46
+
+this hypothetical support questions are pretty far from, like, reality, we found, or specific products, even. So, when I did this a couple days back.
+00:07:01
+
+I saw questions like, oh, where is my order? Can you check the status of my order? I placed an order last week, I haven't received it yet. What's the delivery date for this order number? Truly, these are the four things that I got when I asked my coding agent.
+00:07:12
+
+And at a glance, right, these questions seem fine, like, they don't seem obviously wrong, but the main issue here is that there's so little diversity, and it wasn't just these four. There were 20 questions, all of them
+00:07:26
+
+We're about order status. In this case, on Leap 4, I'm showing you. And…
+00:07:41
+
+We know that if we're building an e-commerce customer support bot, right, we know that people are going to ask for more than just order status, but unfortunately, right, that doesn't come out of the coding agent.
+00:07:46
+
+For example, people might ask about refunds, or they might ask about store policies, they might ask about, hey, what should I buy, right? Like, they… truly, if you're Amazon, your customers might ask for recommendations on what to buy. And all of this is missing, right? If you just ask a coding agent to give you
+00:07:56
+
+Synthetic requests.
+00:08:13
+
+So… Here is how Hamel and I do synthetic data or request generation.
+00:08:15
+
+It's not that we come up with all of these questions by hand. We use the agent to generate a diversity of scenarios for the user requests. We don't ask the agent to generate the user requests directly. And what I mean by scenario here is…
+00:08:23
+
+I mean…
+00:08:39
+
+Some user requests at a high level, so maybe not the actual question that they ask, but some properties of the request.
+00:08:41
+
+And then also an expected result more broadly. So a scenario might be somebody is asking for a refund on an order that they made, you know, two months ago. So these scenarios are somewhat specific, and the expected result might be, given the store's policies, that two-month window is a little bit too long, so we don't want to give the refund. So these are somewhat specific scenarios, and you want to make sure that you cover a diversity of
+00:08:48
+
+Scenarios. So we'll go through this, like, multiple-step process to generate these scenarios.
+00:09:13
+
+And I'm gonna build out this diagram on the right, so the human steps are going to be in orange, and model or AI agent steps are going to be in blue, and then more deterministic or coding steps are in green here. So the first thing that Hamel and I do is we define dimensions of the request, or facets of the request. That might change from user to user. So that might be role.
+00:09:19
+
+Right? Somebody might be actual shopper, somebody might be a merchant, somebody might be a customer support person, there's lots of roles.
+00:09:44
+
+Intent, the state of the order, whether or not there's an order at all, right? You can think of any number of dimensions to vary requests on.
+00:09:51
+
+Then the second thing, when we've come up with those dimensions.
+00:10:00
+
+We will sample what we call tuples, show you in a future slide, and basically you can think of tuples as enumerating the cross product of all different values for all these dimensions. Some of them are going to be realistic, some of them are not going to be realistic, so we're going to have to review those and drop the unrealistic ones.
+00:10:04
+
+Again, we'll go through an actual example, just showing you at a high level first.
+00:10:23
+
+Then after that, we're going to figure out, okay, here are some realistic requests, and what are kind of our expected outcomes, very loosely. So, if we have a database for in the cartwheel scenario, we might… we might actually have the data, we can actually ground what we think the ground truth is going to be, and based on some rows in the data.
+00:10:27
+
+And then once we have all of these synthetic requests, we will then actually just run these through our coding agent to then get our trace support requests.
+00:10:45
+
+Sorry, not coding agent, support agent. Okay, so I will walk through all of these in…
+00:10:55
+
+detail in our cartwheel scenario. And know that, you know, this is a very…
+00:11:00
+
+highly opinionated process. So, every now and then, Hamel and I will be talking about some ways that you could change the outcomes of each of these steps. It's really a framework for you and your team to go and think about how to do synthetic data generation for your product.
+00:11:07
+
+So let's start with the first step of, you know, you have nothing, what are the dimensions of variations at all in your users' requests? So here, a dimension is some source of variation, it's named…
+00:11:22
+
+hyper-specific, you can generate dimensions. I like to do this just from reading the specification. So that if you've written a spec MD, then you have a lot of domain information about your agent, and this can help seed some of the dimensions.
+00:11:35
+
+So let's do a thought exercise here, right? What might this look like for the cartwheel agent?
+00:11:49
+
+I've come up with a number of dimensions that I can think of here. So, for example, maybe the role, shopper, merchant support, maybe the intent. So, what are all the various things that people could ask about? There's a lot. There's probably more.
+00:11:54
+
+What records are involved? So what pieces of data are involved in this request? So that's another way to generate synthetic data for an agent, which is to think, okay, there's these 5 different pieces of data in the database, and somehow the request is supposed to touch all of those.
+00:12:10
+
+Different policies that are acceptable to apply, so we want to test all of those. What are the different tools that are needed? Oftentimes, some of these dimensions may overlap, like, tools needed might overlap with the data record that's involved in the query.
+00:12:26
+
+How difficult, quote unquote, is the query? So, maybe the user specified it very well, maybe it's very ambiguous, maybe there's missing information, maybe it's an adversarial or boundary case.
+00:12:44
+
+who knows? Maybe there's a user style involved. I'm really coming up with a lot of things here, as you can see, right? Like, you can come up with any number of dimensions here. Hamel, you want to talk a little bit about what dimensions, like, are they universal? Are they specific to the application? Kind of how many is a good rule of.
+00:12:59
+Hamel Husain
+
+Yeah. So, this always comes up. People get sometimes overwhelmed with this idea of dimensions, like, what dimensions should I pick? And sometimes, you can get overzealous with your dimensions really fast. You know, as you can see, like, on the screen, if you took the combination of all of these, it would be… it would be insane. Now…
+00:13:19
+
+what you should think about, like, you should kind of zoom out and say, what is the purpose of these dimensions? The purpose of these dimensions is to generate data where hopefully you'll find something that is broken.
+00:13:38
+
+And the best way to, like, inform the dimensions is to come up with a hypothesis of, like, okay, what is likely gonna break my application?
+00:13:49
+
+What are some things, like, from your product knowledge, your experience, talking to customers, using your own product, etc, you're gonna have some hypotheses, and it's good to ground those dimensions and those hypotheses, as much as possible, so that you can… you're kind of trying to be a little bit adversarial.
+00:14:00
+
+and I would say a little bit, like, very adversarial towards this application you're building, and, like, the way to do that is, like, try to, like… you know, you're gonna have some smells of, like, you know what, I bet it's gonna break in XYZ.
+00:14:19
+
+So you want to definitely, like, infuse that into this, and, like, concentrate on that. That's my personal strategy of making sure that I get a lot of value out of this, like, synthetic data.
+00:14:32
+Shreya Shankar
+
+Yeah, I fully agree with all of that. Some other tips here are you can ask engineers, or other people, or, like, even your users, right, what have they seen kind of breaks at a high level, and then try to reason about dimensions, first principles, or, like, backwards through those anecdotal mistakes that you've seen out there. Another dimension that… another way of coming up with dimensions that I really like
+00:14:43
+
+is to look at the specific tools that the agent has access to, and some of these tools might, like, interact with the world. Like, it might be, like, a search API, or it might be something that interacts with data or information that you, as the application developer, don't control, and this is, like, a high source of failure. So maybe there's some dimensions that we want to define around those. So going back to what Hamel said, right? Like, come in with
+00:15:06
+
+hypotheses of where you think your product might break. Use that to think about, you know, what are dimensions that are going to trigger failures, and that user requests could, in theory, vary. Make sure you have this diversity.
+00:15:31
+
+And I guess for a rule of thumb, I always say, you know, 3 dimensions to start with.
+00:15:43
+
+Lately, I've been adding more and more dimensions, because, I mean, if I'm gonna ask coding agents to help me generate synthetic data, to me, like, I might as well just add more dimensions and add more source of variation. But, you know, if you're going through this by yourself for the first time, really pick two or three that you feel quite confident in, and then enumerate a bunch of values for them. And in regards to number of values, my rule of thumb is to try to
+00:15:50
+
+go for at least, like, 10 values, if possible. Like, in some dimensions, you won't be able to. Like, the roll here, we don't have 10 different roles. Or we could make pen-specific rolls, like, there might be different types of shoppers. Kind of use your judgment here as…
+00:16:15
+
+to figure out what your dimensions are. There's no correct answer, there's no one incorrect answer or one correct answer, right? This is a product exercise, almost.
+00:16:30
+Hamel Husain
+
+One question that's already come up is, oh, like, how do you generate, like, rich multimodal data, or, like, multi-turn stuff, and stuff like that? So I just want to remind you that, okay, like,
+00:16:40
+
+this synthetic data approach. This is kind of a stopgap.
+00:16:53
+
+like, you really want to try to use real user traces wherever possible, because, especially for, like, more complicated things, it's gonna be very hard to create, like, synthetic data. In the limit, you're gonna have to create an entire synthetic universe.
+00:16:58
+
+like a, you know, like, so when we talk about data agents, it's like, oh, like, create, like, synthetic data warehouse with a bunch of tables, a bunch of ESCA, you know, like, you can get really crazy with this. And so you, you know, this is… you kind of have to do a cost-benefit analysis of, like, okay, do I need, like, how much time do you want to spend in synthetic data?
+00:17:12
+Shreya Shankar
+
+I really love that question, because
+00:17:33
+
+what we should have is, like, a slide here that's, like, there's a continuous scale of effort. On one hand, you put in no effort, and you just ask your agent to come up with a bunch of requests. That's totally probably not representative of your specific user base and application. On the other hand, you have the other end of the spectrum, you've done what Hamel says, and you go to, like, every extreme for every source of data, you enumerate hundreds of dimensions, and you try to really create this, like.
+00:17:36
+
+hypothetical cross-product of every request and interaction your users might have. You don't want to be on either end, right? You want to be somewhere in the middle, and that really is dependent on your application.
+00:18:01
+
+Cool. Shall we move forward? Once…
+00:18:13
+
+we… I think we have hit the questions that are in the chat, so I'm just gonna keep going, but Hamel stop me if there's anything good that comes up.
+00:18:16
+Hamel Husain
+
+Yeah, I will.
+00:18:24
+Shreya Shankar
+
+Great. So, now let's… we have all these dimensions. We'll define a tuple as just picking a value for each one of these dimensions. So, for example, if we have all of these, 7,
+00:18:25
+
+can't really count in real time, 7 dimensions, right? A tuple is basically having a value for every one of those dimensions. So you could think of it as, you know, a 7-dimensional vector, whatever you want to think of it.
+00:18:39
+
+this is a concrete instantiation of a user's request. So one user request corresponds to one tuple here. There was a question about multimodal data, which I think is a good question. So notice that I put a record here as one of the dimensions.
+00:18:52
+
+And record here might be some sort of specific piece of data in your database, or somewhere in your system. So oftentimes with multimodal requests.
+00:19:09
+
+Right, people want to retrieve documents or do some analysis on documents. Record here can be one of your dimensions, or, like, type of…
+00:19:18
+
+The document or something can be one of your dimensions, and then you can kind of anchor on specific documents and generating synthetic questions around that.
+00:19:27
+
+We talk a little bit about that in the course reader as well, if you want to learn more.
+00:19:35
+
+So we have this notion of a tuple, and now the goal is to generate a bunch of tuples, right, that will seed a bunch of different requests. And a request here is concretely what a message that the user would send. So for this particular tuple on this slide.
+00:19:40
+
+Maybe the user says something like, can I return the vase I got a while ago?
+00:19:56
+
+I never used it. So, as you can see here, right, like, it was clearly a shopper. They wanted… their intent, right, was to get a refund or to return.
+00:20:01
+
+we… for all of these values in the tuple, you don't actually have to concretely spell them out in the user request, right? Often users are not complete with all the information they want to provide, right? So, for example.
+00:20:11
+
+an order past the return window, that's part of our dimension, or that's one value in our tuple. However, we don't actually see it, right, in the request. And that's going to be something that our agent is tested to uncover as they go through and try to learn more about the user request.
+00:20:25
+
+Does that make sense at a high level? What I'm saying here is, like, some of these values are going to be specified in the user request, and some are not, right? They have to be uncovered by the agent. Like, that's the whole point of using the agent to try to get a lot of these things.
+00:20:42
+Hamel Husain
+
+Yeah, another kind of clarification, because…
+00:20:57
+
+some people get confused is, like, okay, what are we talking about when we're talking about generating synthetic data? We're talking about generating the inputs to your…
+00:20:59
+
+To your system. So, like, what are the user inputs? It might be user inputs, it might be some other kind of input if it's not a user-facing thing, but, like, just like on the screen right now, can I return the boss I got a while ago? Okay, like, that's a synthetic query that a user might ask.
+00:21:08
+
+And then you would feed that synthetic query through your system and record the trace. That's the whole idea.
+00:21:25
+
+You're not trying to make the, like, the whole… you're not trying to generate the whole trace synthetically. That's not… that's not the point.
+00:21:31
+Shreya Shankar
+
+Yep. Yeah, good flag here. Well, in a couple of slides from now, we'll be like, yeah, now you take all these requests you've generated, and you put them in your agent, and then come up with traces.
+00:21:38
+
+Yeah. So, it's also important to keep these requests realistic, these tuples realistic. So, one thing that I like to do, and this is just a prompt that I kind of wrote here, but we won't go into it in some detail, but you can really use the examples that you have written yourself
+00:21:50
+
+And then ask agents to help you come up with more values for your dimensions, so that way you can take a bigger cross product, right? So maybe you give some examples.
+00:22:09
+
+And then you ask your agent for even more. And I just said 10 here, so definitely you should try this out in your agent. Hopefully it makes sense here, you're just using the agent to augment what you've already thought about as your dimensions of variation and your requests.
+00:22:19
+
+So when you've come up with this, you have a bunch of different tuples, and you can even ask your agent to help you turn those tuples right into a particular request.
+00:22:34
+
+I really like agents… using agents to do this part, my coding agent, because I know that, you know, I've done the work in defining these tuples, and it's just a matter of, you know, turning this into some sort of
+00:22:42
+
+request.
+00:22:54
+
+So if I want to do that at scale, right, a great use case is to ask the coding agent to do this. I give it a few examples, like, can I return the bus a few,
+00:22:56
+
+weeks ago, or whatever that I got, and so that way the agent knows how to write in a particular style. If there are any questions about that in particular, like, bring that up in the Discord as well, like, share your experience using agents to help you generate these.
+00:23:06
+
+However, especially if you use agents for all of this.
+00:23:19
+
+Right? You're gonna have to do some manual review of all the requests that you generate yourself. What I like to do is to separate the requests into two different sets, and this kind of goes to Hamel's point here around you want some of these to be adversarial or difficult for your agent. So, we'll call these sets a coverage set.
+00:23:24
+
+So, this is just making sure you've covered, you know, the space of variation you know exists.
+00:23:44
+
+In your users.
+00:23:49
+
+And then there's also a challenge set, which is we…
+00:23:51
+
+know about some failures, we have systematically tried to induce them, so let's try to make these difficult. I personally think it's important to have both, because sometimes
+00:23:54
+
+in the coverage set, you'll come up with some requests, and then you'll get some synthetic traces, and actually you will find errors in those as well. So, you don't just want to rely on your hypotheses of what the challenges are, you want to somehow get some broad coverage as well.
+00:24:06
+
+Everything making sense up to here.
+00:24:21
+
+Thanos.
+00:24:26
+Hamel Husain
+
+Yeah, everything… yeah, everything makes sense. There is also another approach, like, that people are asking, like, oh, what if you're not the domain expert?
+00:24:27
+
+What can you do? And so, it's worth looking at some data.
+00:24:36
+
+And we're gonna… I'm gonna say this in the phrase of the class, looking at data, is you're gonna… you can also take real user queries and try to modify and perturb those, meaning, like, shift them, like, you know, vary them in, like, ways.
+00:24:40
+
+And if you don't feel confident doing that, then, yeah, just use… you might want to skip directly towards getting real user data. Again, synthetic data is only a stopgap. It's like when you don't have really any other choice.
+00:24:57
+
+Yeah.
+00:25:12
+Shreya Shankar
+
+Like, pre-deployment of your agent,
+00:25:13
+
+Yeah, or you, like, really have a high accuracy bar, and you want to, like, do a lot of testing before you, deploy it. One other thing that people ask about is.
+00:25:16
+
+I want to get multi-turn, or like, how do I simulate follow-up user requests here? It's a good question. So one dimension you could have is follow-up requests.
+00:25:25
+
+And then, when you're writing your tuples, you could not only just have the individual request, but also possible follow-up conversation ideas. And then you can engineer your rollout, your traces.
+00:25:36
+
+to then just also have those follow-ups, as well as more responses in those traces. So that…
+00:25:50
+
+Hopefully it makes sense, but clarify… tell me to clarify.
+00:25:57
+
+That doesn't.
+00:26:01
+
+Cool.
+00:26:03
+
+Well, one good point is, since Cartwheel is service-oriented, it almost seems like tuples should be owned by CX. I think that's customer experience, teams. I wholly agree, like, this is another collaborative place for you to really go and figure out… do a little bit of product discovery work as well, like, what kinds of requests are people asking, what are the difficult challenge modes, and then try to… try to encompass that. The… another failure mode that Hamel and I have
+00:26:06
+
+it's like you just have somebody who's locked in a room, totally isolated from the rest of the team, coming up with these dimensions by hand, spending a lot of time on it, generating a bunch of requests and traces, and it has no reflection of the world, right? So don't do that.
+00:26:31
+
+Cool.
+00:26:47
+
+Shall I keep going? Or any other stuff?
+00:26:48
+
+Not at all.
+00:26:52
+Hamel Husain
+
+Yeah, so, Arvin's asking, how many synthetic data examples do you… should you generate?
+00:26:53
+
+Everyone wants to know, like, exact number. Again, like, try to just, try to be adversarial. It's not about… it's the quality, not the quantity, you should think about. It's like, okay.
+00:26:59
+
+Try to break it.
+00:27:10
+
+That's your whole idea.
+00:27:12
+Shreya Shankar
+
+Yeah, so, in the past, I've been saying 100 total examples is a good rule of thumb, but then, as agents have gotten a lot better, I feel like sometimes I'll go through 100 and I won't see many instances of a particular failure mode, so I have now upped that number for myself, and I have split that 100 number into this… so I've upped that to 250, and then I mentally try to do this split of
+00:27:14
+
+175 coverage, and then 75, like, challenges.
+00:27:38
+
+Cool.
+00:27:43
+
+Alright, so…
+00:27:45
+
+imagine now we're at a point where we've generated a bunch of tuples, we've generated a bunch of requests from those tuples. At some point, especially if you're using agents to generate these, you have to do a pass to filter out unrealistic
+00:27:47
+
+tuples, or requests. I always realize this a little bit too late, sometimes to make it through the end of the Synthetic data pipeline, and I realize, oh man, like, there are really unrealistic things here, and then I've just wasted my time reviewing these traces.
+00:28:00
+
+like, two failure modes that I see a lot are, one, unrealistic wording, so especially if you're using agents to generate their requests, like, they might just have an unrealistic wording. A user would never ask something like this. Another…
+00:28:16
+
+failure mode I've seen is that you just have impossible combinations. So, like, for example, here, support staff cannot… I guess they could ask about their own orders, but they wouldn't then be routed as a support staff.
+00:28:30
+
+User or role.
+00:28:44
+
+So, think a lot about all of these as you're kind of going, you know.
+00:28:46
+
+just make sure that your requests are realistic, especially if you're trying to mass-produce them with generative AI.
+00:28:51
+
+Okay? So once you have a lot of these requests, the final thing here before running the traces is to actually reason about, okay, what are the expected outcomes? Because we are synthetically generating these tuples, and we're using agents where we know that broadly the whole task is to find the relevant data and reason about it correctly to produce the answer to the user.
+00:28:58
+
+We can kind of prefetch this relevant data, kind of keep it as a ground truth that we know that we needed,
+00:29:22
+
+And then…
+00:29:29
+
+reason about the expected outcome that way. So, for example, like, what are the sources that should have been touched? Oftentimes, right, there's no single right answer here, but…
+00:29:30
+
+having some aspects of what the right answer is for every question, such as the source data, I find useful. You don't have to have it, but in general, when you are debugging, like, when we're going to do error analysis, as we show you in a few minutes, it helps to kind of know, oh, here's where the source data was.
+00:29:42
+
+Cool. Great. So…
+00:30:02
+
+Now the last step is you have all of these requests, you know they're pretty representative, you kind of know what the source data is, or what are the basic building blocks of the answer for those requests.
+00:30:06
+
+Now you finally just run them through your agent. Your agent was already instrumented. Each run should be some LangFuse trace, and they should all be tagged with a scenario ID.
+00:30:15
+
+Hopefully this part makes sense. Any…
+00:30:26
+
+Hamela, anything you want to add to this?
+00:30:32
+Hamel Husain
+
+No, I think it's straightforward. We'll see…
+00:30:36
+
+Where this comes up when it comes to our analysis.
+00:30:39
+Shreya Shankar
+
+Yeah, makes sense. We're getting some questions around, need more clarification of expected outcome. Okay, this is a good question. So.
+00:30:42
+
+maybe we already know our synthetic request is, can I return the vase I got a while ago, I never used it. So, expected outcome here is what piece of data in the database
+00:30:52
+
+is relevant for answering this question. So it's not the final expected answer. There's no single expected answer that we want our agent to have here, so I hesitate to say that it's, like, a gold request or a reference request here. I just think of it as
+00:31:05
+
+pieces or evidence that you need in order to correctly answer the question. So here, we need to be able to see this row in the table, for example, and we need to be able to see this policy document
+00:31:20
+
+fax.yaml. Otherwise, if the agent doesn't see this, we cannot have confidence that it is generating the right answer. So that's what we mean by expected outcome, which is truly just what pieces of data context was necessary.
+00:31:32
+
+for the agent.
+00:31:45
+
+Hopefully that makes sense to folks.
+00:31:46
+
+Another question of, do you go through 250 requests to see if they're realistic? I go through a lot, so maybe not all 250, I'll go through at least, like.
+00:31:50
+
+at least 89… 100 plus, and it sounds like a lot, but actually, you will realize that it's quite fast, right? Once you go through the first 5 or 6, you're like, okay, I understand what this is like. Remember, you're just going through requests.
+00:31:58
+
+Right? So…
+00:32:11
+
+I mean, it should be pretty fast, right? And it's much better to go through a lot of these up front. The other reason looking at the requests before you look at the full traces is helpful is because when you start looking at the full traces, like, it won't be super unfamiliar, right? Looking at traces is really tedious.
+00:32:12
+
+So, everything that you could do in this stage to kind of accelerate that is very good for you.
+00:32:29
+
+Cool.
+00:32:35
+Hamel Husain
+
+Another thing to think about when you're filtering, or when you're iterating on this, is, like, make… you know, you also want to check the dimensions make sense, like the tuples, like the combination of dimensions. A lot of times, the nonsensical things are because the dimensions don't make sense.
+00:32:37
+
+And then it's really clear, like, when you see a bunch of…
+00:32:51
+
+bad synthetic queries, like, oh, these are not great. You cannot usually, like, trace them back to something wrong with the dimensions. So it's an iterative process.
+00:32:54
+Shreya Shankar
+
+Yep.
+00:33:03
+
+We got another question of, would you follow the same process for a data agent or a deep research agent? Yes. Arguably, we will follow this process even more to a T, because for a data agent, it is super critical. The whole… the agent primarily struggles with retrieving and reasoning about the right data. So…
+00:33:04
+
+sometimes you even go backwards, right? So, one of the dimensions can be, what are the specific documents that need to be retrieved, and then
+00:33:23
+
+you can just sample those documents at random from the database, and then from that, use the LLM to generate, like, what your request might be. Some request that is going to uncover that document. So…
+00:33:30
+
+Yeah. There's also a question around how are we getting the expected outcome, human versus LLM generated versus programmatic? It can be a mix of all three, so…
+00:33:43
+
+often you might already know of some particular failure modes in your application, right? You might know that, oh, this, this
+00:33:52
+
+refund rule is very difficult for my agent to find and reason about, so I'm gonna include that. As a human, I wrote that as one of my tuples. You might also ask Claude to go and look over the data, and then try to come up with dimensions.
+00:34:01
+
+You might also programmatically come up with these things, right? You might sample a document at random from the database. You can ask people on your team what are the documents that are most commonly retrieved by the agent, and then sample those more.
+00:34:15
+
+really, you know, mix of everything. There's no one correct way to do this. The goal, right, is to equip you with this framework of going from dimensions to tuples to requests.
+00:34:31
+
+Corning out all the bad ones, and then generating traces.
+00:34:42
+Hamel Husain
+
+Shreya, one question is, what are… how is this expected outcome used?
+00:34:47
+Shreya Shankar
+
+I like to put it in my error analysis dashboard of, like, here are the expected sources that we should have hit, so that way, when I'm reviewing the traces, I can just make sure that we got the relevant sources. You could also programmatically check that
+00:34:52
+
+You know, after you get the traces, that they contain the tool call for the relevant tool, or the relevant data, or whatever.
+00:35:08
+
+These are all great questions, keep them coming, by the way. If you took earlier, versions of this course, you'll notice that this is actually a lot deeper, a lot more agent-first, so we used to tell everybody, do all of this by hand.
+00:35:19
+
+now we are leaning into agents to help us, and also kind of acknowledging the complexity of what data you need to generate for doing synthetic data.
+00:35:34
+
+Alright, Hamel, anything else you want to add before we just…
+00:35:47
+Hamel Husain
+
+Yeah, I think it's worth it to linger on the expected outcome. I think a lot of people.
+00:35:50
+Shreya Shankar
+
+Yeah.
+00:35:55
+Hamel Husain
+
+confused with that. They're like, they might not know what the expected outcome should be yet, they're just exploring, they're generating the synthetic data, and they don't really know what the right answer is. They might need to look into it.
+00:35:55
+
+So, like… what's your… what's your feeling here? Like, should you…
+00:36:08
+Shreya Shankar
+
+Yeah. So, maybe the way to think about it is this partial expected outcome. So, when you're reviewing, when we start doing error analysis, there are so many things we're gonna have to check. We're gonna have to check if the right data was retrieved, if the reasoning was done correctly, if the output was presented in a way that makes sense to the user.
+00:36:13
+
+So anything that you can come up with along the way to assist you in that review process.
+00:36:31
+
+Like, if you… if you know you're already synthetically generating these requests by focusing… randomly sampling data from the database to then generate the request, then you absolutely should keep that data, right, somewhere alongside the trace, so that way you can review it.
+00:36:38
+
+So… so expected outcome, think of it as partial expected outcome, and any information that would help you review, so that could be the data, that could even be, like, asking an agent, telling the agent, hey, I know that this is the data that's supposed to be retrieved, so you've already solved
+00:36:54
+
+Part of the problem here. And then you ask the agent to give you the answer, given the ground truth data.
+00:37:12
+
+That could also be something that you could keep in the expected outcome. But to be simple, right, to be very, very straightforward.
+00:37:18
+
+I would say expected outcome is truly just any pieces of data that you synthetically, pick from your database that you know you're gonna have to need in your queries.
+00:37:27
+
+Does that make sense?
+00:37:39
+Hamel Husain
+
+Yeah, that makes sense. So, like, if you don't know the expected outcome, like, if you truly don't know, just skip it. Like, it's only there for you to help you when you review, if you have any pieces of information.
+00:37:40
+
+And it'll make sense when we actually show you what a review looks like. You can come back to this part, and it'll all click, I promise.
+00:37:51
+Shreya Shankar
+
+Right, right. Yeah, so partial expected outcome, you may not have it. I do think, though, most people, when they do synthetic data generation, they have some things that could help them in partial expected outcome, and often people forget to do that, so that makes their error analysis a little bit more tedious. So whatever you can log here.
+00:37:57
+
+As, like, intermediates in this process, you should totally do it to help you review.
+00:38:16
+
+Another good question is, is it good practice to start offline eval under an existing benchmark data set, similar to your data or use case? I have a lot of thoughts on this, but maybe I'll let Hamel take the first stab on this.
+00:38:21
+Hamel Husain
+
+Sorry, can you repeat that one again? I was answering a question.
+00:38:35
+Shreya Shankar
+
+Is it a good practice to start offline eval using an existing benchmark data set, similar to your data or use case?
+00:38:38
+Hamel Husain
+
+No, I would not use a benchmark dataset similar to your use case, just because, like, look, those are toy examples.
+00:38:46
+
+You know, as we discussed, benchmarks are also very different than product-specific evals. You want to start getting into your data and your agent as soon as possible. Don't…
+00:38:52
+
+don't try to use a benchmark dataset. Like, it's just gonna… it's just gonna waste your time.
+00:39:02
+Shreya Shankar
+
+I think one caveat to that is, like, if you're in a big org or big team, and, like, somebody else in your org made this benchmark data set, just kind of reason about it from first principles, right? Who made this benchmark data set? Do I trust them? Is my data going to look exactly like those people's data? If it's, like, some random
+00:39:10
+
+PhD student at a random university made this. Probably not, right? But if, you know, your colleague on your own team made this benchmark data set, absolutely, right? So, use your good judgment there.
+00:39:29
+
+Great. So I'm going to keep going, and I think the next thing that I just want to mention, I won't go into in detail, because this is part of the homework, which is we've encoded all of these things into a skill, and the skill also interactively asks you for dimensions. So…
+00:39:43
+
+you're gonna go through it in the homework, which will be very exciting. It will force you to reason about some dimensions yourself, and then it will also suggest more dimensions to you. And you can use it with Cloud, OpenAI, etc.
+00:40:02
+
+Let's skip this part so we can get to error analysis. Again, these slides will be made available to you, of course, so you can look at those in detail, but, you know, honestly, follow the scale, or do the whole process yourself, up to you.
+00:40:13
+
+Alright, so now… now let's start talking about error analysis more broadly. So what we have done so far is told you about how you can create a dataset of synthetic traces, and of course, if you have real traces, you should definitely use those.
+00:40:29
+
+We also often see some people only have, like, 15 or 20 real traces. That's great. Also, synthetically generate more, because when you're doing error analysis, you want to review a lot more. It's going to help you downstream. So just make sure you have a couple of hundred, so that you can do the review properly.
+00:40:43
+
+The next step of error analysis
+00:41:02
+
+is what we call reading and open coding traces. So, if you are in product, or you're familiar with UX research, you're already very familiar with this concept of open coding, axial coding, basically some sort of qualitative analysis here.
+00:41:05
+
+So, what we're going to do now is do open coding to help us get a sense of what the failure modes are, and then in the next lecture, we'll continue with open coding, and then we'll also do what's called axial coding to try to group failure modes together.
+00:41:21
+
+So, with that, let's talk a little bit about open coding, and then let me show you the dashboard that we have, and we'll spend the last 20 or so minutes doing error analysis. So the whole, problem statement in open coding is, given a trace, what are the issues with this trace?
+00:41:36
+
+How we're gonna do that is to first read the trace from top to bottom. Okay, we're gonna read them user messages, we're gonna read the tool calls, what the agent did along the way.
+00:41:55
+
+And then we are going to stop whenever we hit a place where we think, oh, the agent did something wrong. And then, in that moment, we are going to write down, in an open-ended or free-form way, what happened. So, you know.
+00:42:04
+
+What was a mistake? What should have happened?
+00:42:19
+
+And we're not going to think about, okay, how do we design an eval for this? Or how do we turn this into a prompt improvement, or should I fine-tune a model, or, like, we're not going to have any of those thoughts. Our goal is to just review as many traces as possible, and write all of these open notes, as many of them as we can get to, without feeling super tired.
+00:42:23
+
+Hamel, anything you want to add before we just start showing the process?
+00:42:43
+Hamel Husain
+
+This is my favorite part of evals. You should totally pay attention to this. I strongly feel this is the most, like, if you're… yeah, you need to pay attention to this. This is, like, the most magical part of the whole eval process.
+00:42:48
+Shreya Shankar
+
+Great. And there's a question around, should we also write down
+00:43:01
+
+successful things, so I'll get to that in a bit.
+00:43:05
+
+Okay, great.
+00:43:09
+
+So, I'm not gonna go into exactly how we do the vibe coding here, because that's detailed in the homework, but again, like in the last time.
+00:43:13
+
+ask a coding agent to build a trace review interface, okay? And I'm calling these pilot traces because I've only synthetically generated about 20 of them for today's example. You will do 200 plus as part of the homework. And…
+00:43:21
+
+What you want to do is make sure that your error analysis dashboard, your interface here, shows you all the traces in one view, so the conversation messages are in order, shows you the tool calls next to their results.
+00:43:37
+
+Shows you the expected outcome, if you have logged that expected outcome. And then also, if you're using the skill, you don't have to specify this, I'm just telling this to you because these are components that are really important, parts of the user interface. A text annotation field. So anytime you do open coding or you're writing some annotations there, those get saved to some JSON or some database.
+00:43:50
+
+Such that you can access it later. That's very important, otherwise you will lose the notes to the void.
+00:44:13
+
+So let's go into this. So this is the…
+00:44:19
+
+Let's pretend, you know, for the sake of time, we don't have time to do live vibe coding. I learned my mistake last time, because it takes too long. But pretend that I have done that, I have entered that prompt in, and now has come some sort of interface here. This is also in the homework, this interface particularly, so you can actually use this exact one.
+00:44:22
+
+So here you can see that this is a trace.
+00:44:40
+
+The user message is listed first. It looks very much like a Claude set.
+00:44:44
+
+Somebody… Asked… can you see my screen?
+00:44:49
+Hamel Husain
+
+I can, yeah.
+00:44:55
+
+Let's your browser, yeah.
+00:44:56
+Shreya Shankar
+
+Good, good, good, okay, that was…
+00:44:57
+
+Somebody said otherwise. So the user message comes first, then you actually just see what happened in order, right? So the assistant said something, a tool call was made, there was a tool result.
+00:44:59
+
+And it kept going. So, we'll do error analysis… we'll actually do the open coding in a bit, but I just want to show you how this trace works at a high level, or sorry, how this UI works first.
+00:45:10
+
+So, I've generated… sorry, I lied, I only generated 20… 10, not 20. And we will spend, in the beginning, you can spend, like, 5 plus minutes on each trace. Like, it might feel really slow, but don't worry, you will accelerate, you will get a lot faster.
+00:45:21
+
+I have some other dashboards here, which we will talk about in the next lecture, so stay tuned for that. But for now.
+00:45:39
+
+Let's start with open coding. There was one good question around, why we use a custom UI instead of Langfuse's native annotation,
+00:45:48
+
+native annotation queue. I'll give an answer for that, and I think Hamel also has another answer for this, but my perspective, there's a couple of reasons. One.
+00:45:59
+
+it's so easy to see everything on one screen if you view your Vibecode your own trace viewer. Like, sometimes in lengthfuse, your trace is actually split up into multiple different traces, because every span kind of adds to a new trace.
+00:46:10
+
+So that's one thing being said. The other thing is that sometimes you're building something domain-specific. So maybe you're building an email agent, and you can use your vibe-coded UI to render the output in a way that your user would see. So if the output was an email, you can literally have this render look like an email, and that will make it so much easier to review. The point of this UI is to accelerate your review.
+00:46:25
+
+So anything you can do to make your review faster, you should totally do.
+00:46:49
+
+Hamel, anything more you want to add to, like, why we code.
+00:46:53
+Hamel Husain
+
+That's exactly what you should do.
+00:46:57
+Shreya Shankar
+
+Yeah.
+00:46:58
+Hamel Husain
+
+Anywhere to…
+00:46:59
+Shreya Shankar
+
+Yeah, like…
+00:46:59
+
+humans are extremely visual creatures, right? Like, if there's anything that we know about how human brains work, we are very… we have very good pre-attentive processing capabilities, so make things very visual, make things very easy for you to review.
+00:47:01
+
+We also have hotkeys, so if I press the left and the right arrow key, I'm able to just move from one trace to another. I find that very useful for myself.
+00:47:15
+
+Alright, so let's get into error analysis. So, open coding. We start by reading the first message. I need a refund for the desk lamp I bought from Pocket Arcade, it broke after 2 days. So put yourself in the mind of the user, right? This is what the user said.
+00:47:24
+
+Okay, so now we are kind of trying to evaluate whether the agent did the right thing or not.
+00:47:39
+
+So, we'll read. I'll look up your recent orders.
+00:47:44
+
+Matching desk lamp, so I can identify the correct purchase, check its refund eligibility, okay, sure, fine.
+00:47:48
+
+I look at the tool.
+00:47:55
+
+Again, these are not things that the user sees, obviously, it's just stuff that we are seeing.
+00:47:57
+
+Queried the desk lamp, Okay.
+00:48:03
+
+Sure.
+00:48:06
+
+I read a lot of these things. Sometimes it's also very important to read the data so you can kind of see, okay, like.
+00:48:08
+
+does the data even make sense? Sometimes you'll even see that there's data inconsistency issues in here. But you can kind of just go through it. I like doing a very high-level pass first, before I go do a detailed pass myself. Assistant says, found two matching LAMP orders, pull the order details, verify the refund amount allowed.
+00:48:15
+
+Okay, so it's calling order ID 64, and so forth.
+00:48:35
+
+I confirmed it's refund eligible, so I'll submit a refund.
+00:48:42
+
+Okay?
+00:48:46
+
+Great. So it submits this.
+00:48:49
+
+Okay.
+00:48:52
+
+But then, look at this. Something is off here.
+00:48:54
+
+It says I'll submit a refund for the full order total, and then the issue refund tool.
+00:48:58
+
+Says that, oh, it's over the 100%… sorry, $100 auto-approval threshold, so a human support agent.
+00:49:03
+
+We'll review it.
+00:49:10
+
+Strange, okay? And then now the assistant kind of changes its mind and says, okay, I'll open a human support ticket.
+00:49:12
+
+And so it escalates to the human.
+00:49:19
+
+And then it creates a message around this.
+00:49:22
+
+And you can see that it keeps going.
+00:49:24
+
+Hamel, do you want to stop me at any point now, or do you want us to keep looking at the trace before we start thinking about how we're going to do open coding here?
+00:49:27
+Hamel Husain
+
+Yeah, I mean, I would fail… I would already fail it, I would fail this, and I would say… because, okay, like, let's put our product hat on. Like, and having your product hat on is super important. Like, I don't think this is a great user experience, like…
+00:49:35
+
+this is designed to cause frustration. Like, is it gonna make just… everyone's gonna get pissed off when they have this, like, thing, right? So, it's like, how can we, like, okay, regardless of whether or not you want this, like, $100 thing to go to a human, which is arguable, I want to argue with that itself, like…
+00:49:49
+
+I think it could be a little bit smoother, of like, hey,
+00:50:09
+
+Let's just, you know, like, let's…
+00:50:13
+
+Yeah, communicate differently about this thing, make it more seamless about the escalation, don't go through too many hops,
+00:50:17
+
+You know, give the user confidence that they…
+00:50:26
+
+You know, what is going on with this, like, approval thing, and…
+00:50:29
+
+Like, give the user confidence that it is being worked on.
+00:50:33
+
+I don't know. So, like, I would fail it based on that. And that's a failure. So it doesn't have to be, like, something wrong with the AI. It's, like, anything wrong with this user experience, you want to note it down.
+00:50:39
+Shreya Shankar
+
+I really like it.
+00:50:52
+Hamel Husain
+
+How do you feel? What do you feel it?
+00:50:52
+Shreya Shankar
+
+So, I like to think of open coding… I'm looking for two categories of issues. One is, like, factual, logical errors the agent made. So it, like, called the wrong tool. It did, like.
+00:50:54
+
+something wrong in terms of, like, data fetching. The other source of error that I like to look at is exactly what you're saying, of, like, user experience, right? Like, this is quite frustrating, because it's just going on and on, saying.
+00:51:04
+
+Like, imagine you're at the user, you're, like, actually seeing this, right? It's super annoying to see all this number of messages, right? I'll look up your recent orders. I found two matching lamp orders. Another qualitative issue with this is…
+00:51:17
+
+as the developer, I don't want to leak details on, like, kind of what is happening in my system, right? I don't want to actually show the keywords that are being searched. So, I might say something like this here, so now this is where the open coding part comes in.
+00:51:31
+
+So in my UI, I've built it such that I highlight something, and then I'm just able to give feedback immediately. So I'm gonna say something like, don't…
+00:51:46
+
+I don't… Like, that details.
+00:51:55
+
+of the process.
+00:52:00
+
+where code are exposed to the user. We should not mention search terms, Verbatim.
+00:52:04
+
+Okay, so you can see there that I've just kind of made this
+00:52:16
+
+an open code here. And then I kind of let it down, set it down, and forget it. So Hamel, maybe there's probably more that we want to add. Maybe one around, like.
+00:52:20
+
+Don't send too many.
+00:52:32
+Hamel Husain
+
+And the reason open coding is so powerful is because a lot of times, you don't even need to write an eval. You're like, this sucks, I'm just gonna, like, redo this thing XYZ, like…
+00:52:33
+
+we're gonna come back to evals later, let's just fix this, like, UX, like, more generally. And you'll find that all the time, especially when you're starting out.
+00:52:45
+
+And, like, looking at traces is a superpower. No one does this.
+00:52:55
+
+When you look at it, you're gonna know more about how your product works than anybody else.
+00:53:00
+Shreya Shankar
+
+We should not have mentioned in an earlier message that we were refunding.
+00:53:09
+
+This is another huge issue that I see a lot with agents, is, like, conflicting messages, right? So, that's, like, a pretty bad UX.
+00:53:20
+Hamel Husain
+
+And so there's an art to this error analysis, like, you could stop here if you wanted to, you could be thorough and, like, mark everything as wrong. There's, like, different heuristics. When you're first starting out, you can stop at the first major problem and just move on.
+00:53:29
+Shreya Shankar
+
+Yeah.
+00:53:46
+Hamel Husain
+
+If you notice a lot of problems, like I find, like, go ahead and note them, but,
+00:53:46
+
+Usually, like, the first major problem is the one that's most important to focus on for you.
+00:53:51
+
+Next.
+00:53:56
+Shreya Shankar
+
+Yeah.
+00:53:57
+Hamel Husain
+
+That's the one working on this product. And then, you know, you want to get through a bunch of traces, also. You want to see a lot of examples, and you don't want to get bogged down, so…
+00:53:57
+Shreya Shankar
+
+Yeah, I would say if you're a beginner at error analysis, like, if you've never done open coding before, I would say, yeah, stop at the first failure, the first two failures, or first category of failures, and then in follow-up reviews, like, or as you become better at error analysis, you can start putting in many more errors or open codes that you find, right?
+00:54:06
+
+It's really about where you are in the stage. Think of it as you're going through this process, you're trying to increase the coverage of failure modes you find. Finding some failure modes is better than finding zero failure modes, and you can't really expect day one to find every single failure mode, right? It will be an iterative process, you'll keep discovering them.
+00:54:27
+
+I feel like there's a lot of great questions that are coming up, so I'll take a moment to answer this. This UI is in the GitHub repo, the Cartwheel GitHub repo, correct?
+00:54:46
+
+I… do we need this UI for subject matter experts to label? I love to give subject matter experts these UIs. I think it's much faster for them to review. It's great. If you give them this in a spreadsheet, they're not going to review it or find these issues.
+00:54:57
+
+I also want to mention a,
+00:55:12
+
+thing about actually looking at some of these… so I mentioned that we also want to look for logical errors as well, especially with the newest agents, like, this is GPT-5.5, so it doesn't make as many logical errors as, say, if we were to use, like, GPT-40, or 4.0 Mini, or something like that. But oftentimes you can find issues in the data, so I don't know if this is the exact trace that has this problem.
+00:55:15
+
+In one of these, we have the…
+00:55:38
+
+Shipping date before the order date. Okay, I guess it's not this one. But sometimes, you know, if you have errors in the data and the agent doesn't react to it in the way that you wanted, like, hey, I noticed an inconsistency or something, then you can also put an open code for that.
+00:55:40
+
+Yeah, let's see. Keep going…
+00:55:57
+
+So part of the synthetic trace, we also were able to… whoops, I have an issue.
+00:56:02
+
+Oh, we have my favorite.
+00:56:11
+Hamel Husain
+
+Favorite question has just been asked. Favorite question?
+00:56:12
+
+is, why can't you just have Claude do this?
+00:56:15
+
+Okay.
+00:56:19
+
+So, Claude cannot do this. So, like, let's scroll all the way up. What does Shreya annotate? What's the other thing?
+00:56:20
+Shreya Shankar
+
+Yeah.
+00:56:25
+Hamel Husain
+
+Oh, she said, like, she doesn't want this leaking into the thing.
+00:56:26
+
+Agent doesn't know that this is… this is, like, very specific to your preferences. Now, the agents can catch certain things, like, maybe if it had, like, the ship date, after, you know, like, you know, after the delivery date, or whatever.
+00:56:29
+
+Then the agent might be able to catch that. Agent can catch logical errors, agent can see if there's, like, an obvious error in the trace, but it can't catch a lot of these other things that require your judgment, because you have to get it out of your head, into somewhere. And this is the process in which you elicit that out of yourself.
+00:56:46
+Shreya Shankar
+
+Yep. Yep.
+00:57:06
+
+Totally.
+00:57:08
+
+Yeah, and, like, these are also great things of, like, if the user asks for something, like, just give me my money back right now, right? These are questions that maybe you care a little bit more about how your agent responds, so you might say, like.
+00:57:12
+
+okay, you might actually want to read this in a little bit more detail and make sure that, oh, indeed, this is saying what I want to say.
+00:57:25
+
+So, like, here's a great point here. I don't want these internal details of, like, my policy names, cartwheel policy names, to be leaked to the agent, to be leaked to the user, right? So I would put another open code here. We don't need to, leak…
+00:57:33
+
+These to the user.
+00:57:52
+
+Okay, so again, just mentioning this here.
+00:57:56
+
+And it looks like the markdown stopped rendering. So, that's the unfortunate part if you vibe code your UI, sometimes there will be bugs, but I think it's better than nothing.
+00:58:00
+Hamel Husain
+
+One thing I want to mention is, this might seem very tedious. Like, we just spent, I don't know, 15 minutes looking at singletrace. Might be wondering, how the hell am I going to do this? I don't have time for this.
+00:58:09
+
+So, okay, a couple things. One is, you can get really good at this.
+00:58:19
+
+This is a skill.
+00:58:24
+
+If you do this even, like, if you do this, like, a hundred times, just a hundred times, you will get exceptionally fast.
+00:58:26
+Shreya Shankar
+
+just so fast.
+00:58:33
+Hamel Husain
+
+Second, we will teach you advanced techniques to sample traces effectively. You're not just wading through the random sea of traces, like, you're gonna… there's ways to, like.
+00:58:34
+
+you know, maximize the chance that you're gonna see something valuable. So I'm gonna show you that.
+00:58:44
+
+making these tools really good, like this, like, you know, is gonna help you a lot. I can think of ways you might want to improve this… this thing that we're showing. You know, like, for example, you… like, if it's a real e-commerce app, you're probably gonna be showing widgets of some kind.
+00:58:49
+
+It's probably gonna look different to the user. You might be able to put certain things in here that allow you to check it faster, like, maybe if there's side effects that happened, if the refund happened, yes or no, you can put… you can get… you can get really, like,
+00:59:05
+
+Clever with these…
+00:59:18
+
+vibe-coded pers… like, things to make it super fast for you to… to judge whether something is going wrong or not. And so I wouldn't get… so just keep that in mind, we're trying to teach you the fundamentals, and we're going slowly, so you kind of get the idea.
+00:59:20
+Shreya Shankar
+
+Nope.
+00:59:38
+
+Awesome. Okay.
+00:59:39
+
+So… Let's…
+00:59:41
+
+there's a bunch of good questions that are coming. I'm getting confused with the language. Can you define open coding and trace review? Open coding is the process of writing these open-ended notes, so every single one of these notes on the side is an open code. Trace review, I'm just colloquially using as, like.
+00:59:43
+
+looking at these choices, nothing in particular. Yeah, unfortunately, open coding is, like, the term that's used in qualitative research, so coding is a little bit confusing, but yeah, think of it as open annotation. The reason that we're saying open coding is also because if you tell your agents, hey, I'm doing some open coding, are there any open codes that I missed? Agents know about qualitative analysis, or they know
+00:59:59
+
+science and literature, so they will also understand what you're saying. If you say open annotations, they may not understand what you're saying.
+01:00:24
+
+Oh, there's also a question about the expected outcome, and I'm realizing my agent, when vibe coding this application, did not put the expected outcome in here. So, expected outcome, I like to just put as, like, a button in the top, like, show expected outcome. And either it'll show up in the bottom, or it can show up as a popover in the UI, however you want it, so I can make sure that, like.
+01:00:33
+
+In this case, the expected outcome will be all of the specific documents that should have been hit, so I will want to just make sure that all those documents were hit.
+01:00:55
+
+Let's do one more, and then let's call it… next lecture, we're gonna do a lot more of these, so you can see how fast we'll end up getting. This one's just slow, also, because it's like a teaching exercise. Let's do number two.
+01:01:06
+
+So…
+01:01:18
+
+I got this pencil set, I think I want to send it back, but I'm not even sure when it arrived, honestly.
+01:01:19
+
+Okay, I'll look… so first of all, I look at this and I think, oh, I messed up my synthetic request generation in a bit, because I don't think any users would say anything beyond a while back, but, you know, let's leave that aside. Imagine someone actually sent this.
+01:01:25
+
+I'll look up your pencil set order and the cartwheel return policy, so I can see when it arrived, so look for the order.
+01:01:41
+
+Bye.
+01:01:48
+
+Nothing ever happened.
+01:01:49
+
+Okay?
+01:01:51
+
+Search help tool, or sorry, Search Help Center, okay, fine.
+01:01:53
+
+So, a bunch of different stores. So, this is, like, the general purpose cartwheel return. So, 30 days. The other ones also have, I guess, 30 days.
+01:01:59
+
+I didn't find an exact match, so I'll check your recent orders.
+01:02:08
+
+Okay, again, going back to the same error as before, like, you don't have to leak this many details, but so be it. List my orders.
+01:02:13
+
+Okay, so there's 20.
+01:02:21
+
+Different orders.
+01:02:26
+Hamel Husain
+
+Yeah, I would've already failed it, no. I would fail it.
+01:02:27
+Shreya Shankar
+
+What will you say?
+01:02:29
+Hamel Husain
+
+Because I would say, like, it's just too many, like, I don't know, it's
+01:02:30
+
+it's too… it's, like, struggling too much, like… like, it just… well, maybe… maybe it's okay, maybe it's okay. I'm being too harsh. I'm in, like, a failure, bias right now. Let me just… let's keep going.
+01:02:38
+Shreya Shankar
+
+Yeah, so I think…
+01:02:50
+
+I think you also want to, like, focus on what is, like, high impact. Like, what is the highest impact for your business at this current point of time? Like, you can't focus on everything. I can see your recent orders, they show product IDs, so I'll… again, it's like, I don't want these details, but so be it. I've already given the open code in a previous one.
+01:02:52
+
+It is important to try to have multiple instances of open codes.
+01:03:09
+
+Just so, like, you know, you can save them. We'll show you why it's useful in a bit. Don't make details.
+01:03:13
+
+Okay.
+01:03:22
+
+And then I found this likely match.
+01:03:25
+
+Okay, fine.
+01:03:27
+
+Before… because this order is marked delivered, but has no recorded delivery date, I'm going to escalate it.
+01:03:31
+
+So, I guess I'd want to check if that was actually true.
+01:03:36
+
+Anyways, I'll keep going.
+01:03:41
+
+So a lot of this is stuff that I just wouldn't want to be said.
+01:03:44
+Hamel Husain
+
+Yeah, I would fail it.
+01:03:49
+Shreya Shankar
+
+You would fail it, and describe why, I guess.
+01:03:50
+Hamel Husain
+
+Yeah, yeah, so I would fail it because I'm like, okay, I don't like this whole UX, I'll… okay, if someone asks for a return or anything, I want to return a widget, be like, hey, like, which one of these orders do I just want to confirm? You hit confirm.
+01:03:53
+
+And it says, okay, I'm gonna help you with a return on that, and then right away, it just tells you what it's gonna do. And that's it. It should be, like, as few turns as possible, just get it done. This is too… this is too tortured for me.
+01:04:05
+Shreya Shankar
+
+Yep, yep.
+01:04:18
+
+I know we're running a little bit over time, so I'll answer a couple more questions that I think are good. The expected outcome thing, I'll cover it in the beginning of the next lecture. I think this… this UI doesn't show it, even though the skill tells us to have it. It's not…
+01:04:20
+
+it's just going to be a little popover in the top right that just shows us, here are the tables that should have been queried, and we're gonna make sure that those tables were queried. That's all.
+01:04:35
+
+Could you recommend a good resource on grounded theory? Check out the course reader, it already has stuff about error analysis, so I highly encourage you to read that, and that also links to a bunch of resources.
+01:04:47
+
+Yeah.
+01:04:59
+
+And then there's a bunch of other things around questions, so please, you know, awesome in Discord.
+01:05:00
+
+And… let's go back to the slides.
+01:05:07
+
+So, for homework 3, we're gonna really exercise synthetic generation here. So there's 5 parts to it. You're gonna plan your dimensions. When I did the homework, and I generated a bunch of these dimensions and traces with coding agents for Cartwheel, I realized that I spent a lot of time doing it, and there were a lot of mistakes.
+01:05:11
+
+So I have, changed it to be, first, you're gonna do a pilot set of scenarios, just look at 30 of them, make sure that you've got at least 5 confirmed failures in there. If not, then, you know, fix your dimensions, fix your synthetic data generation, and then scale that up.
+01:05:30
+
+Then run them all through your, LLM. This cost me $6.71.
+01:05:45
+
+sense using GPT 5.5, and then just have them ready for us to do open coding, later on. And if you skip the homework, that's totally fine. We're gonna provide reference patches for you, so you're not, like, super behind or anything.
+01:05:51
+Hamel Husain
+
+If you don't want to do the homework, one really fun exercise is, like, if you are working on an AI product right now.
+01:06:08
+
+Yep. Go do some open coding on it, like, as soon as possible. Look at… just look at, you know, 10 traces.
+01:06:15
+
+Try to look at 30 traces, if you can. And I promise you, you're gonna learn something from those 30 traces.
+01:06:23
+
+It's gonna be a really good exercise, just… just do it.
+01:06:31
+
+We will be discussing, like, what do you do with these open codes? How does these turn into evals? How does this generalize? And, like, this seems, like, anecdotal, or, like, oh, how is this, like, looking at individual pieces of data?
+01:06:34
+
+like, I know you have all these questions, we will answer all those questions, we just want to, you know, we just can't cram it all into one shot, so just, just know that it's coming.
+01:06:48
+Shreya Shankar
+
+Yeah, it's all coming. People ask, how often do you do this? When do you do this? I say, if you've never done this before, you absolutely have to do this.
+01:07:00
+
+Sometimes you'll find a lot of failures, sometimes you'll find a few failures. The more open-ended your agent is, probably the more failures you'll find. If you use a cheaper model, you'll also probably find more failures, so kind of…
+01:07:08
+
+expect a lot of variance in between different rounds of error analysis that you do for different applications. And I never, ever ship anything into the world without doing error analysis. That's what I will say. I don't know about Hamel, but this is, like, number one part of evals. I think he will also preach the same thing.
+01:07:21
+Hamel Husain
+
+you can… you can become, like, a consultant by just doing… you can, help people with just error analysis. Yep. Like, a lot of times, that… people don't… are not looking at their data, they have no idea what's wrong.
+01:07:38
+
+It's somehow this, like, superpower you can develop looking at data.
+01:07:51
+
+You should get good at this, because there's this unreasonable amount of alpha in this area looking at data.
+01:07:58
+Shreya Shankar
+
+Cool. Awesome. Okay, we will see everyone in office hours.
+01:08:06
+Hamel Husain
+
+And if we didn't, answer your Zoom question, just post it in Discord, and we will…
+01:08:14
+
+We'll look at it.

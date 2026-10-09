@@ -1,0 +1,1610 @@
+Shreya Shankar
+
+Okay.
+00:01:52
+Hamel Husain
+
+Hello!
+00:01:53
+Shreya Shankar
+
+Oh, shit.
+00:01:55
+Hamel Husain
+
+It's, it's recording, by the way.
+00:01:55
+Shreya Shankar
+
+It's recording, give me, like, 10 seconds, I just want to get my drink.
+00:01:57
+Hamel Husain
+
+No worries.
+00:02:02
+Shreya Shankar
+
+Okay.
+00:02:10
+Hamel Husain
+
+No worries, yeah, just take your time, take a minute. Because you can get them water, it's not… Yeah, I know.
+00:02:12
+Shreya Shankar
+
+I realize this, so I don't, like, hack away, coughing.
+00:02:18
+
+This weekend, I got sick, and I feel like… I fear it is one of those…
+00:02:22
+
+Times in life where you're just sick for a month.
+00:02:26
+
+So… Wanna make sure that I…
+00:02:30
+
+have everything. Let me share my screen.
+00:02:33
+
+Can folks see my screen?
+00:02:43
+Hamel Husain
+
+Yes. But no.
+00:02:45
+Shreya Shankar
+
+Cool.
+00:02:47
+Hamel Husain
+
+And yes,
+00:02:47
+Shreya Shankar
+
+No.
+00:02:48
+Hamel Husain
+
+No, it was black, and then it…
+00:02:48
+Shreya Shankar
+
+Oh, okay.
+00:02:51
+Hamel Husain
+
+Permit.
+00:02:51
+Shreya Shankar
+
+Sounds good. Bunch of people entering the waiting room. That's strange.
+00:02:53
+Hamel Husain
+
+Oh, really? Okay, let me check on that.
+00:02:57
+Shreya Shankar
+
+I just, I just let some folks in.
+00:02:59
+
+Okay, cool. Oh, video has been disabled. Oh, that's another… Good flag.
+00:03:05
+
+We'll fix that. Let's try to fix that.
+00:03:14
+
+So that way we're not… speaking to Black Hole.
+00:03:16
+Hamel Husain
+
+Yeah, let me… One second, let me figure out…
+00:03:21
+Shreya Shankar
+
+Good, I'll go, take your time.
+00:03:26
+Hamel Husain
+
+settings are.
+00:03:27
+
+How do I get back to the settings?
+00:03:30
+
+Host tools, maybe? Oh, here we go, okay.
+00:03:34
+
+Okay, here we go. Okay, you can start your video.
+00:03:44
+Shreya Shankar
+
+Hopefully folks can.
+00:03:49
+
+I realized I need a new collection for today.
+00:03:52
+
+Okay.
+00:03:58
+
+Now we are all ready to go, Rag.
+00:04:02
+
+All right. Well, welcome, everyone, to Wednesday, Lesson 6. We are in a weird transition spot. We're halfway between the end of Module 2, which is RAG evaluation, and then the beginning of Module 3, which is CI.
+00:04:06
+
+Folks can hear me, right? Yeah. I feel like I…
+00:04:23
+
+Maybe my noise canceling just got so good, because now I can't hear anything. Okay. So, first things first is just a recap of what we did last time.
+00:04:27
+
+So, so far, we're going through this analyze, measure, improve life cycle. We haven't gotten to improve yet, much to lots of people's impatience, but I promise
+00:04:36
+
+We will get to it. We talked about error analysis, right, looking at your data. Hamel and I always say, look at your data, now you finally know what that means. Then we talked about how to measure the, prevalence of the failure modes that you found in error analysis. So concretely, right, we built an LLM judge.
+00:04:46
+
+to measure that failure mode. And what did we actually do in last lecture? Well, for an LLM judge, we wrote an LLM judge prompt, and that prompt consisted of pass and fail rules, as well as some examples of pass and fail.
+00:05:05
+
+And then we talked about how…
+00:05:20
+
+we apply our data science skill set to actually make sure that LLM judges aligned with our preferences, right? So that includes splitting the labels that we came up with in error analysis into trained dev and test sets, and then using an AI agent or coding agent to hill climb on the dev set. All that means is to try to make changes to the prompt in order to improve the two positive rates and true negative rates.
+00:05:22
+
+And in every iteration of hill climbing, hopefully you got a chance to work on that during the homework, which is essentially taking a look at what the LLM judge got wrong, any disagreements with your labels, and then figure out how you can revise your past and fail boundary, maybe even adding more examples.
+00:05:47
+
+And at the end of all of this, right, you've got… hopefully you got a frozen prompt and model, essentially, for your LLM judge. And hopefully this whole process kind of convinces folks that, okay, we… we don't have all the time and resources in the world to build LLM judges for everything. I think a lot of people fall into this trap of just trying to make an LLM judge for every single failure mode they can think of, even before they've observed it in the data.
+00:06:04
+
+And, you know, maybe they skip a lot of this alignment process, and I can promise you and assure you there's nothing worse than having a slop LLM judge, where you cannot trust that it aligns with your own labels, and so you kind of ignore it in your metrics dashboard.
+00:06:29
+
+So, yeah, key takeaways are it is time-intensive, labor-intensive to do this, so only pick… only do LLM judges for failure modes that you really think are going to persist or important to the base business.
+00:06:44
+
+And then, also, don't be afraid of it, right? Like, we went through the process, everyone can do it, I know everyone can.
+00:06:57
+
+What are we going to do today? Well, we're going to talk a little bit about RAG, specifically the retrieval part of RAG. A lot of people ask, okay, how do I evaluate whether the agent is responding to my retrieved documents correctly, or if I'm retrieving the right things, so we're going to show you a set of metrics that test for different things, and you can pick and choose what makes the most sense for your application.
+00:07:05
+
+Then we're going to pivot into, you know, going into evals, what folks think of as evals, which is concrete test cases for your AI agent. So we're going to talk about how you can write these eval cases or express them, given the failure modes. So folks have heard of Harbor, for example, we're going to go into that a little bit.
+00:07:27
+
+We're gonna talk about what metrics to even measure.
+00:07:46
+
+for eval, so pass at K, or pass… pass care at K. I actually have never see… heard of how people say it out loud in practice, but different metrics.
+00:07:49
+
+to measure. And then also the thought of, you know, integrating this workflow into GitHub Actions, or something in your codebase so that it mimics or it resembles CI.
+00:08:02
+
+Before we get into today's stuff, I just want to spend, like, a minute calling out some new developments in the world of evals. So, one thing that Hamel and I have been working on, really Hamel has been driving this, is this, new… this blog post that we released yesterday called Advanced Evals, How to Find and Fix Hidden AI Failures in Your Product.
+00:08:12
+
+And I think it's a really, really awesome walkthrough of pretty much how you can use the error analysis skill, or error discovery, basically, that we talked about in the course. Talking a lot about, you know, how this ties specifically to product and to business metrics. We didn't go over that too much in lecture, so I highly recommend you read this and kind of see, okay, how do we connect some of the concepts that we're learning to actually
+00:08:35
+
+business outcomes.
+00:09:00
+
+Some lab-coded interfaces, love that stuff. Hamel, maybe there's stuff that you want to add. I know a lot of people have been reading this and really liking it, which is really exciting.
+00:09:02
+Hamel Husain
+
+Yeah, just, like, an administrative note about this Substack post is, like, it's a… for paid subscribers, like, you could read, like, I think two-thirds of it, or one-third of it, something like that, but…
+00:09:12
+
+Subscribe to Lenny, he gives you, like, something like $40,000 of AI credits.
+00:09:24
+
+So it's, it's one of these, like, subscriptions that is kind of crazy not to subscribe to, because you get, like, credits for everything, like Cursor, granola, like, you just name it, you probably have, like, these tools, and you can get them for free.
+00:09:30
+
+So, yeah, definitely check it out,
+00:09:47
+
+And definitely check out the skill. We touched on it a little bit, but this is, like, a concrete blog post, like, okay, how can you use the skill? And I highly recommend, like, taking that skill to your products. Of course, you want to learn the whole end-to-end workflow, that's what you're doing in this class, but just keep that in mind.
+00:09:49
+Shreya Shankar
+
+Awesome. Great. Okay, let's start with some of the evaluating retrieval stuff.
+00:10:10
+
+So… Hopefully folks can see my whiteboard screen here.
+00:10:16
+Hamel Husain
+
+Yeah, I can see that.
+00:10:22
+Shreya Shankar
+
+Evaluating… gotta zoom in a bit. It's always…
+00:10:23
+
+Evaluating RAG. So, maybe raise your hand if you have used retrieval in your agents, just so we can get a sense… okay, great. A lot of… or maybe not raise your hand, but put some emoji or something, so that way… because you probably have to put your hand down yourself.
+00:10:28
+
+Okay, so a lot of people have done this. So what is RAG? So RAG is Retrieval Augmented Generation.
+00:10:47
+
+And concretely, what that means is use…
+00:10:56
+
+In the agent, one, retrieve Document.
+00:11:01
+
+And then two, feed these documents to the agent.
+00:11:06
+
+To make a decision.
+00:11:13
+
+Okay, so we kind of did this in Cartwheel itself, right? We have, like, a database of policy documents, and the agent needs to be able to retrieve these documents and then read and reason over them.
+00:11:16
+
+And racking retrieval itself can be extremely complex, that's why we talk about it in its own section. But at a high level, the kinds of pipeline architectures that I've seen is, how to do retrieval.
+00:11:30
+
+So one option that I've seen here is kind of the basic two-step pipeline.
+00:11:44
+
+Buff!
+00:11:53
+
+Another thing that I've seen… just do this.
+00:11:55
+
+Is agent does the retrieval, Or… some… retrieval model, does.
+00:11:58
+
+So a dedicated retrieval model, like a Colbert style, or not Colbert, but, like, any embedding-style model can do that. And if you don't know what I'm talking about, read the course reader for that, but the point is that there's many ways that you could do one.
+00:12:11
+
+And then for step 2, Sometimes.
+00:12:25
+
+We have re-rankers.
+00:12:30
+
+to… Clean up.
+00:12:36
+
+the ranked… Documents.
+00:12:40
+
+or two.
+00:12:47
+
+Alright, is there anything that Hamel, like, screams out to you, like, new retrieval paradigms you've seen, or is this kind of it? This is really what I've seen?
+00:12:49
+Hamel Husain
+
+No, I mean, that's the most important.
+00:12:59
+Shreya Shankar
+
+Yeah.
+00:13:00
+Hamel Husain
+
+It's like, these are all fungible, like, you don't always have a re-ranker, that's why we have the word sometimes here. You can apply more and more computation to try to, like.
+00:13:01
+Shreya Shankar
+
+Yup.
+00:13:11
+Hamel Husain
+
+make your ranking better, and that's why there's two stages, like, the second stage is, like, more computation.
+00:13:11
+
+And so that's some… there's always a trade-off between, like, computation and, accuracy that you might want to think about, just like in the general case of, like, outside rack. So,
+00:13:18
+
+Yeah, that's what we're talking about.
+00:13:29
+Shreya Shankar
+
+Great. So let's, like, concretely look at an example here of, returning policies relevant to an agent's question. So maybe I'll say what I think the ground truth… I'm just making this up, so, you know, don't…
+00:13:33
+
+get super fixated on this, but I'm gonna make up what…
+00:13:48
+
+okay, when we're doing RAG, right, we're gonna… we're gonna hope to try to retrieve… what we can control is retrieval of the documents, the step one. We're gonna want to make sure that the documents are very good, because if the agent
+00:13:51
+
+doesn't even have good documents is definitely going to hallucinate, or it's not going to know how to answer the question. So, always, in my mind… let me… where's my highlighter? Here.
+00:14:03
+
+Yeah, this part… oh, that doesn't work for some reason.
+00:14:15
+
+Here.
+00:14:21
+
+This part of retrieval… is most important.
+00:14:23
+
+So…
+00:14:28
+
+The part two, which is evaluating how the agent uses the documents, that is going to be done in error analysis when you look at your outputs. But Part 1 can be done more deterministically with different metrics.
+00:14:29
+
+So let's talk about the examples here. So, imagine that I have some…
+00:14:42
+
+ground truth ranking of documents. So… Let me put example here.
+00:14:49
+
+retrieving… docs relevant to, stores, Relevant to a return query.
+00:15:00
+
+Example, ground troops.
+00:15:12
+
+So I'm just gonna make some stuff up. Maybe the first one that we want to be able to retrieve is, default return policy.
+00:15:14
+
+Okay. The second one that we want to be able to retrieve…
+00:15:25
+
+is… I don't know, let's say, specific store override.
+00:15:32
+
+And then, maybe these are the only two documents that are relevant, okay? So, I'm gonna put this here as Brown Truth.
+00:15:42
+
+And then this is gonna be… Number one…
+00:15:53
+
+This is gonna be number 2.
+00:16:03
+
+Alright, so in practice.
+00:16:08
+
+the retrieval method is never going to be perfect, right? It's not going to exactly give us these two documents in exactly this order with no more, no less, right? That is super hard to get.
+00:16:10
+
+So maybe I'll make up what a retrieval mechanism gets. So, what… Our retrieval model says.
+00:16:21
+
+And, yeah, maybe it returns… This guy number 1.
+00:16:37
+
+And then maybe…
+00:16:42
+
+maybe we retrieve 5 documents from the document base, because we know our retrieval model is not perfect. So in that setting.
+00:16:44
+
+maybe… An irrelevant document.
+00:16:51
+
+this second.
+00:16:57
+
+And then I'm also really just making this up. So maybe this specific store override is number 3.
+00:17:11
+
+Actually, mmm… This is fun.
+00:17:19
+
+Okay.
+00:17:28
+
+Okay, so maybe we've retrieved 5 documents. Here.
+00:17:31
+
+4 or 5.
+00:17:42
+
+And you'll notice that I don't put any 4 or 5 or 3 on the left-hand side here.
+00:17:46
+
+Because…
+00:17:51
+
+the ground truth, there's only two relevant docs to a query. So this makes sense so far, this example that I've constructed. So what we're going to do is just walk through different metrics that we're going to use to measure quality of the retrieval step.
+00:17:53
+
+Let me check the chat really briefly.
+00:18:05
+Hamel Husain
+
+GT means ground truth for anyone that.
+00:18:08
+Shreya Shankar
+
+Yes.
+00:18:10
+Hamel Husain
+
+Awesome.
+00:18:11
+Shreya Shankar
+
+Yes.
+00:18:11
+
+Yes. There's a question on, can websites be a part of RAG, or is it always just static documents? So websites are a type of document.
+00:18:12
+
+Anything. Any piece of text, anything that you put in a database.
+00:18:19
+
+Or anything out there is… that's a document, is something that you can retrieve.
+00:18:24
+
+So we won't talk about how to specifically index documents for retrieval, so, check out the course reader for that, and then maybe post in Discord if you have questions about that, but this is specifically on, once you have a retrieval mechanism, how can you tell whether it's good?
+00:18:29
+
+So the first metric… so actually, first, before I get into metrics, I want us to kind of brainstorm a little bit, like, what is the intuition for what good in retrieval means? Like, maybe what are some facets of good?
+00:18:43
+
+So, one thing we want to check is coverage, right? Did we get
+00:18:56
+
+All the documents and the ground truth.
+00:19:02
+
+Actually, did the retrieval model do that?
+00:19:05
+
+Another thing that we want to check is, okay, how accurate
+00:19:08
+
+Right? So, like, of all of the things that the bottle retrieved.
+00:19:12
+
+How many of them are actually relevant?
+00:19:16
+
+So, let's talk about what those two actually are. The first one's called Recall at K.
+00:19:20
+
+So this metric is probably, like, most fundamental metric in retrieval, which is, given the He retrieved documents.
+00:19:26
+
+How many are in… How many ground truths?
+00:19:42
+
+Or, sorry, what fraction of ground truth?
+00:19:48
+
+In top K.
+00:19:55
+
+Okay, so let's be more precise here. Let's actually put the formula, which is… Relevant.
+00:20:00
+
+What equal here?
+00:20:07
+
+Relevant.
+00:20:12
+
+Docs.
+00:20:14
+
+divided by… All relevant dogs.
+00:20:19
+
+And these, these hor… these vertical bars here just mean number.
+00:20:26
+
+So it just means the number of relevant docs in the top K, divided by all of the relevant docs. And so anybody wants to tell me what that is for our example?
+00:20:34
+
+I'm gonna look in the chat.
+00:20:48
+
+One! Nice.
+00:20:50
+
+Example.
+00:20:53
+
+So hopefully that is intuitive, right? That all the documents that were in the ground truth actually appear in our retrieval steps return. And so what I say with… why I say recall at KK is really important, right, is that you have no hope of correctly answering the question.
+00:20:57
+
+If your recall at K is bad. Okay, so concretely, what does it mean for recall at K to be less than 1, or to be close to 0? That means you did not retrieve the relevant documents in your retrieval step, so your agent is not going to be able to say the correct thing.
+00:21:15
+
+So, basic metric everybody has to be able to evaluate is recall it K.
+00:21:30
+
+Hamel, anything you want to add to that? Like, maybe, like, this is the most important metric, like, places that you've seen people kind of not measure this, and then kind of get burned? Because…
+00:21:37
+Hamel Husain
+
+Yeah, I mean, I think it… so, like, there's always gonna be a question, like, what is K? And…
+00:21:50
+Shreya Shankar
+
+Mmm.
+00:21:55
+Hamel Husain
+
+What metrics to use.
+00:21:56
+Shreya Shankar
+
+flag.
+00:21:58
+Hamel Husain
+
+And that depends on your product, like, that depends on… like, how…
+00:21:58
+
+You are retrieving documents, how many you want to retrieve, how many you're going to show to the user, what does it look like for the user, things like that.
+00:22:04
+
+it gets really deep. We have the course reader, you know, we could… this could evolve into just a retrieval class, an information and search engine class. We don't want to go into that level.
+00:22:14
+
+So, highly recommend the Course Reader, but there are a lot of nuances, and we're giving you kind of, like, the overview here, but definitely, for depth, you want to check out the course reader.
+00:22:25
+
+And then also ask us questions. But yeah, it's something to think about.
+00:22:36
+
+And there's a lot of tuning required for search.
+00:22:41
+
+to do… to go well, and that's where evals come in. So you might be wondering, we're gonna… you'll see as we keep talking about, there's a lot of parameters, so don't get distracted, like, just…
+00:22:44
+
+Just know that, okay, this is something you have to eval as well.
+00:22:55
+Shreya Shankar
+
+Yep.
+00:23:00
+
+Awesome.
+00:23:01
+
+Yeah, so this actually begets the question of, like, oh, how do I choose K? Right, you mentioned that. And there's also some,
+00:23:04
+
+there's also some questions, so confusion around, you know, why is recall at K…
+00:23:14
+
+1, right? Why isn't something else? So…
+00:23:19
+
+let's think about, okay, what if K was, you know, 10,000 in our case?
+00:23:25
+
+Right? That's not really great, right? What that means is that the agent is actually seeing 10,000 documents, it has maybe a high chance of getting distracted, even if you're able to recall all the ground truth in those 10,000 documents, right? So, if you have 10,000 documents to be KK, you're gonna confuse the agent, maybe, with all sorts of irrelevant information.
+00:23:30
+
+If there's only two relevant docs. And you're going to be paying a lot in token use, right? Because the LLM has to see all those 10,000 documents. So this motivates another metric called precision.
+00:23:53
+
+Okay. And here, intuitively, Like, given all the documents in Returned by the retrieval step.
+00:24:07
+
+Step.
+00:24:22
+
+How many are actually… relevant.
+00:24:24
+
+So, what that formula ends up actually being is relevant!
+00:24:29
+
+Same numerator.
+00:24:35
+
+divided by… K.
+00:24:40
+
+Alright, so you can see that this is different from recall at K, right? The denominator is different. So, does anyone want to say what that is going to be?
+00:24:43
+
+for, for our example.
+00:24:51
+
+Yes.
+00:24:58
+
+Example…
+00:25:00
+Hamel Husain
+
+What's, what KK are we choosing again?
+00:25:01
+Shreya Shankar
+
+Five.
+00:25:03
+
+I just… I have 5 documents in that ranking, so…
+00:25:04
+Hamel Husain
+
+Yeah.
+00:25:07
+Shreya Shankar
+
+Yeah.
+00:25:08
+
+Great, so let's actually spell this out. So it's 2 relevant docs, right, out of 5.
+00:25:10
+
+equals 0.4.
+00:25:16
+
+Awesome. Okay, so, so I know there's a lot of questions in the chat around,
+00:25:18
+
+why is recall at K1? Why is it not 2, or something?
+00:25:24
+
+hopefully this clarifies, right, precision at K is different from recall at K. You want to take
+00:25:28
+
+We have 5 documents that were K, there were 2 that were relevant. Our recall at K was perfect, because in our set of K, we were able to rank all of them. And then precision at K is 0.4, because we have 3 irrelevant docs in there.
+00:25:34
+Hamel Husain
+
+People are confused. So, like, the… okay, the denominator of recall is… of K is 2. The denominator is 2, it's not 5.
+00:25:50
+
+Okay.
+00:25:59
+
+So, recall is, like, how many of these relevant docs are you able to retrieve? Were you able to retrieve all of them? Because in the top 5, we were able to retrieve both of them, so that's why it's 1. Yeah, there you go.
+00:26:00
+Shreya Shankar
+
+Yeah, I'll spell that out on there. So hopefully that clarifies all the confusion, but, you know, come to office hours and ask if you're still confused. Yeah, so precision KK, what I found for LLMs, is that it doesn't need to be one. It's almost impossible for it to be one.
+00:26:14
+
+But it shouldn't be, like, 0.001. Something like 0.001 would mean that 99.9% of the document text is irrelevant to the query, so you're wasting a lot in token use.
+00:26:29
+
+Recall at K really needs to be 1, or as close to 1 as possible, otherwise your agent has no hope of getting the correct answer.
+00:26:42
+
+It's also a useful exercise to think about how precision at K, recall at K, retrieval metrics differ for humans and for agents. So, one classic application of these metrics, right, is in Google Search, or ranking for humans. In Google Search.
+00:26:51
+
+Right? It really matters that you have a pretty good precision at K, right? If you search something on Google, and your answer is only, you know, on page 5 or 6, you would be very frustrated, right? You don't want to page through 5 or 6 pages in order to get to the correct answer.
+00:27:09
+
+So precision at K is much more important, whereas with an LLM, right, they have these really big context windows, maybe it doesn't really matter
+00:27:26
+
+That the top answers are close to the beginning.
+00:27:34
+
+Is that… hopefully that analogy kind of sticks, or that thought exercise makes sense.
+00:27:38
+Hamel Husain
+
+Yeah, it makes sense, and one thing to highlight to people is there is a precision recall trade-off.
+00:27:43
+
+in the room are nodding their heads. Basically, like, you always trade. There's a tension between precision and recall. You always have to trade one for the other.
+00:27:51
+
+Just a thought experiment. If you wanted perfect recall, you would just retrieve all the documents, just all of them, and just say, look at all of them. That's 100% recall.
+00:28:00
+
+And then, like, precision is like, okay, well, you know, yeah, now you can't recall all the documents, you gotta get the, the, you know, you gotta get the ones right that you do recall. So, like, there's always a trade-off, and that is a product decision of, like, this precision recall trade-off.
+00:28:12
+
+And it's there everywhere in search.
+00:28:29
+Shreya Shankar
+
+Yes, really good flag there. Always there. In practice, you're going to be limited by the context window of your agent. You probably can't dump all the documents in your database. Maybe you can, if your database is small.
+00:28:32
+
+But yes, there's absolutely a trade-off.
+00:28:44
+
+I want to mention two more metrics, that are also more search-oriented, but are for more, you know, if you're building a more complex agent, it's probably good to know.
+00:28:48
+
+So, the first one that I'll mention… is… Mean reciprocal rank.
+00:28:59
+
+So, if you've heard of MRR, that's what this is. And intuitively.
+00:29:11
+
+Actually, first, let me say the formula, and then I'll say what the intuition is. And this is, across K queries, so this is across a set of queries. Or sorry, let's say Q.
+00:29:17
+
+So a set of queries. The formula is… 1 over Q, times…
+00:29:30
+
+I don't have my mass mode enabled, so…
+00:29:41
+
+This might be a little bit confusing, but we'll make do. The sum of 1 over R.I.
+00:29:46
+
+Okay, I'm gonna have to write… whoa.
+00:29:57
+
+handwrite that, where… RI equals rank of doc I.
+00:30:00
+
+Okay.
+00:30:11
+
+Actually…
+00:30:12
+
+Does this… does this make sense to folks who are, like… or should you want me to, like, actually write it up? Hamel, what do you think? Like, with the…
+00:30:14
+Hamel Husain
+
+Also, in the course reader, I…
+00:30:21
+Shreya Shankar
+
+Yes.
+00:30:22
+Hamel Husain
+
+you know, like, it's also, like, I would say for a lot of people, it's helpful, like, watch what Shreya's doing, and then, like, later on, get a spreadsheet out, and just play with it. So, like, what would it look like if it was ranked this way or that way? You know, we're talking about ranking now.
+00:30:23
+
+Which there was a lot of questions on, so just hold tight, and we'll tell you why MRR is interesting.
+00:30:40
+Shreya Shankar
+
+Yeah. So… MRR equals 1 is perfect.
+00:30:47
+
+And if I were to go back to my thing here, so intuitively, what MR is, is how far down
+00:30:51
+
+The list was, do you need to go To find the relevant… Doc.
+00:30:59
+
+And typically, people do this, you know, for the first
+00:31:17
+
+like, you can do this for the first query only if you want, but you can do this for all of… sorry, the first relevant doc if you want, but you can do this for all relevant docs. But the idea here is kind of what I said before, you don't want your first relevant doc to be really far down the list.
+00:31:21
+
+Does that…
+00:31:38
+
+into it, so you… you can… I would say that MRR is kind of a more fine-grained, nuanced metric. Like, you absolutely make sure you're doing… measuring recall at K.
+00:31:40
+
+Because then you have no hope. Precision at K is important, but can be replaced by this MRR, or mean reciprocal rank, if you want a more fine-grained measure of relevance.
+00:31:50
+
+And then the last metric, that I'll mention, which is also complicated, More complicated is called normalized Discounted…
+00:32:00
+
+cumulative gain.
+00:32:11
+
+And… D, C, G.
+00:32:17
+
+Okay.
+00:32:21
+
+And here, the formula is very complex.
+00:32:22
+
+So I'm not gonna put it on here, but I will put the intuition.
+00:32:27
+
+Which is, essentially, graded relevance. So, when you have… graded relevant.
+00:32:32
+
+Or, maybe not graded.
+00:32:44
+
+When you have varying relevance, A finer grained version.
+00:32:45
+
+of MR.
+00:32:55
+
+So that means, like, maybe, I don't know, certain docs are much more important than other docs to get.
+00:32:57
+
+I've really never seen NDCG at KK be very, very important for retrieval in RAG, specifically. Super important for search, for, like, Google search, but you're probably not designing Google search.
+00:33:05
+
+Yeah, I lost my train of thought, but hopefully this kind of makes sense. So, if I were to say.
+00:33:23
+
+you know, for everybody, a blanket prescription, make sure you're measuring recall at K, precision at K, also important. And then, if, you know, you are building a custom retrieval engine, and you need to make sure it's really, really good, and you, you know, your error analysis is still finding mistakes in retrieval, maybe look into mean reciprocal rank.
+00:33:28
+
+Or NDCG, but, you know, don't jump to NDCG. I'm just mentioning it here to you now, because sometimes, you know, people ask for it in the eval interviews, or, like, try to see if you know something about search, even though, in practice, it's really not as relevant.
+00:33:48
+
+And I guess I'm on recording saying that, but oh well.
+00:34:04
+
+So these are the four metrics, and I…
+00:34:09
+
+I encourage you to check out the course reader if you're interested in learning more about this. Hamel, anything that you think that I… I probably missed some stuff.
+00:34:13
+Hamel Husain
+
+No, I mean, so it's impossible to cover every single search metric. It would be a semester-long course. I'm serious. And I have textbooks here on the wall, they're just in search. It just goes.
+00:34:23
+Shreya Shankar
+
+Information retrieval.
+00:34:35
+Hamel Husain
+
+Just go into these, like, metrics.
+00:34:37
+
+The… so don't get overwhelmed by this, it's just important for you to know.
+00:34:39
+
+The most important thing for you to know is the precision recall trade-off.
+00:34:43
+
+That's underlying a lot of things, like that concept.
+00:34:48
+
+is very, very fundamental. And then, like, how you make those trade-offs, like, you're gonna think about that trade-off either way. Now, there's different nuances, like, do you care about ranking? Do you care about other things?
+00:34:52
+
+It really depends on what you're doing.
+00:35:05
+
+You know, there's a lot of things that get very nuanced into, like, your product.
+00:35:08
+
+But, again, don't get overwhelmed here, just kind of… I would recommend the focus on the precision recall trade-off, because it's gonna… like, you're gonna have to think about it.
+00:35:13
+
+As we keep moving.
+00:35:23
+Shreya Shankar
+
+Yeah, and another thing to mention is a lot of the LLMs, these agents, are really trained, to respond okay to low precision. Like, not great, but, it's a… on this recall precision curve that Hamel mentioned, you really want to get recall high.
+00:35:25
+
+More so than getting precision high.
+00:35:45
+
+Okay, so I will… don't worry, we will send this whiteboard screenshot to everybody, but hopefully this gives you a sense for what to care about and what to log. Oh, one good question that always comes up is, how do you feed this… how do you fit this process into error analysis?
+00:35:49
+
+And so here is my… here's our answer to that, which is, when you're doing error analysis, try to look for whether there's an issue with retrieval first.
+00:36:04
+
+Before kind of measuring what the… how the agent responded to it. And so for with that.
+00:36:15
+
+you can create these labeled data sets, or you can create synthetic data. So remember how we generated synthetic data around dimensions, and dimensions generate tuples, and so forth? So you could have dimensions around which documents are the ground truth documents, and then synthetically generate questions that target these documents.
+00:36:22
+
+And then you can compute this recall at K, or precision at K automatically when you're doing your error analysis.
+00:36:42
+
+Does that make sense to folks?
+00:36:51
+
+Hopefully so.
+00:36:53
+
+Yeah, so definitely, like, we also talk about synthetically generating documents, and questions that test retrieval in the course reader, so check that out.
+00:36:54
+
+Alright, so that was the first part around RAG.
+00:37:06
+
+Hopefully this makes people less scared about RAG.
+00:37:11
+
+And now I want to talk a little bit about, okay, evals, switch gears a bit. So, imagine you're in a world in which you've already built a taxonomy of failure modes, and now we want to think about how are we going to, turn these into test cases for our agent, and continually maintain or improve them over time.
+00:37:13
+
+So, here is the taxonomy that I came up with when I was doing all of the
+00:37:32
+
+I was doing the homework that we wrote after the lecture, and I did my error analysis, and then I came up with these failure modes. And so I don't… I won't go through any of them.
+00:37:42
+
+every… sorry, I won't go through each single one of them in detail, but, you know, hopefully this resonates with folks. You know, when you do your error analysis, you're going to come up with some taxonomy like this, and you're also going to be able to come up with some count or fraction of the traces that exhibit each failure mode.
+00:37:53
+
+Now, the first thing that everyone should know is that not all of these
+00:38:10
+
+Failure modes, right, should turn into an e-bout, much like LLM judge.
+00:38:16
+
+it's gonna be a lot of work to get these into good evals and maintain them over time. Like, the goal is not to have maximal number of evals in CI, it's to have, you know, around 30 evals, or 30 test cases that are very high quality, that you can consistently trust.
+00:38:21
+
+So, the first exercise that we typically do is just go through each one of these to try to figure out whether we should eval it or not. So.
+00:38:37
+
+And then the second thing is, if we are going to eval it, what is the right way to assess whether this is correct? This criteria is adhered to in an LLM response or not. So, for example, the first one.
+00:38:44
+Hamel Husain
+
+So are you gonna do one at a time? Yes. Maybe you should, maybe you want to quiz me. Maybe I'll, like.
+00:38:57
+Shreya Shankar
+
+That'll be fun. That'll be really fun.
+00:39:01
+Hamel Husain
+
+I haven't seen this, I haven't seen the slide.
+00:39:03
+Shreya Shankar
+
+Yeah, yeah. So, the first one is the one that we did in Lecture… 4 or 5?
+00:39:05
+
+Lecture 5, where we did LLM Judge. So, the reply includes information that the user didn't ask about.
+00:39:12
+Hamel Husain
+
+Yeah.
+00:39:21
+Shreya Shankar
+
+Eval or not.
+00:39:22
+Hamel Husain
+
+Yeah, I would say you need to eval. I mean, I already saw the answer, but… okay. I mean, like, I would say you need to eval because it's tricky, like, I don't know what, yeah, necessarily how to fix this. It doesn't feel… yeah.
+00:39:22
+Shreya Shankar
+
+Exactly. So eval yes, and then also LLM judge, or codebase Check. And this one's obvious, because we actually did an LLM judge for this.
+00:39:37
+Hamel Husain
+
+or policy? I would… mmm… yeah, I mean, like, LM Judgment, I would see, you know, like, can… is there a way I could do this with code? Like…
+00:39:45
+
+Somehow,
+00:39:55
+
+I'd have to know more, but… okay, I mean, like, everything else being equal, okay, good suit, judges sounds reasonable.
+00:39:57
+Shreya Shankar
+
+Yeah, I think maybe I need to do a better job of describing what this failure mode is, because it's really all those edge cases.
+00:40:06
+
+Like, it's not just fields or policy the user didn't ask about, but it was also, like, it's irrelevant information, basically. So…
+00:40:13
+
+I think that it would be very difficult. Yeah, so the next one, what do you think?
+00:40:22
+Hamel Husain
+
+Okay, exposes internal document ID? No, not… I don't… I don't think I need a judge. I could use a code base check. Oh, yeah!
+00:40:26
+
+I feel like I won a prize in a game show. So, yeah.
+00:40:35
+
+Amazing.
+00:40:39
+Shreya Shankar
+
+Yeah, somebody said Wiz regular expression shouldn't be a code-based judge. Yeah, that's what I mean by code judge. Alright, third one.
+00:40:41
+Hamel Husain
+
+Refund or cancellation executed without user confirmation?
+00:40:46
+
+I guess you could need an LM judge, but I'm not…
+00:40:54
+
+I would, like… maybe it's an engineering issue, like, it's obvious, and, like…
+00:40:58
+
+I need to redo my product so that…
+00:41:05
+
+It does… it, like, forces you into confirmation, like, with a widget or something, or, like, with, like, some more…
+00:41:08
+
+Like, I don't want, you know, like, maybe it's, like, not an LLM, like, maybe the only way…
+00:41:16
+
+To get a refund is with user confirmation, like, Push that into the… Into the… the product.
+00:41:21
+
+So, that's, that's what I…
+00:41:28
+Shreya Shankar
+
+Yeah, so, like, yeah, so, okay, so the options, maybe to clarify confusion for everyone, are don't eval it, just immediately try to fix the prompt, or, like, fix the product. Or the other option is, yes, we're gonna create an eval for it, and then we're gonna figure out whether it's best checked with codebase Check or LLM judge.
+00:41:30
+
+So, I think what Hamel says is pretty good.
+00:41:47
+
+So, another thing is we're gonna disagree a lot on a lot of these, and that's totally okay. It just depends on, you know, how prevalent the failure mode is, how difficult it is to fix in the product, or like,
+00:41:51
+
+So, I put code check here, because I imagine if this is a persistent issue, maybe we want an eval for it. And then the second thing is that we probably can do a code-based check, because user confirmation is something that can be checked via a regular expression, as well as a refund or cancellation. So that's why I put code check.
+00:42:02
+
+Again, there's no one correct answer.
+00:42:22
+Hamel Husain
+
+Yeah, it makes sense.
+00:42:24
+Shreya Shankar
+
+Yeah. The Bible said makes sense, what I said makes sense.
+00:42:26
+Hamel Husain
+
+This next one is kind of similar to me, it's like, okay, refund is complete, but tool returned queued. I'm like, okay, I can see, I can guess that the answer will be code check, but…
+00:42:30
+
+I would say, is it possible I can exit, like, if this is a chat interface, I want to almost, like, take the person into a flow that's not chat to show them the status of the refund, of the UI?
+00:42:40
+
+Because, like, I… like, yeah, wherever you don't need to use an LLM, just exit that modality and get into, like, because there's no.
+00:42:55
+Shreya Shankar
+
+Where you're a coach.
+00:43:05
+Hamel Husain
+
+Reduce the surface area, you know, when it's not needed of problems.
+00:43:05
+Shreya Shankar
+
+Yep.
+00:43:11
+
+I can't actually remember what I put in here, but yeah, code check makes sense because it's really similar to the previous one. In fact, an astute, you know, student would say, hey, maybe they should actually be in the same bucket.
+00:43:12
+
+And, you know, you're probably right. If I were to spend some more time on this, probably it would have looped these into the same axial code.
+00:43:24
+
+Okay, reply contradicts the tool results.
+00:43:32
+Hamel Husain
+
+Definitely LLM judge. That… that… oh!
+00:43:36
+Shreya Shankar
+
+Oh!
+00:43:40
+Hamel Husain
+
+Oh This is a…
+00:43:40
+Shreya Shankar
+
+Good one.
+00:43:43
+Hamel Husain
+
+I was so overconfidently wrong.
+00:43:43
+Shreya Shankar
+
+I'll tell you why, I said KoCheck, because I figured you could do a string match between any tool result and, like, make sure that there's, like, a Jacquard similarity overlap between the tool result and what the judge said in the reply.
+00:43:45
+Hamel Husain
+
+Okay, I like it. Yeah, if you can find clever ways to go check, you should always do that. Yeah, you should always try.
+00:44:00
+Shreya Shankar
+
+Yeah, we're… hopefully people are getting the sense of, you know, there's no one correct answer, and then try to index on code check if you can. If not, use an LLM judge. Oh, sorry, sorry, sorry.
+00:44:07
+
+I leaked the answer. What do you think about the next one?
+00:44:19
+Hamel Husain
+
+Oh, I didn't see it, I was looking at the chat. Redundant policy lookups before answering…
+00:44:24
+
+That one seems, like, redundant. What does redundant mean? Mmm…
+00:44:30
+Shreya Shankar
+
+We had a failure mode, when we were doing error analysis, where there was just, like, so many tools called. Sometimes the same tool is called multiple times.
+00:44:37
+
+Or looking for policies was called multiple times.
+00:44:45
+
+But I didn't need to.
+00:44:49
+Hamel Husain
+
+Smells like it could be a code check, potentially, but… yeah, I don't know.
+00:44:50
+
+You might need some semantic reasoning to know if it's, like, really, like, necessary.
+00:44:55
+
+My…
+00:45:01
+Shreya Shankar
+
+Yeah.
+00:45:02
+
+So, I, spoiler alert, did this, myself, and I found that if you add an instruction to the prompt, not invoke so many tool calls in search.
+00:45:02
+
+It… somehow I don't see that error in error analysis anymore.
+00:45:13
+
+So again, like.
+00:45:17
+
+Yeah, if you can, if you feel like there's a way to fix the solution with a very low-hanging fruit, like just a prompt instruction, or add another example, or, like, fix a bug in your tool code or something, do that first. Don't even bother making the eval.
+00:45:19
+
+Forgot budget or preference from an earlier turn.
+00:45:34
+Hamel Husain
+
+I don't… I think that's a… it has to be a LM judge, like, I don't really see how…
+00:45:39
+
+Interesting.
+00:45:46
+Shreya Shankar
+
+fix the prompt. Actually, I agree with you when you say, it's just because I…
+00:45:47
+
+found that if I…
+00:45:53
+
+prompt, instruct, like, you know, remember the, like, any important fields, such as budgets, or, like, user preferences, make sure that your final response adheres to them. And I found that the agent reasoned its way to do that, but…
+00:45:55
+Hamel Husain
+
+Yeah, there's some art in this, because, like, okay, like, what you're saying is you intuited that, like, you can easily fix this problem?
+00:46:10
+
+And you're not gonna have to iterate on it a lot.
+00:46:17
+
+and you're like… you're like, oh, like, this is so stupid, like, I need to fix my prompt, and I… you have, like, some high confidence that you can fix it, and you've done some math in your mind, knowing…
+00:46:20
+
+like, how much, like, the effort of a judge versus, like, your experience with this application, and you're like, hmm, okay, like, you know what, I'm gonna fix the prompt, like, this judge may not be worth it, which is kind of…
+00:46:33
+
+It's something that takes experience.
+00:46:45
+Shreya Shankar
+
+Yeah, and the other thing I'll add is, like, I always timebox my, like, quick fixes. Like, if I can't do it within an hour, I'm like, I'm just gonna make an eval for it, and, like, hopefully my automated… my recursive self-intelligence or whatever, my auto-research is gonna improve on it for me.
+00:46:47
+
+Okay, so these last three, I think that, It doesn't… it's…
+00:47:06
+
+there… the first thing I'll say is just a 3% prevalence, means that this only occurred once or twice in my IR analysis, so, you know, don't index too much on it, but…
+00:47:12
+
+If, you know, there were higher prevalence, I would think about, okay, if I want to have a judge or not.
+00:47:25
+
+Turns out for ceramic storage return for a JAM query, I was able to fix this by simply increasing K by 1. I… I typically don't…
+00:47:32
+
+I don't recommend that people mess around with, like, increasing K for one particular failure mode or not. Use your judgment there, like, if you're in the really early stages of building a product, then, yeah, maybe you can experiment a little bit more with the K that you recall, but not later on.
+00:47:46
+
+Product listing without photos, something Hamel mentioned. So, again, this is something that you can fix the prompt for, or you can fix the application, not just the prompt. And then there was one thing that we highlighted. I completely understand your frustration on a neutral question, which we didn't like.
+00:48:06
+
+And again, this is… could be a prompt fix if you say, if you have, like, blacklist phrases that you don't want it to exhibit. However, what I'll say is,
+00:48:23
+
+Sometimes this failure mode can actually be a bigger,
+00:48:34
+
+a bigger failure mode of, like, don't use LLM-isms, where it's like, oh, like, you're totally correct, or, sorry about that, or I completely understand your frustration, so maybe you want to have a category for that, and maybe that is something you would evaluate with an LLM judge.
+00:48:39
+Hamel Husain
+
+And you might be reading this slide, and you might think.
+00:48:56
+
+Why the hell did we have fix the prompt on here? Are you telling us that we don't need to do
+00:48:58
+
+This is an evals class, like, you're telling me not to do an eval, telling me just to fix the problem. Like, that feels wrong. Like, why are you… why are you saying that? And the reason we're saying that is because there's no… we don't want you to get so eval-pilled in the wrong direction that you end up wasting your time.
+00:49:04
+
+Everything is a judgment call, and that you have a limited time.
+00:49:23
+
+and resources available, okay? Like, it sounds like you want to eval everything, like, in, like, sort of, like, in an academic sense.
+00:49:27
+
+Yes, like, for this redundant policy lookups, or for forgot budget.
+00:49:37
+
+How do you know that that error won't come back?
+00:49:41
+
+Like, it sounds like you won an eval. However…
+00:49:44
+
+In reality, you have to make a judgment call, because remember, the eval isn't free, because we're gonna show you… we can keep talking about, like, how you do this LM judge thing.
+00:49:48
+
+And… Yeah. Yeah, it takes time. It takes time.
+00:49:57
+Shreya Shankar
+
+It might not work.
+00:50:01
+Hamel Husain
+
+Yeah, and so everything is a cost-benefit trade-off, and what we want to, like, instill upon you is, like, okay, you will, after you practice this a few times.
+00:50:01
+
+you'll get this intuition of, like, okay, when should I do an eval and when should I not? That's what we're trying to sort of simulate a little bit here.
+00:50:12
+Shreya Shankar
+
+Yeah. And then people ask, like, how do you know if your prompt fix worked? Do you need an eval? Well, one thing you can do is do another round of error analysis. Regenerate your traces, look at your traces, and see if you can observe the failure mode. If you don't observe it at all, in, like, 200 traces reviewed.
+00:50:20
+
+Then, I mean, what I would say is just, great, it's not there, move on.
+00:50:38
+
+And if you do observe it, then where it's like a pesky and persistent issue, like, that's what I said around time boxing, how much time you spend trying to immediately fix this issue. For example, if, like, an hour… two hours later, I'm not able to fix it, then I'm like, okay, whatever, I'm gonna make an eval for it, because I'm too pesky.
+00:50:45
+
+So yeah, like, you know, we're not in the business of saying everything you do should be gated by, like, really, really rigorous evals. The hope is that, you know, you take this
+00:51:03
+
+these ideas and concepts and apply them when they make the most sense, but don't, you know, arbitrarily get lost in the whole pedantics, and as a result, you know.
+00:51:14
+
+you're not able to make any progress on your product. That would be bad.
+00:51:26
+
+And you can really go down the deepest rabbit hole in the world with this exercise. There's no one right answer. It is very uncomfortable, I think, from a software engineering perspective, because software engineering is not as much like this. Like, there's so much art here. But you'll figure it out.
+00:51:31
+
+All right, cool. So in the last, few minutes or so, I'm not gonna get deep into, you know, technical detail, or…
+00:51:50
+
+technical details, the course reader has this, but I want to talk about, you know, what are the components of an eval, what tools you might use to express them, so you can actually do the homework, and then go through the exercise yourself. So here are the components of an eval. So evals have one component, like the task, and a task here
+00:51:59
+
+Each task is an input, an initial state of the world, so I like to call that database state. A lot of other people, like the Harbor website and so forth, call it, like, the state of… the world state. But you can think of this as all of the tools that are needed with the… for the agent to effectively do, try to answer the question.
+00:52:19
+
+And then a rubric. And this rubric is essentially your, what comes out of your error analysis. So the different criteria that are important, and then some way to implement that criteria. That could be LLM judge, or that could be code-based check.
+00:52:37
+
+I typically like to set about 5 different tasks per failure mode. So a task is… we could think of it as, like, a request, a distinct request that the user has. So if you're trying to test this, this,
+00:52:53
+
+what was the… the reply includes fields or policy that the user didn't ask about. You're trying to test that failure mode, maybe you have 5 different requests that trigger it.
+00:53:08
+
+And there's two types of tasks that I like to set up. So one is more of a regression-style task.
+00:53:16
+
+Which is that I'm pretty confident that the agent can get right, but I'm thinking of this as a regression, like, in future iterations of my agent, like, if I change the prompt or add new tools, I need to make sure that this task is still passing.
+00:53:23
+
+And then the second type of task, which is not something we typically have in software engineering, but I'll call it capability tasks, and this is kind of
+00:53:37
+
+tasks that we know the agent is really, really bad at, and it's a reach goal for us. Like, if we improve the model, or a new model comes out, we try in our own model, we would hope that we can easily get these capability tasks.
+00:53:45
+
+to, 100%.
+00:53:59
+
+Hamel, you want to talk a little bit why… about why you think, like, it's important in your task set to, you know, not be able to get 100%?
+00:54:01
+Hamel Husain
+
+Yeah, so, okay, if your evals are returning
+00:54:11
+
+Okay, let's just… okay, if your evals are all passing, they're not telling you anything. It is making you feel good.
+00:54:15
+
+Don't ever do this.
+00:54:21
+
+Same thing, like, is with anything in life, okay? Like, if you have, like, a classroom full of students that are all getting 100% on a test.
+00:54:23
+
+You're not really, like, we're not learning anything collectively about, like, what people are struggling with, or whatever, like, it's not a good test. And the last kind of, like, you… and you don't want to feel good. This is not about feeling good. This is very, very different than software engineering. Software engineering is, like, you open a pull request.
+00:54:33
+
+you see all the green checkmarks, you feel amazing. You're like, I can merge it, yes, I finally passed all the tests.
+00:54:52
+
+Evals, it's like, you should be really upset if you have this eval suite, it's, like, all 100% passing all the time, that means, like, you're not improving. You don't know what the next, sort of, challenge is.
+00:54:59
+
+Yup. And if… If your feeling inside is like, well, you know, like…
+00:55:11
+
+Yeah, like, I've already passed all these challenges. I would challenge… I would say to you.
+00:55:19
+
+think bigger. Maybe, like, your product can do more, can do better. You know, and so, like, yeah, always have challenging evals that you don't necessarily know how to fix yet.
+00:55:24
+Shreya Shankar
+
+Yeah, I mean, some of your things that you observe in error analysis are going to be challenging evals, and it's good, you should have those,
+00:55:38
+
+I think it's helpful to also separate, like, the regression from capability, so that way you, you know, like, don't merge a code change
+00:55:46
+
+Unless, like, your regression ones pass.
+00:55:54
+
+That's something I have learned in, like, recent months. It's useful to have.
+00:55:58
+
+Let me drill down a little bit into the rubric part around each task. So the rubric is concretely how you check whether the agent passed
+00:56:03
+
+the task or not. And this goes back to either having a code-based check or programmatic verifier, or having LLM judges, and you can think of a rubric as just a function that just returns pass or fail.
+00:56:11
+
+So, it can really be anything. It can check for many different criteria, it can have many different LLM judges. All we say is that in the LLM judge, make sure that it's checking a binary criteria. So, one distinct binary… one distinct LLM judge for a distinct binary criteria that needs to hold.
+00:56:25
+
+One thing I'll add here is if you look at the more recent, benchmarks out there, like Automation Bench, for example, some of these tasks in that benchmark have, like, 100 plus
+00:56:43
+
+criteria in the rubric, which is a little bit crazy. I'm not really sure why, so I… my rule is, like, I like to have around 10 to 15 maximum, and that directly comes out of my error analysis.
+00:56:57
+
+Right? So, don't have too many. If you have too many, then, like, you didn't do a good job axial coding.
+00:57:13
+
+And that's really only something that has come up, I think, over the summer, really, where it's, like, I feel like agents are generating these tasks and environments, and, you know, they're generating these really big, complex rubrics, so just be careful and mindful of this, and make sure you're fully in the loop.
+00:57:20
+
+Alright, I like to use Harbor to specify my tasks. It's an open source framework for defining and running agent evals, and you can check out the link, I'm not gonna go…
+00:57:37
+
+I don't know, explain all the code, but at a high level, each eval case is a directory. In this case, it'll be through, like.
+00:57:47
+
+E001, unconfirmed, right? So if you've worked with Terminal Bench before, that benchmark, this follows the same structure. So, one of these is a task, and there's 3 different files there. There's a task.tomal file, which has some metadata in the state of the world.
+00:57:56
+
+There's an instruction.md file, which is the user request, or the initial request that the agent receives. And then there's this rubric, and it's known as test.py in Harbors format. And it's basically a Python function, nothing fancy.
+00:58:16
+
+There's utils and Harbor to just be able to run all of the tasks.
+00:58:32
+
+If we were to really walk through every single component of it, the total of the task looks something like this.
+00:58:36
+
+I won't go into a detail, but, you know, you want to just make sure that you have these components. There's a failure mode component, so these are, like, the metadata, for example.
+00:58:44
+
+There's… this… I… I personally like to denote here, whether it's a capability or a regression.
+00:58:57
+
+There's other inputs that you need for the task.
+00:59:03
+
+The instruction .md looks something like this.
+00:59:07
+
+test.py, again, a Python function. I'm just going through this pretty fast, so I think you can feed this into your agent, or you'll encounter this when you're doing the homework.
+00:59:12
+
+And then the run judge is going to actually run your LLM judge rubric. So this is the rubric that you came up with from the last homework, or if you pulled the patch.
+00:59:24
+
+You can use our rubric that we came up with. And it's really important here. I remember last time I talked about having the, true negative rate be high, or sorry, true failure rate.
+00:59:35
+
+Now with Harbor, right, like, if we're trying to run this in an automated way, you don't want there to be false positives, because that's going to be really annoying to try to fill Clyb on.
+00:59:46
+
+So from…
+00:59:58
+
+So, okay, so that's the components of a task. You can use harbor as a tool to express them. Now what are the metrics, right, that we're trying to measure out of that harbor run command? So, this is also different from software engineering, because the agent is very non-deterministic, right? So the same input, right, if you have multiple different runs of the same task.
+01:00:01
+
+you can have some fail and some pass, which is quite annoying, so we're going to want to do multiple trials. There are two different metrics that the literature and that folks typically use for measuring, pass rate. So the one that I really like to use is called PASS at K.
+01:00:21
+
+And you can think about this intuitively as a probability that at least one of K runs passes. So if I have, N trials, so n runs are observed, and C of those pass.
+01:00:37
+
+Pass that K was the third thing.
+01:00:52
+
+is a probability that at least one of the K runs passes. And so this is the formula here, C is a combination function. You know, you'll read about it in the reader, and then you'll work through in homework, if you don't know what that is.
+01:00:55
+
+But why is pass at K important, right? It's because these agents are non-deterministic. You don't just want to run one trial. You want to run many trials, and you want this metric to give you an intuition of, okay, what is the probability that
+01:01:08
+
+one of K runs passes, rather than did they pass or not, some, like, Bernoulli variable. And then pass to the power of K, or pass caret k, I don't know.
+01:01:22
+
+how people say it, really. This metric was introduced by the TAL Bench paper, which are folks from Sierra, if you've heard of Sierra, the agent company. And this is… there's a metric more around reliability, so that means the probability that all K runs pass,
+01:01:34
+
+If you're trying… not just at least one of K. So…
+01:01:53
+
+I don't love this metric, because I just honestly think it's impossible to have all K-Pass all the time, like, you end up having such a low metric, but, you know, up to you, up to different people, depends on what your application is. You know, if you're building self-driving cars.
+01:01:57
+
+it's quite different than if you're building cartwheel, so do what is most reliable.
+01:02:13
+
+I…
+01:02:22
+
+I know that we're running a little bit over time, so maybe I'll skip this Talibench example here, but this was just an example to show you, you know, as K increases, pass at K should increase, and at some point, it's going to saturate. And past caret K typically decreases.
+01:02:23
+
+for mathematical reasons, you know, play around with the formula, and you'll see why. And at some point, I think the key thing to know here is at some point, pass at K saturates. And, yeah, you don't need to run hundreds of trials to figure that out. In my experience, I've…
+01:02:41
+
+seen it saturate at, like, 20. 10 to 20, really.
+01:02:57
+
+Okay. Where am I? Okay, so the last two slides, I'm really sorry we're running over, we got very excited on the interactive activity.
+01:03:03
+
+But now you might be wondering, okay, we talked about Harbor, expressing an eval, expressing it as tasks, we talked about the pass at K metric, and now how does that, you know, feed into my overall engineering lifecycle? Well, you can just feed it into your continuous integration component. So…
+01:03:13
+
+generally for me, I have CI be a suite of 30 or so tasks that runs on every pull request that actually changes the agent in some way.
+01:03:31
+
+Some regression tasks, some capability tasks. They have… they cover the failure modes discovered in axial coding, and those are encoded as rubrics as well.
+01:03:42
+
+And I continuously add new tasks as the agent changes. So when I'm doing weekly error analysis here, sometimes I will add a new task, or I'll remove an old task, whenever I see new failure modes
+01:03:52
+
+arise. So I think it's important that you're always, you know, changing. It's much more dynamic than, say, in software land, where you are kind of adding to your test set over time, or not always, like, adding new tests if you're just changing existing functionality.
+01:04:06
+
+Going back to Hamel's point, the suite should never be 100% pathing, right? You want… you don't want to have a test that every… all students
+01:04:21
+
+or passing, that means they're probably… you're not testing the right things. So have this… I don't know, Hamel, do you have, like, a number that you like to go for here?
+01:04:30
+Hamel Husain
+
+Yeah, I mean, I'd like to see at least 30%.
+01:04:40
+
+maybe 50% failing. I'm… I'm aggressive, so, like, that…
+01:04:43
+Shreya Shankar
+
+You're.
+01:04:47
+Hamel Husain
+
+That would make more people feel uncomfortable, but, like, okay, at least 30%. I want to see, like…
+01:04:47
+Shreya Shankar
+
+I would say 30%, I don't know about 50%. I mean, for me, it says, like, 20-30%.
+01:04:52
+
+But, yeah, up to you, up to your application, no hard and fast numbers.
+01:04:57
+
+Yeah.
+01:05:02
+
+Okay, so…
+01:05:06
+
+bringing us to the last slide, homework 6 is all about, you know, trying to build… it's not about RAG, but it's about trying to build evals, put them in harbor, and evaluate the pass at KK metrics.
+01:05:08
+
+create at least one regression case and one capability case. You'll be looking at this pass at K metric and really deeply understanding that, and
+01:05:23
+
+As an aside, we have a bunch of stuff coming up, so a bunch of guest lectures,
+01:05:33
+
+Some of them have already passed yesterday, but also, we have a bunch of office hours coming up, study groups, another lecture on Saturday, and the updated version of the course reader is also up, and it's the same link, so we've added Module 3 into there around CICD.
+01:05:39
+
+And I realized a bunch of chats have come up in the Zoom, and everyone was like, oh, you move too fast, so I apologize for that.
+01:06:00
+
+We'll talk about it more in office hours come if you have questions, and feel free to ask in Discord.
+01:06:08
+
+Hamel, anything else that…
+01:06:16
+Hamel Husain
+
+Yeah, I would say, okay, this particular lecture, I know people found it went really fast, we covered, like, a lot of ground, a lot of information.
+01:06:18
+
+It feels that way because there's a lot of rabbit holes. Like, it's impossible to, like…
+01:06:26
+
+Teach you all of search, you know, and things like that.
+01:06:31
+
+Ask us questions in the Discord.
+01:06:36
+
+Check out the homework, and also come to office hours. If there's a persistent
+01:06:39
+
+part of confusion, I'm happy to do a session, like, a special session on it. But, like, please come with your questions, because, like, we want to see what questions you have. And we're happy to, like, go deep into anything you want. But, like, take a look. It takes some time to, like, process some of this information.
+01:06:46
+Shreya Shankar
+
+Yep.
+01:07:05
+
+Makes sense. And this is all, like, really fresh off the press. We've not talked about this, in previous versions of the course, because really, I think, like, only in the last few months has this practice been matured. So, yeah, there's a lot to discover.
+01:07:06
+
+Okay.
+01:07:24
+
+That wraps up today, and see you very soon in Office Hours!
+01:07:25
+Hamel Husain
+
+Alright, see you there.
+01:07:30
+
+It's in about 24 minutes.

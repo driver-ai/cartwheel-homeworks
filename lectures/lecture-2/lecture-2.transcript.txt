@@ -1,0 +1,1316 @@
+Shreya Shankar
+
+Okay.
+00:01:10
+Hamel Husain
+
+How's it going? Can you hear me?
+00:01:12
+Shreya Shankar
+
+Yes, sorry, I was just getting a water.
+00:01:14
+Hamel Husain
+
+Oh, cool.
+00:01:16
+Shreya Shankar
+
+Alright, let me share my screen.
+00:01:19
+Hamel Husain
+
+I'm gonna let people in, and I have the table view.
+00:01:21
+
+Waiting room.
+00:01:25
+Shreya Shankar
+
+Excellent, excellent.
+00:01:26
+
+We should now be in less than two slides, but please tell me if you don't see them.
+00:01:30
+Hamel Husain
+
+Yeah, I can see it, yeah.
+00:01:39
+Shreya Shankar
+
+Alright, let's give people 15 seconds. I don't know.
+00:01:41
+
+Hope everyone is having a good week, and post-Labor Day. I always forget about Labor Day, and I find out Sunday, so…
+00:01:46
+
+Oh, well.
+00:01:55
+Hamel Husain
+
+You labor on Labor Day?
+00:01:57
+Shreya Shankar
+
+I labor on Labor Day. That's okay. I enjoy.
+00:01:58
+
+laboring, I guess.
+00:02:03
+
+Thank you.
+00:02:05
+
+Alright, let's get started. So, welcome everyone to Lesson 2. Today, we're going to be talking about tracing, and also building a viewer for your traces.
+00:02:06
+
+Before we get into this, just a couple of things from last time. I have 3 things that I want to share with you from my… from our meticulous perusing of the Discord.
+00:02:17
+
+One thing, last time we talked about spec-driven development, and I think there was a very good question in the Discord around when should we be using specs to do development? How often should we be updating the specs?
+00:02:27
+
+Can we ask Claude to build the specs? Right, just some more clarity around this, because honestly, there isn't that much information online. Arpana asked this question. I really liked
+00:02:40
+
+Sorry, Hamel, I'm gonna call out Isaac in this thread, even though I know you also have an answer, but I really liked Isaac's answer here, which is kind of acknowledging the complexity of the kinds of tasks that you're going to use agents for. Isaac says, you know, when I have something complicated that I really need right, I use a spec.
+00:02:52
+
+I also use voice transcription to help me build the spec, so voice transcription, then get organized into a spec, which is a very interesting idea. I know Isaac is quite voice-pilled very, very successfully, and I'm just not… I haven't… I'm a boomer here, I haven't switched to using voice, but it's… it seems very useful. And then kind of talking about how he uses specs, right? So it's not super formal, but it's a very clear description of what I
+00:03:10
+
+want and know. It can be very detailed, depending on how much I know. It can be very short. Often there will be significant reorganizing and stuff. As I go, I will edit and refine to,
+00:03:35
+
+And he ends up saying, you know.
+00:03:48
+
+My main advice is if the model starts doing something stupid and it's frustrating, take a step back and change your approach in a new context window, rather than to convince it to be back on track. So, again, acknowledging the complexity of your application. It's useful to have a spec as a higher order level of abstraction, or something that you can work with, or you and your team can work with, and then have agents be writing the prompts, and sometimes they're not going to do it perfectly.
+00:03:52
+
+So hopefully that clarifies, you know, should I always write a spec MD when building my agent? Answer is no, don't always do it, but if you're building a complex agent when you know it's going to evolve over time and you're doing it with multiple people, it's a good shared representation between you and your coworkers.
+00:04:17
+
+So that's, Spectrave and development. The second thing that I thought that was great that came out of Discord is don't blindly trust your coding agents.
+00:04:35
+
+So we've revamped all the homeworks in this course, as some of you may know, and they've gotten to be a lot more complex, in part because we expect coding agents to be able to help you do the homework, either both walk through it, as well as do a lot of the implementation work for you.
+00:04:44
+
+I think Conor had a good point about the fact that coding agents tend to just edit a lot of files, like, they're very horizontal or lateral. Sometimes you might see a diff of 30 plus files, and that might not be necessary, so just read the files that are being edited, make sure you understand it, and try to figure out, okay, is there a way you can minimize the surface area? Don't try to edit everything. And Eleanor here has a pretty good
+00:05:01
+
+point around you don't really need to use Ultra. It tends to be ridiculously proactive, which I did not know, but I trust Eleanor with this. I don't think I'm fully up to date with 5.6 Astra Ultra.
+00:05:25
+
+So… Anyways, you can check this one out in the Discord.
+00:05:38
+
+Last but not least,
+00:05:42
+
+The other thing that was in the Discord is a thread of Homework 1 videos. So, here are a couple that I just want to highlight pretty briefly. One is a video from Angela, and Angela actually has two videos. One is actually the whole video of the homework, and the other one is a video on overcoming confusion in Homework 1, which I think was a big thing. You know, it was a lot. There's a lot going on, there's a new codebase.
+00:05:45
+
+there's a lot of stuff to implement, especially if you're not an engineer. So I think this is an awesome video. Again, we'll send these slides out, and so you can check them out. I'm not gonna play them for you here in class, but it looks something like this. This is really great. I really love how Angela kind of took a step back and figured, okay, what is… what are we trying to do with this? So getting oriented is its own stage, setting up.
+00:06:10
+
+kind of testing with conversation, all throughout testing with conversation. So please check out this video if, you know, you want to get started on the homework, but maybe it's a little bit overwhelming to start with. I think this is a fantastic video for it.
+00:06:33
+
+There's also a number of homework videos that… I went to sleep last night, and then I woke up, and there's even more that have come. Ancore is one video that I want to highlight. I'm gonna try to highlight a video in every lecture. Probably you can't hear it through me.
+00:06:47
+
+listening to it in my AirPods, and you can check this out on your own time. One thing I really like in these videos is that people are really walking through some of the data in the databases. So here, Ankur has the data open in Sublime, walking through, okay, what are some of these orders looking like, what are some of these requests looking like? I highly encourage you to also be doing this.
+00:07:02
+
+Cool.
+00:07:23
+
+So, with that, you know, kudos to everyone who's made it through Homework 1. You don't need to have done Homework 1 to get something out of today's lecture. They are optional, you know, they are really just if you want to eke out everything you can from the course, you know, go through them. I also want to highlight that we have now
+00:07:25
+
+added prompts for coding agents at the beginning of all of the homeworks that come out, which I'll show you at the end of this lecture, and so you can use those prompts to interactively go through the homework with Claude Code, or Codex, or your agent of choice.
+00:07:44
+
+Hamel, is there anything I'm missing before… We…
+00:08:00
+Hamel Husain
+
+Yeah, no, I mean, so feel free to ask each other, there's different kinds of people in the class, so, like, Angela is a PM, she came not, you know, not necessarily with a technical background, and she figured everything out. And if you're kind of in that same
+00:08:05
+
+kind of background, you might want to check out her video. Ankur is a data scientist.
+00:08:22
+
+So, he likes to focus on the data, and that's really great. And so check out his video. I actually work with Ankur at Airbnb. Really talented guy. You should definitely talk to him, if you're, like, looking at the data, or, like, looking into databases.
+00:08:27
+Shreya Shankar
+
+Awesome.
+00:08:43
+
+Yeah, and we have a number of help sessions that we're going to put on the calendar, have already put on the calendar, to help people go through the homework. Antaripa is really leading a bunch of efforts there, so…
+00:08:44
+
+Great. Alright, so what are we gonna do today? So, first, we're gonna talk about tracing. So, first, the motivation for tracing.
+00:08:57
+
+Then we're gonna talk about, you know, instrumenting your codebase to actually capture the evidence or the traces for each request.
+00:09:05
+
+And then we're going to vibe code a viewer so we can review more runs or traces much more quickly. I'll show you LangFuse, which is the stack that we're going to use, LangFuse and OpenTelemetry, which is the stack we'll use in this course.
+00:09:11
+
+So here's a motivation, right? If you already did the homework one, totally fine. If not, what you'll find is that maybe there are some failures here and there. So maybe, for example, here's one of the requests that is in my copy of Homework 1,
+00:09:26
+
+Where are the wool socks that I bought from Arbor Knits? I can't find the order number, so maybe the customer is somebody who sends a shopper, somebody who sends this request to Cartwheel, which is our massive, you know, shopping agent platform.
+00:09:42
+
+And our agent tries to respond to this. So maybe the agent says, okay, what I'm gonna do is I'm gonna call this findOrder tool, and then it's going to show me the tool, which, of course, as a human being, is very difficult to read, but agents are quite good at reading and making sense of this.
+00:09:56
+
+And then the agent might say, okay, I found your order, this is great, you know, here's the item, it was delivered, it looks like the order has already been delivered, okay.
+00:10:15
+
+All of this makes sense, but if you dig into it a little bit.
+00:10:24
+
+Right, maybe there's some issue or error here with how the agent that we made responded to the customer. So perhaps, you know, there's an idiot… there's an inconsistency in the data in this particular example. So the delivery is recorded two days before the shipment, and the agent's answer doesn't flag this inconsistency. Which maybe if we're the people building this agent, right, we want the agent to
+00:10:30
+
+proactively be like, hey, yeah, it was delivered, but maybe we have something wrong, or maybe it's a different version. I don't know, like, there are a number of reasons. And you might wonder, okay, like, Shyanne Hamelark is totally making this up, right? Like, this doesn't happen in practice. No, it turns out data quality issues happen a lot in practice.
+00:10:55
+
+all the time, agents are extremely bad at handling or reacting to data quality issues, and actually one of the number one issues that I see with people building agents is the agents didn't respond to the data quality issue in the way that the developer or PM intended.
+00:11:15
+
+number of reasons that the dates might have conflicted here. You know, maybe there are separate point-of-sale systems, maybe the user asked for a replacement shipment, or they might have, I don't know, like, maybe a developer did some manual edit or migration. The point is that there's a number of reasons it could occur, and when you think about this, right, we want the agent to say something different, right? We want to say that.
+00:11:31
+
+Hey, you know.
+00:11:55
+
+maybe something is off here, we want our agent to be proactive and say, okay, maybe would you like me to ask support to verify it? So in this case, you know, suggest a new response, you know, not just.
+00:11:56
+
+Whatever it said in the previous slide.
+00:12:08
+
+And then if you actually look at our spec, that is from…
+00:12:11
+
+that's in the code base, we actually want the agent to, you know, state when required information is missing or incomplete, right? So the agent did not do the behavior that we wanted to in the spec.
+00:12:15
+
+So hopefully this is good motivation for, you know, there are going to be failures, and now it's hard to figure out what these failures are, so how are we going to do this? How are we going to help ourselves catch these failures as we serve a lot of traffic?
+00:12:26
+
+To do this, we're going to trace our system. So I'll get into what trace means in a bit, but first, if you actually Google what is a trace, you'll… first, you'll find Hamel's blog post, but second, if you read Hamel's blog post.
+00:12:40
+
+it… terminology is extremely inconsistent in the industry. I think that this blog post is great in that it highlights a blog post from one of our former students, Alex.
+00:12:53
+
+Who basically built this spreadsheet on every single LLM tracing provider, and the different definition of trace and sub-definitions and whatnot.
+00:13:05
+
+So what we're gonna do in this course is anchor on a specific definition.
+00:13:15
+
+So, first, let's go up a level, a request, I'll define as one customer message, and all the work our agent does to respond to it. And then, a trace is essentially everything that happens
+00:13:20
+
+that's responded to… that's responding to this request. And a trace is essentially a collection of spans.
+00:13:35
+
+A span is… you can think of it as a single turn, so maybe an easier way is to just visualize this diagram here. So there is a roots fan, which is the first message, or the first,
+00:13:42
+
+request the trace, and traces are… the spans are hierarchical, so root spans can have children spans, so maybe the root span has a list of all of these child spans.
+00:13:56
+
+The model chooses a tool being one child's fan, the second turn being the tool actually executed. The third child's fan is that the model writes the answer.
+00:14:07
+
+And every one of these fans.
+00:14:17
+
+has attributes. Okay, so a promised attribute is the last term you need to know here. Attributes are… think of it as metadata about each of these spans, that's going to help us in debugging. So maybe that's the model name, maybe that's the tool name, and there's more that I'll get into.
+00:14:20
+
+All of these definitions are taken from OpenTelemetry, okay? So, I think that OpenTelemetry has been around for a while, right, for observability standards, and they have, in the last year or so, released GenAI conventions, so this is coming from there. So every span.
+00:14:36
+
+has start and end times, which will be helpful for logging and viewing. And then attributes are, as I mentioned, key-value pairs on a span, so metadata that is useful for us when understanding what happened in the trace. So I'll show you some examples so that it's a little bit more sensible. So for example.
+00:14:54
+
+maybe you have this, GenAI tool… sorry, this tool span, and it might look something like this. So it has its name, right? This is what it will be called. There might be some context here, so there's a trace ID, so the trace ID links all of this, spans in the trace.
+00:15:14
+
+It has a parent ID, so maybe the root span is its parent. It has a start time and end time.
+00:15:32
+
+super helpful for us whenever we're going to be debugging. And then it has the extra attributes, which, in this case, I just put the tool name, but you can also imagine that there are going to be more, IDs, sorry, more attributes. So, in the case of tools, actually.
+00:15:39
+
+There are tool arguments, so inputs to the tools, and then there are tool results, so whatever the tool output. These are also things that we really want to log.
+00:15:56
+
+There's a bunch of these attributes, and it's very overwhelming.
+00:16:06
+
+So, actually, I have this slide here that lists all of the attributes that I have particularly found useful, and so hopefully you can just feed this into a quoting agent, or send this to engineers or something if…
+00:16:10
+
+if you want, like, someone else to implement this. But all of these are something that I've definitely found useful, you know, things about the model, things about the tool. In OpenTelemetry, there's a difference between agent spans and model spans, which is highly confusing, but sometimes people do have that metadata where
+00:16:22
+
+They want to actually track this differently if they're doing an agent versus, like, a single LLM call or a pipeline.
+00:16:42
+
+And then, yeah, there's span type, chat, execute tool, invoke agent.
+00:16:49
+
+So the full General AIC… there's actually more than this, so you can check out this link if you're interested in more attributes.
+00:16:54
+
+And okay, so what is going to happen in today's… or sorry, in Homework 2, so this lesson's homework, is that we're going to instrument Cartwheel, which is our shopping platform and the agent that we're building for it. We're going to instrument it with tracing.
+00:17:01
+
+So, remember we used OpenAI Agent's SDK for coding up the agent?
+00:17:18
+
+To enable tracing.
+00:17:24
+
+we're going to use, LangFuse, and we're going to use some custom… we're going to use some connectors to actually automatically, you know, augment OpenAI SDK to log things in the correct format to LangFuse, and I'll show you how that looks like in a moment.
+00:17:26
+
+I just want to mention one slide here on, kind of, how I think about what to capture. So I know I showed you the hotel attributes on the previous slide, but if you had to, like, pick just a few, always capture
+00:17:41
+
+Model spans and tool spans. Having both is super, super necessary. Can't tell you the number of times people do not trace the tool spans, and then it becomes very, very difficult to debug.
+00:17:55
+
+Model messages could be helpful. They're less helpful to me than tool spans, but they're very helpful. And then arguments of the tools and the results. So don't just say, like, these tools were called, actually say what were the inputs and outputs of those tools.
+00:18:06
+
+And some people actually also get a lot of value out of instrumenting for… or logging the token usage as well, particularly if you're interested in tracking costs and figuring out what your most expensive agents are. So, open, like, GenAI OTEL, does have attributes for token usage.
+00:18:24
+
+I also like to instrument my agents to track application-specific attributes as well for each span. So, often, like, for… in our case, right, this might be the user ID of the request, the store ID. I really like to also log the prompt versions. Now, this is very helpful, because oftentimes prompts change in my agents a lot, and when I'm looking at my trace.
+00:18:44
+
+in blank views or a trace viewer, I want to know what was the prompt that produced this. And not just the text of the prompt, but also, like, can we link it to some version in GitHub or something? So that way I can maybe group all of the traces for a particular prompt version and see what happened.
+00:19:09
+
+And there's some more application-specific attributes if you want to log them. The reason that it's important to log them while you're doing tracing here also is so that you can do data analysis on your traces. So, again, right, which agent
+00:19:29
+
+Generated this prompt, or for a particular request, right, we might run 5 different prompts.
+00:19:45
+
+on that particular request, so get all of the prompt versions and all the traces for a particular user ID. I don't know, I'm making this up, but you can kind of see how this might be useful when you're trying to debug your agents, because everything is always changing under the hood when building agents, right? Prompts, tools, skills, like.
+00:19:52
+
+There's, like, a whole surface area here, and it's helpful to have everything in one place.
+00:20:10
+
+I cannot tell you the number of times people have tried to trace, and they… they have incomplete traces, right? So not only are they, like, missing tools, but they're also missing the application-specific attributes that they need to, like, actually go link that with what user called this, or… or so forth.
+00:20:16
+
+Hamel, I bet that you also have things that I'm missing here, or want to drill down on, you know, specific attributes that one should highlight that are common mistakes.
+00:20:32
+Hamel Husain
+
+Yeah, there's some questions in the chat, so, Katrina's asking, any guidelines on when you should instrument your app? Or is there any situation where it's not needed? So…
+00:20:45
+Shreya Shankar
+
+True.
+00:20:56
+Hamel Husain
+
+One thing I'll say is.
+00:20:57
+
+Okay, with coding agents, it's easier than ever before to instrument your app, so you should not be afraid to instrument your app, and capture this data. There's a lot of degrees of freedom here, so, like, if you're vibe coding your own personal tool or whatever, you don't need to necessarily…
+00:20:59
+
+instrument it. You know, you can…
+00:21:18
+
+you know, there's a lot… and you can also have… you can, like, write the trace out manually to a database if you want. Like, again, if you're just making your own prototype and you just want something quick and dirty, you want to just, like, output some JSON,
+00:21:22
+
+you know, but, like I said, it's easier than ever to instrument with the coding agent, so don't be afraid of it.
+00:21:36
+Shreya Shankar
+
+Yep. There's also a few other questions that I'll get to. So one logistics question is, I thought we were not supposed to ask questions.
+00:21:43
+
+here, ask them in Discord. All we… you can ask questions here, we just cannot promise we'll get to them because we lose them all here. So if you definitely want to answer your question, please, please ask in Discord. That's where we'll actually answer it.
+00:21:53
+
+And then let's talk… some questions about tracing. So, one is, you know, the difference between traces and spans. So here.
+00:22:05
+
+Like, spans are really the unit of work that you're going to…
+00:22:15
+
+instrument for, so when you actually are… or when your coding agent is editing your code base, to do the logging here, they're going to instrument at the span level, so every tool, every model turn, that's going to get logged. And then when we look at the trace viewer, which I'll show you in a bit, so one trace is basically just all the collections of spans associated with a user request. You…
+00:22:19
+
+I think people just say trace because root span is quite confusing. Yes, one trace has one root span, and then that root span has a bunch of child spans, but we're just going to use trace as kind of an easy, simple term to say, to refer to that root span that corresponds to one user's message.
+00:22:42
+
+Hopefully that clarifies,
+00:23:01
+
+this question about trace versus root spans. And then there's some questions around, open inference and open telemetry GenAI semantic, conventions. So…
+00:23:03
+
+all of the big tracing providers, or sorry, all of the big observability providers, like Langsmith and Arise and Braintrust and so forth, they all support OpenTelemetry, GenAI semantic conventions, like we're teaching in this course. There is a layer on top of that called Open Inference.
+00:23:15
+
+I think most people are also supporting open inference, but please correct me if I'm wrong, Hamel, or you have more up-to-date information on that. I just…
+00:23:35
+
+I don't want to tell everyone this, and then somebody is like, oh, actually, Provider X is not supporting it, so, I know for a fact everyone's supporting OTEL, so that's why we're teaching that.
+00:23:44
+
+Yeah. So, I think that is hopefully most of the questions that are extremely… oh, the last question is, do we collect all of the traces? So I'll say that having a partial trace
+00:23:55
+
+is not super helpful. And it's much better to
+00:24:11
+
+capture the entire trace. Kind of think of it as, like, an all-or-nothing phenomenon here, right? Maybe logging all of your traces is…
+00:24:16
+
+for some reason, like, it could be too expensive. I, I highly recommend logging…
+00:24:24
+
+100% of every single trace, and in the case that you simply can't, or you only can do, I don't know, a sample, like, that's okay. Just make sure you're logging 100% of every trace in that sample. Cannot tell you the number of times people have partial traces, and then can't accurately debug the failure. And they're like, oh, but I have logged something for every trace, like…
+00:24:28
+
+Yeah.
+00:24:50
+Hamel Husain
+
+I just want to say one thing here, is, okay, you might be thinking, you know what, I don't want these, I don't want this, like, these dependencies, I don't want, whatever, open telemetry, I'm just, you know, I'm just gonna do it myself.
+00:24:52
+
+I'm going to log my own… I'm just gonna, like, have my machinery, like, output a JSON file, and I'll just do it that way.
+00:25:03
+
+You might… you might be one of these people. I'm kind of like that, too, sometimes.
+00:25:12
+
+But…
+00:25:16
+
+like Shreya's saying, it's easy to forget to log something, and then you… you know, you feel like you logged everything, but you're like, oh, I didn't log this one thing. So the good part is, since you're using the OpenAI Agent's SDK, it's such a popular SDK that
+00:25:18
+
+There's a lot of… like, paved paths out there to instrumenting it. So, like, someone has already thought about
+00:25:33
+
+instrumenting it for you, so that you are capturing everything, so you kind of… you will… you can save a lot of time by doing this, like, you know, open telemetry with the SDK.
+00:25:41
+Shreya Shankar
+
+Yep, yep. No, I totally agree.
+00:25:54
+
+Alright. Oh.
+00:25:57
+
+There… good question around, is there such thing as collecting too much data and traces? So, for example, would we bloat an LLM's context window if we pass in all the trace information to evaluate an LLM response? So, I like this question because it highlights the fact that we should separate logging
+00:25:59
+
+from querying the logs. So, log all of your data, and if you're going to use, I don't know, LLM judges, or you're going to use other tools to evaluate these traces, that's fine, you don't have to feed the whole trace into that tool.
+00:26:18
+
+you can feed in a subset of that data. But the point is to have everything so that you can actually view it when you do need to go and debug particular traces.
+00:26:32
+
+Great.
+00:26:43
+
+Let's keep going.
+00:26:46
+
+So this was, again, to recap where we are, all about tracing, right? There's the hotel Gen AI semantic conventions for what to trace. We can find some existing off-the-shelf library to probably hook onto Opening AI Agent's SDK. In fact, you will do that in Homework 2, with your coding agent. It's called OpenLL Emma Tree, or some… I can't say it. I don't know if I'm saying it correctly or not, it's a funny name.
+00:26:48
+
+But you'll be using that.
+00:27:13
+
+Log all of your traces, log as much as you can, only in the case where, you know, you're just running into too much data logged, or you're running at a scale that is just massive, maybe it makes sense to log fewer traces. There is… there was a comment around logging dev and not logging prod,
+00:27:15
+
+I… in my experience, you know, if you can log prod traces.
+00:27:34
+
+that's great, because you're going to find failures in production, and you're going to want to debug those, and if you don't have those logs, it's very difficult to debug. But again, you can log just a sample if you don't want to store all of the data associated.
+00:27:39
+
+So let's keep going. Before we get into actually looking at what length use looks like, one common concern that comes up here is
+00:27:53
+
+oh, no, there's PII, or there's sensitive information, or customer-specific information and traces, you know, how can I get around that?
+00:28:03
+
+So, what we've found to be helpful here is that maybe you can use an open-source PII redacting library, like, for example, the Presidio library from Microsoft, something I've used
+00:28:11
+
+once before. It captures some forms of PII, like phone numbers, but not everything.
+00:28:24
+
+But the way that… what you could think about redacting PII is at the logging stage itself, you know, just make sure that you strip all PII from messages before you log any model-related spans, so model or agent-related spans.
+00:28:31
+
+Yeah. Pamela, probably you also have, stuff to say about this, because it's one of, like, the biggest questions that we get around, like, logging PII, like, we can't look at this data.
+00:28:47
+Hamel Husain
+
+Yeah, I mean, it's, it's very application-specific, like, how you want to redact it. It really depends, like, what the requirements are. Sometimes you're allowed to log everything, and you just can't show it to the end, you can't view it, or different people can view different PII.
+00:29:00
+
+So it really number… it really depends, we might have to scrub it up front, might have to redact it.
+00:29:18
+
+So… Yeah, it just really depends.
+00:29:24
+Shreya Shankar
+
+Yeah, it's a… it's a good point that, like, so in this solution, or, like, in solutions that I've done, I've just been like, okay, we're gonna blanket React before storing the traces somewhere else. But sometimes, in some cases, right, you might have some
+00:29:30
+
+employees able to look at some data and some not able to look at some data. And in those cases, it's a little bit more complex, so you can… probably every organization has different conventions for dealing with privacy here.
+00:29:44
+
+So, I won't try to preach into what exactly to do there.
+00:29:57
+
+So just know that, you know, this is a problem a lot of people have. Post about it in Discord if you're interested and want to see what other solutions people have out there. But one blanket way to try to get around this is to strip PII before you even log it.
+00:30:00
+Hamel Husain
+
+Just for clarification, what is Presidio again?
+00:30:14
+Shreya Shankar
+
+It's an open source library from, Microsoft. It just…
+00:30:17
+
+strips PII, specific types of PII.
+00:30:21
+
+from text.
+00:30:25
+
+Nothing, like, super fancy. Yep.
+00:30:26
+
+All right, so now we're going to get into actually viewing some traces in LangFuse. So, in the homework, you'll actually walk through instrumenting the codebase to log the spans.
+00:30:30
+
+I'm gonna assume that we've already done… I've already done that part of the homework, because I want you guys to go through that exercise of actually doing it.
+00:30:42
+
+Then the thing you'll do after logging is to actually try to go view those traces in Langfuse, and then…
+00:30:50
+
+you will see that it's quite difficult. So let me actually open up my…
+00:30:56
+
+leg fuse, and… can people see my screen? Maybe I'll.
+00:31:03
+Hamel Husain
+
+Yes.
+00:31:08
+Shreya Shankar
+
+the picker.
+00:31:09
+
+Okay, so if you…
+00:31:12
+
+ask your coding agent to help you with the homework. What's going to happen is that it will instrument the codebase, and then it will spin up a Docker container, which is… will explain the homework, or your agent will explain to you. But it's a Docker container that runs this service called LinkFuse. So LinkFuse is an open source
+00:31:14
+
+observability provider.
+00:31:33
+
+So, the reason that we're using it is because it is open source, and it runs a stack that both stores your logs and then offers a UI for querying these logs. So, this is the UI here. So your coding agent will tell you, please open localhost
+00:31:35
+
+3,000 in your browser, that's where I'm serving length views, and then it will open a page that looks exactly like this.
+00:31:51
+
+you will have one organization called Cartwheel.
+00:31:58
+
+And it will be called Cartwheel Dev, it's the project. And in my case, I have logged 55 races, like.
+00:32:03
+
+made these up, with some requests for Cartwheel. And,
+00:32:13
+
+The first thing that you want to do to look at these traces is to actually go into tracing.
+00:32:20
+
+So there's a bunch of different features in here, like, there's a prompt playground, there's scores, evaluators, human annotation, like, we'll get to that later. But tracing is the page where you can view part of everything in a table, all of your… so every one of these rows corresponds to a trace, which, remember, corresponds to one user's request.
+00:32:26
+
+And it is, you know.
+00:32:46
+
+I will say that this is a good open source dashboard, but one of the things that's been very difficult for me is just kind of understanding at a very high level what is happening here. So, these traces are actually a little bit hard for me to make sense of. It's nice that we have them. You can click
+00:32:50
+
+Any trace, and it will open the sidebar viewer here, so it looks exactly like this.
+00:33:09
+
+And the root span… might look something like this. So, you can see the root span up here.
+00:33:15
+
+And then you can see that there are child spans. So, again, this just comes all out of… if you ask your coding agent to instrument.
+00:33:24
+
+With OPTEL, this is what happens. There's some model requests and model response and tool calls. So I think these are annotated with whether it's tool call or model response.
+00:33:33
+
+I go through these, and hopefully you guys are also noticing it's actually pretty hard to make sense of. So here, if I want to see what happened in this tool call, right.
+00:33:44
+
+I have to, like, expand all of these different IDs, or sorry, all of these different outputs. So this is the query, I suppose, that went into the Search Help Center tool call. And then out came these things.
+00:33:54
+
+Which… I guess there was a list?
+00:34:08
+
+Of these three different policies.
+00:34:12
+
+And each policy had these attributes. So, again, there's… you notice there's a lot of clicking that you'll have to do in order to just see everything, and it's also difficult to see everything on one page. You'll see all of these attributes that we logged. Remember, attributes are associated with every span.
+00:34:15
+
+But more importantly.
+00:34:33
+
+One of the things that I find difficult also in this UI is that I can't, like, see all of the important data associated with all of the spans in just one viewer, right? For every single one of these fans, I have to do a different click.
+00:34:35
+
+It's nice in that it kind of shows some information here, I guess. Like, 9 available tools were not called, like.
+00:34:49
+
+I guess that's… that's useful, but the point being, like, I can't line up, you know, one tool against the corresponding chat, or the model span afterwards and, like, actually see what happened.
+00:34:57
+
+So I think this is, like, a… actually, I don't want to pick on, like, views at all. I think it's great that there's an open source viewer out there. I just want to motivate to you, like.
+00:35:09
+
+A, you know, don't worry if you're having these feelings or thoughts also yourself, as you're looking at Langviews. Like, actually, Langviews is one of the better UIs out there. I find that a lot of them are very, very confusing.
+00:35:18
+
+So, you know, just don't feel alone. I think, Hamel, you probably have also, because both of us have quite a bit of experience on, like, pretty much every single Trace viewer out there, and it is a big, common frustration of ours, that it's very difficult.
+00:35:32
+Hamel Husain
+
+Yeah, my husband…
+00:35:45
+
+is… so I use all of these eval observability tools as a glorified database, and I put my own trace viewer on top of them.
+00:35:46
+
+Of course, they all have APIs where you can suck the data in, you can write the data back out, and, you know, I create my own annotation interfaces that render the parts of the traces that I want to see or flatten them out. We'll actually be talking about that later in this course, so don't worry about it.
+00:35:56
+Shreya Shankar
+
+Literally right after this. Just giving a lengthy story.
+00:36:13
+Hamel Husain
+
+Great.
+00:36:16
+Shreya Shankar
+
+Yeah.
+00:36:18
+
+Sorry, I cut you off, but keep going.
+00:36:19
+Hamel Husain
+
+No, no, that's right.
+00:36:21
+Shreya Shankar
+
+what are you gonna say?
+00:36:22
+Hamel Husain
+
+No, that's great. Lead right in.
+00:36:22
+Shreya Shankar
+
+Yes, I'm trying to… thanks. Things that I like about the UIs are, you know, having these hotkeys that you can just quickly look at different traces at once, so if I go down arrow… oh, I clicked the down arrow, but it didn't go.
+00:36:26
+
+Maybe if I click J, it'll go?
+00:36:40
+
+Okay, yeah, if I click J, oh, that seems new. So here, right, I can…
+00:36:43
+
+here's another trace. Like, how much the user says, how much was the,
+00:36:51
+
+trowel set I ordered from Petal and STEM, so this is a, I guess, synthetic data here. And the assistant responded with, this total was $212.50, if you need a breakdown, let me know. And…
+00:36:56
+
+again, right, just looking at this preview, very difficult to understand, did the agent do the right thing or not, right? We, like, no idea what happened in the trace. Perhaps there was some error in the data, perhaps the tool was not called correctly, or the agent didn't respond to the tool… the model… model didn't respond to the tool output correctly.
+00:37:10
+
+So in these cases, right, we'll just drill into the spans here, Pure.
+00:37:29
+
+I guess the first one is… So this is another issue.
+00:37:36
+
+That's very difficult, which is… which, I never remember which one is first. It's in the bottom one, or the top one that is first in the trace, and maybe we could try to figure that out.
+00:37:42
+
+Let's see… I think, I think the first…
+00:37:53
+
+The first one is the first, message that's in the trace, or the first span that's in the trace, because it shows the system prompt here.
+00:37:57
+
+And then you'll see that there's multiple parts to it, so I was… how much was this? Then the assistant decided to say, okay, I'm gonna invoke this tool call, the tool call find order, with the arguments.
+00:38:06
+
+as follows. You can see the text that I'm showing you, right? Hopefully that… okay, they're getting nods.
+00:38:20
+
+So you can see, right, this query happened, the agent finished because of this finish reason tool call. If you've never worked with LLM APIs or Agent SDK before, you might be overwhelmed, like, oh my god, there's so many different attributes that are involved in this entire trace.
+00:38:26
+
+Don't worry about that, like, I know there's… but there are a lot of attributes, this is just really showing you everything.
+00:38:42
+
+Then the tool span is logged next, so there's input, and there's output.
+00:38:48
+
+Again, attributes.
+00:38:54
+
+And then, finally, the response here.
+00:38:57
+
+So this one took 4.91 seconds, and it took me a really long time to figure out what these numbers and arrows mean, but it turns out it's the number of tokens in and the number of tokens out. So, in case you were wondering.
+00:39:01
+
+Yeah.
+00:39:18
+
+Okay, so I'm not gonna, you know, keep beating this… like, hopefully you…
+00:39:19
+
+I just wanted to spend enough time showing you LangFuse, don't be afraid of it, like, don't be afraid of the UI, I know there's a lot going on, but sometimes, you know, you will find yourself, like, I need to open up LangFuse because it's just really fast. I know exactly what trace that I want to look up. So this begs the question, right? Like, for… when should I use LangFuse, and when should I, like, try to build my own trace viewer? So for me, I find LangFuse, or
+00:39:24
+
+any provider good, where I know exactly what trace ID that I want to look up, so I can just search it here. I also know, for example, or I can have a suspicion that, oh, there's something wrong with a particular tool with that trace, so I know that, like, oh, maybe the list my orders thing is wrong, and I literally just want to see the inputs and outputs.
+00:39:48
+
+So that's helpful there.
+00:40:08
+
+Another thing that can be helpful with these is the ability to share these dashboards, to share links to these trace with other folks on the team. Now, when you build your own trace viewer, it's
+00:40:10
+
+somewhat… it's not impossible, right? But most people don't build in functionality to kind of share the vibe-coded viewer, or links to the trace in that vibe-coded viewer with other folks on the team. So this one is pretty good for, like, if there's a particular trace,
+00:40:21
+
+This is…
+00:40:38
+Hamel Husain
+
+I just wanna mention something. So, it's a good time to mention, people always get very fixated on the tool.
+00:40:39
+
+It's a tendency, when we teach evals, to say… to… your mind wants to go to, what is the tool that will solve all of this for me? Is it LangFuse? Is it Brain Trust? Is it whatever?
+00:40:45
+
+Do not get overly fixated on the tool. The tool almost doesn't matter at all. It's gonna fade completely into the background. You might not even ever open the tool at all.
+00:40:59
+
+Yeah. There's a really good chance you will never see this window. You might see it once, and you'll never see it again, ever again. Because, and the tool is not gonna solve the evals problem for you.
+00:41:11
+
+just, like, repeat it again, the tool is not gonna solve the evals problem. It's, like, the process that you put into it, is gonna do all… is where the magic is gonna take place, so don't… whatever you do, do not get fixated on the tool.
+00:41:23
+Shreya Shankar
+
+Yeah, I think that's a great point. All of the tools are more or less the same. They are a foundation for being able to do e-files, which is look at these traces, figure out what the failure modes are, and build a very rigorous, like, taxonomy of failure modes for your application.
+00:41:37
+
+You can't really do that, right, without having some place to look at all of these traces, so think of that as this is what the tool is for. And why we're spending a lot of time on it early on is because, you know, your agents, you're going to ship them to production, and you're going to consistently log production traffic. So, if you set up your agents well, right, you instrument them early on, and you're always logging your traffic, then it's very easy to continually update your evals in production.
+00:41:53
+
+and, like.
+00:42:18
+
+Otherwise, if you try to just do it only once up front, and your evals change, or your behavior changes, like, you'll have no idea how to handle that, right? So, it's very good to kind of set this up.
+00:42:19
+
+There are some questions around what do all of these kind of parts of the trace mean. This is a great question. Again, this is, I guess, what happens when… I don't know how Langfuse renders a UI. You'll see it actually different in every single observability provider. I personally only just like to look at everything. I know that the trace is somewhat linear, right? There's going to be one
+00:42:29
+
+Roots fan for my agent, and then there's going to be, like, one…
+00:42:53
+
+tool span or model span, and there's gonna be a sequence of those, so I just zoom in to whatever's, like, these children here, and I ignore whatever this hierarchy is. I imagine, like, these are auto-logged
+00:42:58
+
+Just based on the framework that you use. The other thing is sometimes if there are sub-agents, sometimes there's complexity in these UIs because people are tracing and instrumenting sub-agents, and so then there needs to be a list, or the hierarchy looks a little bit strange. So hopefully that answers people's question of what is everything in this UI? Also, just setting the expectation, you're not going to know everything that's happening in this UI. I certainly don't know.
+00:43:09
+
+everything that's happening in the UI, this is the most important thing here.
+00:43:34
+
+Yeah.
+00:43:40
+
+Hamela, am I missing anything before I…
+00:43:41
+Hamel Husain
+
+No, I mean, I, you know, honestly, like, I don't look at these UIs, like, too much. I really, like, we… I'm serious, you know? And we're gonna show you this… we're gonna have skills, and we're gonna show you how to extract this data in a way that is customized for your domain and your use case.
+00:43:44
+
+Because, like, the last thing you want to do is, like, look at this cookie-cutter way of looking at data, you're not going to do this.
+00:44:01
+
+But I don't want to ruin.
+00:44:07
+Shreya Shankar
+
+Yeah.
+00:44:08
+Hamel Husain
+
+the next thing, so I'm just gonna…
+00:44:08
+Shreya Shankar
+
+Yeah, sure. I feel like the ad we've only been saying…
+00:44:11
+
+Yeah, I have very mixed feelings about observability providers. I'm really glad these providers exist. Rolling your own is really hard, to Hamel's earlier point, like, you don't want to build all this twin yourself, and do all of this instrumentation yourself. It's just… it's not your job, right? Your job is to build the agents, and to continue maintaining your own observability stack is going to be a lot of work. So, kind of…
+00:44:15
+
+Stick to the good parts of existing frameworks.
+00:44:37
+
+There's also good features for things like adding to datasets here, which…
+00:44:39
+
+I won't talk about this set… this session, but if you want to jump ahead of yourself, you're like, I need evals yesterday, you know, you can take some of these traces and curate, you know, subsets of them, and you can also annotate
+00:44:44
+
+These traces,
+00:44:56
+
+This is a good point where I feel like I don't know. Oh yeah, you have to, like, predefine certain annotations, and then you can apply them to the trace here. Anyways, we don't have to get into it, but if you want to…
+00:45:00
+
+Explore this on your own.
+00:45:11
+Hamel Husain
+
+There's other features as well, like, helping you keep track of metrics. We're gonna get into metrics and evaluators later on, but, like.
+00:45:12
+Shreya Shankar
+
+Yeah.
+00:45:19
+Hamel Husain
+
+Limit if you have a lot of…
+00:45:20
+
+If you have a lot of these automated evals that are producing scores, you may want a place to keep it and organize it, and these things give you, like, a dashboard to do that. So there's other things other than looking at traces that these evals platforms give you.
+00:45:22
+Shreya Shankar
+
+Cool!
+00:45:37
+
+Alright, so…
+00:45:38
+
+Let's get back to this. The last… the remainder of today's class, I kind of want to show you what it's like to build your own trace viewer, and how this can really accelerate, like, you looking at your own traces. So here is a prompt that I and Claude wrote together, basically. The idea here is we have great coding agents, why don't we just ask our coding agent.
+00:45:40
+
+To read all of the data that's already stored in LangFuse.
+00:46:03
+
+And simply just render that, kind of in a read-only view for us.
+00:46:07
+
+So, here's a prompt. You can copy this verbatim if you like. You don't have to. You can write your own prompt that literally says, build a trace viewer.
+00:46:11
+
+So I'm gonna copy this prompt. The… actually, before we type this into… to Claude Code.
+00:46:21
+
+or codecs. There's 3 paragraphs here. The first paragraph just says, build a local read-only trace viewer. I just wanted something fast here, like, I don't want… at least with these newer models, sometimes I find that, like, it will try to build a whole production app, like, oh, like, here is, you know, the container, and here is exactly how you host it and deploy it, and I'm just like, man, no, I just want to see in my Chrome
+00:46:27
+
+what's happening. So anyways, and the second thing is… the second paragraph here is just, you know, use a FastAPI backend, and it's very simple front-end, right? You don't have to use the fanciest stack. Oftentimes, you know, the agent is always trying to do the most complex thing for any test, so it might build a whole Next.js app, which, you know, I don't really want that.
+00:46:51
+
+And then the third paragraph here, which is very important, is make it very easy to read everything and scan for failures or mistakes.
+00:47:11
+
+So one failure mode that I often observe is there are a lot of clicks required to be able to see a full trace, and that's quite annoying. So you want to be able to see full traces without too many clicks.
+00:47:19
+
+In this case, I'm not going to add annotation controls or database. We can… we'll do that in the next lecture when we actually do some analysis on these traces. But for now, let's just type this into our terminal and see what comes up out of it. And maybe I have to reshare another screen to make this work.
+00:47:33
+
+Can people see my terminal?
+00:47:53
+Hamel Husain
+
+I can, yes.
+00:47:56
+Shreya Shankar
+
+Excellent, but probably is too small.
+00:47:57
+Hamel Husain
+
+Hmm, I can see it pretty good. Okay, yeah.
+00:48:01
+Shreya Shankar
+
+Okay, I made it bigger. And so this is the Cartwheel Homeworks repo that, you know, you all have access to.
+00:48:03
+
+Hopefully, so I know that people might not be familiar with working in the terminal, that's totally, totally fine. Part of this course is going to be you learning how to get familiar with using coding tools. So, I'm going to type in codex.
+00:48:11
+
+I'm gonna try to switch between codecs and Claude code in this session. There are some errors here that my Notion is requiring OAuth3 authentication, which we don't really need Notion today, so, you know, I'm gonna ignore these messages. And then I'm gonna switch my model, because I don't think I need GPT-6 Astra high.
+00:48:28
+
+let's see. I feel like I'm not super familiar with the OpenAI model, so maybe I'll try something like…
+00:48:48
+
+Tara.
+00:48:54
+
+Really making this up.
+00:48:55
+Hamel Husain
+
+Taras fun.
+00:48:57
+Shreya Shankar
+
+Tara, hi. Alright, and then I'm gonna paste.
+00:48:58
+
+this… Here, actually, I probably also want to say, do this for… homework.
+00:49:02
+
+Or, sorry, Lesson 2, the traces…
+00:49:15
+
+are already logged to LangFuse, and my computer is running.
+00:49:19
+
+The leg fuse… Docker container. I just like to tell my agents, don't do too much, like, don't rerun.
+00:49:28
+
+The agent, don't regenerate data.
+00:49:38
+
+Use the existing data.
+00:49:43
+
+Right? Please, ask questions, or Hamel, like.
+00:49:48
+
+You know, ask me questions that you think somebody would have.
+00:49:51
+
+Somebody asked, what terminal theme are you using? That's a very important question. I use Work, and then I just use, like, their high…
+00:49:55
+
+Contrast, terminal scene.
+00:50:04
+Hamel Husain
+
+Now, I know that there's a skill that might help you with some of these things, is that something that…
+00:50:10
+
+Okay.
+00:50:14
+Shreya Shankar
+
+There… we will get into a skill for the next lesson. I think this… for this lesson, I just wanted to, you know, show people that they can use their coding agent to build
+00:50:15
+
+UIs. But next lesson, we'll get into a scale about synthetic… generating synthetic traces to view in your UI and or length views.
+00:50:26
+
+But today, no scale, sorry.
+00:50:36
+
+Alright, so you can see here that the agent's doing stuff.
+00:50:43
+
+Don't worry, I have a backup. If the agent is continuing to do this for some time, I've already generated the UI.
+00:50:47
+
+But we'll give it a couple of minutes so you can actually see what's happening in real time. You'll see that it's always making mistakes.
+00:50:55
+
+you know, such a life. I'm glad that it seems to be using the Langviews scores, or the LangFuse traces. LangFuse has APIs, right, for being able to read the data, so hopefully this shouldn't be too hard of a task for the coding agent.
+00:51:02
+
+But maybe if I miss last words, we don't know.
+00:51:17
+
+Is there a reason that I prefer the terminal over the desktop app? There is truly no reason, it does not matter, I just have used the terminal for a very long time in my life.
+00:51:22
+
+Other questions, Hamel, that, like, you feel like are good to address now?
+00:51:34
+Hamel Husain
+
+Okay, let me look. I'm just trying to pay attention to you.
+00:51:40
+
+No.
+00:51:45
+Shreya Shankar
+
+And be…
+00:51:45
+Hamel Husain
+
+a good student myself.
+00:51:46
+Shreya Shankar
+
+All right, so yeah, maybe we can talk about the difference between traces and evals. I think that's a good question. So evals, as we will define in Module 2, the first sentence of Module 2 is going to be, evals are the systematic measurement of application quality.
+00:51:52
+
+So traces are a prerequisite to doing evals. If you don't have traces, you have nothing to evaluate and measure.
+00:52:09
+
+So think about it as… we gotta do this, right? We're setting foundations for ourselves to do evals.
+00:52:17
+Hamel Husain
+
+One question that I think is good is, I don't know what the real name of the person is, but the handle is Sign Monkey.
+00:52:24
+
+And SandMonkey is asking, one of the harder problems when evaluating traces is search, like, how do you select candidates and what to view?
+00:52:32
+
+We will be talking about that when we get to error analysis. It's my favorite module of the class, I get really excited about that particular module. And we'll be showing you how to do error discovery, use agents to help you search.
+00:52:41
+
+There's, like, a really rich area, so don't worry about this, like, it is important to be able to search through traces and look at them, but we're gonna get there, because we're setting up a foundation right now of, like, how to even get the traces, how to set yourself up for success.
+00:52:53
+
+As Shreya mentioned, next lecture, we're gonna talk about synthetic data, so that you can, like.
+00:53:08
+
+Learn how to deal with situations when you don't have any users, or don't have any… you're just, like, creating something for the first time, so that you can make sure, like, you have all the foundation, before you get into this.
+00:53:14
+Shreya Shankar
+
+Yep.
+00:53:27
+
+Yep. Yeah, we'll have skills for, like, sampling… clustering and sampling traces to review.
+00:53:28
+
+Yeah. There's a question around why do we need synthetic traces? You know, if you never need synthetic traces, all the power to you. If you can look at real data and log real data, that's great.
+00:53:37
+
+Most people have… so there's two reasons why it will be difficult to have real data. One is you're building your agent from scratch.
+00:53:47
+
+and you want to, you know, do some error analysis, or, you know, figure out what to evaluate before you deploy it, then you want to generate synthetic data. In another case, right, you just maybe simply cannot look at real users' requests.
+00:53:55
+
+So, again, you want to use synthetic data.
+00:54:08
+
+Cool.
+00:54:14
+
+Question around how does a trace data model or JSON payload look like? Good question. Honest answer to that is…
+00:54:15
+
+do the homework, and then look at the JSONs there. But you can think of the human-defined hierarchy there as, you know, there's a root span, which is all of the spans involved in a trace. Each span, think of it as, like, a turn or a tool call, and each of these spans is also a JSON, so there's different attributes to it.
+00:54:22
+
+Depending on the type of spam.
+00:54:41
+
+Okay, well, I'm feeling less and less optimistic as it continues to just go on and on.
+00:54:45
+
+This is my issue with coding agents. I just… I don't know. I feel like, you know, there's a glorious time where I could do coding agent demos, and it would complete in, like, 2 minutes, but now we live in this world where they're all doing these long-running tasks, and they take, like, 30 minutes to do.
+00:54:52
+
+And…
+00:55:07
+
+maybe… okay, I'll give it one more minute, and if it doesn't work, I will skip to the dashboard I've already generated, and we'll kind of pretend that that was a result of what happened here.
+00:55:08
+
+Oh, last question of a… is a trace inherently multi-turn or single-turn?
+00:55:19
+
+I like this question, so the reason that we teach trace and spans is because it encapsulates all of the complexity of agents. So, a simple, like, single LLM call, or concrete multi-LLM call workflow, these both can be represented in a trace. A trace can be just literally
+00:55:25
+
+like, user message and model span. Can be one span, it could be two spans, right? Doesn't have to be very long, multi-term.
+00:55:45
+
+And we see that a lot, right, Hamel? Like, super common, super normal.
+00:55:54
+
+Your trace does not have to be, like, tens of spans.
+00:56:00
+Hamel Husain
+
+Yeah, definitely.
+00:56:03
+
+It's different for every application.
+00:56:04
+
+Sometimes turns are generated by users, because there's, like, follow-ups, if it's, like, a chat application. Sometimes turns are, like, you know, more data processing things.
+00:56:07
+
+If you have, like, a chain of events.
+00:56:18
+
+So there's a lot of ways that things can generate turns.
+00:56:20
+
+Yes, yes.
+00:56:25
+Shreya Shankar
+
+Okay, I'm giving up on this, I think there's a lot of fun chat in the meeting chat in Rocco. Next time, maybe we try a plan, I don't know. I don't know what it's doing. Why is it searching the README? That should not be necessary. Okay, let me…
+00:56:27
+
+Let me… Move back to my… Google Chrome.
+00:56:40
+
+Alright, can you see…
+00:56:49
+Hamel Husain
+
+Yes, I can see the slides.
+00:56:51
+Shreya Shankar
+
+Great.
+00:56:53
+
+Okay, so pretend that finished.
+00:56:54
+
+Girl, I go faster!
+00:56:58
+
+So this is what will happen.
+00:56:59
+
+when you open up the Vibe-coded UI, this is what I generated last night, so you can kind of see the timestamps here.
+00:57:02
+
+And…
+00:57:10
+
+I kind of like this UI, you know? So one thing I really like about this is that I can just see all of the spans in a single view. I wish that it had automatically expanded, I don't know, maybe not.
+00:57:11
+
+But anyways, here, so let's… let's go through what one of these traces was. So the user said, actually, how long do I have? I want to think about it first.
+00:57:26
+
+This seems like it came out of nowhere, which happens a lot of times.
+00:57:35
+
+And this is probably, like, a seated adversarial input. But anyways, what happened, right, what did the agent do? It called this Search Help Center tool.
+00:57:41
+
+Okay.
+00:57:50
+
+called these twice, I don't know.
+00:57:51
+
+And then…
+00:57:56
+
+I gave this answer. So, probably, when we're doing this error analysis, we'll be a little bit aghast. We'll be like, maybe the agent should have asked for some follow-up from the user, like, figure out, okay, like, how long do you have for what? Like, do you have for making a purchase? How long do you have for returns? Like, I don't know. Instead of just assuming something.
+00:57:58
+
+Let's look at another one.
+00:58:18
+
+Oh, wait, it already arrived. Again, it's a similar issue. And look at a support.
+00:58:21
+
+What orders do I have?
+00:58:27
+
+This one's interesting. I can help look them up.
+00:58:30
+
+So I guess this is… did something correctly, right? You have an order number, a product name, or you might think, like, my agent should be more proactive. It should literally go and look at what the user's orders was.
+00:58:33
+
+And not just ask them, give me the order number or the product name, right? This goes to, you know, hopefully motivating people, like, you do want to look at your data, you do want to do some sort of custom evals for your product, because you can't just rely on off-the-shelf behavior of models, right?
+00:58:45
+Hamel Husain
+
+to reflect that, like, how helpful this dashboard is. So, like, it's rendering things in a very friendly way, but you can see that Shreya had made some customizations. She has, like, a shopper tag, a support tag, she can easily put a filter to, like, filter shopper and support.
+00:59:02
+
+You know, this is very domain-specific already, and you, when you go to make your own viewer.
+00:59:20
+
+You should make it completely customized for yourself.
+00:59:27
+
+And this is super important, because it allows you to take the pain away from looking at the data.
+00:59:31
+Shreya Shankar
+
+Yeah. I like that you called attention to the tags here. Like, one thing that's nice is I just… I told the agent to render the data that's already in LangFuse, so we already know, right, we have logged so many different attributes for every span, so hopefully the agent reads those and tries to render them for us here.
+00:59:39
+
+you know, I need to check this order…
+00:59:58
+
+Got something, here's what I found.
+01:00:01
+
+Cool.
+01:00:04
+
+Can you look at this order? The shopper says it arrived damaged. Lots of stuff is happening.
+01:00:06
+
+You know?
+01:00:11
+
+So, this one's an OpenAI agent. I find with OpenAI behavior, they just, like, submit a bunch of tool calls, and then, like, try to think or reason about it at the end, so that's what this message is.
+01:00:13
+
+Yeah, so you can see the varying complexity. Again.
+01:00:24
+
+Very, very helpful to just have all of the spans in one view when you're trying to do error analysis, which we'll do in the next module.
+01:00:27
+
+But hopefully people are motivated, like, this is great, build your own UI, it doesn't take too much effort from you other than sitting and waiting for your coding agent to finish doing it. Whereas the downside, right, it's difficult to, like, share these traces across other members of your team, maybe…
+01:00:37
+
+you know, you'll have to figure out how to share this app, or you can just use LankFuse, to share specific trace IDs.
+01:00:54
+
+All right.
+01:01:02
+
+So…
+01:01:04
+
+That was today, right? Today we talked about observability, we talked about doing tracing, OTEL, Gen AI, we talked about LangFuse, we built our own custom viewer. So for Homework 2,
+01:01:05
+
+The… again, just want to stress out, all of these homeworks are optional. You can make it through this course without doing any of the homeworks. You will get something out of the lecture without doing any of the homeworks. They're just there for you to feel like, you know, you have mastered truly everything end-to-end by the end of the course.
+01:01:18
+
+So homework 2 is all about just doing what we did today in Lecture, the actual behind the scenes.
+01:01:34
+
+And doing a little bit more, so trying to change the prompt version, so having two different prompt versions, and then looking at those results in your trace viewer, or in link views. Similarly, you know, make a video, post these videos in Discord.
+01:01:40
+
+Starting this homework, we also have made every single handout have a prompt at the top to walk through it interactively with a coding agent. So you can kind of see that here.
+01:01:55
+
+I, plus Claude, wrote this prompt together that you could just paste into your agent, say, help me do homework too, or you don't even have to say that, literally just paste this prompt. It does have some of the concepts that I think are quite important from this homework, and it…
+01:02:06
+
+is a little bit… think of it as, like, it's not going to try to do the homework for you, right? It's going to work with you to try to teach you what's going on in the homework. I think it's awesome that we can do this. The coding agents can do this now. Like, previous cohort we taught, like, could never have done this, so, highly encourage you to do it.
+01:02:25
+
+Course reader, still the same. We're still on Module 1. Again, super optional to read, it's just some people, like myself, prefer to read and are very reading-oriented.
+01:02:43
+
+And then, upcoming stuff is we have office hour in, like, 29 minutes, and then Lecture Plus Office Hour is coming up on Saturday. So, definitely please attend. This one's about generating synthetic data, so we can review traces.
+01:02:54
+Hamel Husain
+
+My suggestion for the office hours is.
+01:03:11
+
+Try to apply what you're learning
+01:03:13
+
+to your own products you're working on, if possible. Bring those questions to office hours.
+01:03:17
+
+If you can, because that's where you're gonna learn a lot. Also, for the homework, there's, like, homework-specific study sessions, so we just created a bunch of study sessions for homework led by Antaripa, that are Monday and Thursday, and the Thursday one is APAC.
+01:03:23
+
+We're actually opening up another one on Tuesday, so it'll be Monday, Tuesday, and Thursday will be homework-specific
+01:03:41
+
+study sessions.
+01:03:47
+
+So, yeah.
+01:03:48
+
+Just to keep in mind.
+01:03:51
+
+On the theme of these different sessions.
+01:03:54
+Shreya Shankar
+
+Yep. Okay, so all the questions we didn't get into the chat, sorry, they're gonna disappear. Please ask in Discord for us to get to, and see you all in 28 minutes!
+01:03:58
+
+Everything is always recorded, Hamel screamed, yeah.
+01:04:10
+
+Alright, bye everyone.
+01:04:17
+Hamel Husain
+
+Alright, fair.

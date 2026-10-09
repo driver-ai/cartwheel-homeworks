@@ -1,0 +1,623 @@
+<title>The Suite Loop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* layout: five flowchart figures stacked, same grammar as the Taxonomy Loop and Judge Loop references */
+  :root {
+    --bg: #f6f4ef;
+    --panel: #ffffff;
+    --fg: #1d1e1b;
+    --muted: #6b6a62;
+    --line: #dbd8cd;
+    --accent: #0f6e63;
+    --on-accent: #ffffff;
+    --note-bg: #eef1ea;
+    --warn: #a35d12;
+    --warn-soft: #f4e6d4;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171a;
+      --panel: #1c1f21;
+      --fg: #e9e7e0;
+      --muted: #9a988f;
+      --line: #35382f;
+      --accent: #57d6c4;
+      --on-accent: #0a1512;
+      --note-bg: #1f2420;
+      --warn: #e2a356;
+      --warn-soft: #3a2c18;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171a;
+    --panel: #1c1f21;
+    --fg: #e9e7e0;
+    --muted: #9a988f;
+    --line: #35382f;
+    --accent: #57d6c4;
+    --on-accent: #0a1512;
+    --note-bg: #1f2420;
+    --warn: #e2a356;
+    --warn-soft: #3a2c18;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .page {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 40px 16px 64px;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: clamp(30px, 6vw, 42px);
+    line-height: 1.08;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .intro {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 62ch;
+    margin: 0 0 40px;
+  }
+  .intro strong { color: var(--fg); font-weight: 600; }
+  .intro code { font-family: "IBM Plex Mono", monospace; font-size: .92em; background: var(--note-bg); padding: 1px 5px; border-radius: 4px; }
+
+  figure {
+    margin: 0 0 18px;
+    padding: 20px 14px 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .figure-grid {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) 300px;
+    gap: 16px 28px;
+    align-items: start;
+  }
+  figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+  }
+  .block-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+  .block-notes .tag {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    color: var(--accent);
+    margin: 0 0 3px;
+  }
+  .block-notes p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fg);
+  }
+  .block-notes code { font-family: "IBM Plex Mono", monospace; font-size: .92em; background: var(--note-bg); padding: 0 4px; border-radius: 3px; }
+  figcaption {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  figcaption b { color: var(--fg); font-weight: 600; }
+
+  .note {
+    background: var(--note-bg);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin: 0 0 48px;
+    max-width: 720px;
+  }
+  .note h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0 0 10px;
+  }
+  .note ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .note li {
+    margin: 0 0 9px;
+    font-size: 14.5px;
+  }
+  .note li:last-child { margin-bottom: 0; }
+  .note li b { color: var(--fg); }
+  .note code { font-family: "IBM Plex Mono", monospace; font-size: .92em; background: var(--panel); padding: 1px 5px; border-radius: 4px; }
+  .note p { margin: 0 0 12px; font-size: 14.5px; line-height: 1.5; }
+  .note p:last-child { margin-bottom: 0; }
+  .note.warn { background: var(--warn-soft); border-color: var(--warn); }
+
+  .metrics {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4px 0 18px;
+    font-size: 14px;
+    max-width: 480px;
+  }
+  .metrics caption {
+    text-align: left;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .metrics th, .metrics td {
+    text-align: left;
+    padding: 8px 14px 8px 0;
+    border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  .metrics th { color: var(--muted); font-weight: 500; font-size: 12.5px; }
+  .metrics td.num { font-family: "IBM Plex Mono", monospace; }
+
+  .phase-tag {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 6px;
+  }
+
+  footer {
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+    margin-top: 8px;
+  }
+  footer code { font-family: "IBM Plex Mono", monospace; }
+
+  @media (max-width: 860px) {
+    .figure-grid { grid-template-columns: 1fr; }
+    .block-notes {
+      margin-top: 4px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+  }
+  @media (max-width: 480px) {
+    .page { padding: 28px 16px 48px; }
+    figure { padding: 16px 10px 14px; }
+  }
+</style>
+
+<div class="page">
+
+  <p class="eyebrow">Defining and maintaining evals, generalized</p>
+  <h1>The Suite Loop</h1>
+  <p class="intro">
+    How a frozen taxonomy of failure modes becomes a versioned suite of
+    <b>Harbor tasks</b>, and how that suite keeps working once the agent is live.
+    First <strong>decide what earns a Harbor task</strong> &mdash; a failure mode that
+    survives a quick fix, or a behavior worth protecting outright. Then <strong>write
+    and classify</strong> each candidate's tasks, and <strong>run them as a gate</strong>
+    on every change. After that, two separate things run on their own schedules, neither
+    one triggered by the other: <strong>watching production</strong> continuously for a
+    more honest read on failure modes you already know about, and <strong>recalibrating
+    the judges</strong> that make that reading trustworthy.
+  </p>
+
+  <div class="note warn">
+    <h2>Before you start</h2>
+    <ul>
+      <li>This loop assumes two things already exist. A <b>frozen taxonomy</b> of named failure modes, each with a binary present/absent definition and prevalence data from a labeled sample &mdash; see <b>the Taxonomy Loop</b>. And, for a subset of those modes, an <b>already-frozen judge</b>, measured for TPR and TNR against human labels &mdash; see <b>the Judge Loop</b>. Everything else &mdash; which modes are worth evaluating, which currently-reliable behaviors are worth protecting, code or judge or both &mdash; gets decided here, not before.</li>
+      <li>This loop uses <b>Harbor's</b> vocabulary throughout. A <b>Harbor task</b> is one versioned, reproducible trial: a request, a starting state, and the checks that grade the result. The shape transfers to any runner that can seed state, send a request, and score what comes back &mdash; but say "Harbor task," not just "task," so it's never confused with the request that feeds it or the failure mode it's testing.</li>
+      <li>Phases 3, 4, and 5 are <b>not sequential steps of one pipeline.</b> The gate (3) fires on every code change. Watching production (4) runs continuously, on its own clock. Recalibrating judges (5) runs periodically, on a completely different clock. All three can be happening at the same time.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <h2>Sizing this in practice</h2>
+    <ul>
+      <li><b>Timebox the quick fix:</b> give a confirmed failure's prompt tweak, tool fix, or product change about one to two hours before it's allowed to earn a Harbor task at all.</li>
+      <li><b>Suite size:</b> no fixed target &mdash; stop once every candidate you've decided is worth continually testing has at least one Harbor task. In practice that's often a dozen or so candidates; the task count is what falls out of that, not something to hit on its own.</li>
+      <li><b>Requests per candidate:</b> a judgment call, not a rule. Weight it by prevalence or business impact &mdash; a candidate that matters a lot might get close to 5 requests so it isn't judged on one phrasing; a marginal one might get by with one or two.</li>
+      <li><b>Trials per Harbor task in the gate:</b> 5, fixed. That's enough to tell a reliable behavior (5 of 5) from an unreliable one (3 of 5) without paying for more agent runs than the signal needs.</li>
+      <li><b>Deeper look at one capability:</b> 10&ndash;20 trials outside the gate, on the one Harbor task you need a tighter number for. Watch for where the rate stops moving &mdash; that plateau is the real answer, not trial 20 itself.</li>
+      <li><b>Production sample (Phase 4):</b> 1&ndash;5% of live traffic, continuously, graded by the judges only &mdash; code checks don't need this, since the gate already re-verifies them on every change.</li>
+      <li><b>Recalibration cadence (Phase 5):</b> every few weeks, independent of the continuous sample above &mdash; its own fresh, hand-labeled batch, used only to recompute TPR/TNR.</li>
+    </ul>
+  </div>
+
+  <p class="phase-tag">Phase 1 of 5</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 700 680" role="img"
+         aria-label="Pick a candidate: either a failure mode from the taxonomy, or a behavior deliberately chosen to protect. A protected behavior skips directly to earning a Harbor task. A confirmed failure is checked for whether it is fixable within a timebox, with a prompt or product change; if so, ship the fix and re-run error analysis on fresh traces, and if the failure mode is gone, loop back and pick the next candidate, no Harbor task needed. If it is not fixable within the timebox, or it survives the fix, it earns a Harbor task: exit to phase two, where its checks get decided and written.">
+      <defs>
+        <marker id="g1arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <!-- 1.A -->
+        <rect x="150" y="16" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">1.A  Pick a candidate</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10.5" fill="var(--muted)">a failure mode, or a behavior worth protecting</text>
+
+        <line x1="320" y1="72" x2="320" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#g1arrow)"/>
+
+        <!-- 1.B diamond -->
+        <polygon points="320,100 470,156 320,212 170,156" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="151" text-anchor="middle" font-size="11.5" fill="currentColor">1.B  Confirmed failure, or</text>
+        <text x="320" y="166" text-anchor="middle" font-size="11.5" fill="currentColor">something you're protecting?</text>
+
+        <!-- 1.B confirmed failure -> down to 1.C -->
+        <line x1="320" y1="212" x2="320" y2="240" stroke="currentColor" stroke-width="1.5" marker-end="url(#g1arrow)"/>
+        <text x="340" y="230" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">confirmed failure</text>
+
+        <!-- 1.B protecting it -> bypass straight to exit -->
+        <polyline points="470,156 610,156 610,600 340,600 340,612" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#g1arrow)"/>
+        <text x="630" y="378" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 630 378)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">protecting it &mdash; straight to Phase 2</text>
+
+        <!-- 1.C diamond -->
+        <polygon points="320,240 470,296 320,352 170,296" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="291" text-anchor="middle" font-size="11.5" fill="currentColor">1.C  Fixable inside</text>
+        <text x="320" y="306" text-anchor="middle" font-size="11.5" fill="currentColor">the timebox?</text>
+
+        <!-- 1.C yes -> down to 1.D -->
+        <line x1="320" y1="352" x2="320" y2="380" stroke="currentColor" stroke-width="1.5" marker-end="url(#g1arrow)"/>
+        <text x="340" y="370" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes</text>
+
+        <!-- 1.C no -> bypass to exit -->
+        <polyline points="470,296 580,296 580,600 300,600 300,612" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#g1arrow)"/>
+        <text x="600" y="448" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 600 448)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no &mdash; not worth a quick fix</text>
+
+        <!-- 1.D -->
+        <rect x="150" y="380" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="402" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">1.D  Ship the fix</text>
+        <text x="320" y="420" text-anchor="middle" font-size="10.5" fill="var(--muted)">prompt tweak, tool fix, or product change</text>
+
+        <line x1="320" y1="436" x2="320" y2="464" stroke="currentColor" stroke-width="1.5" marker-end="url(#g1arrow)"/>
+
+        <!-- 1.E diamond -->
+        <polygon points="320,464 470,520 320,576 170,520" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="515" text-anchor="middle" font-size="11.5" fill="currentColor">1.E  Still shows up in</text>
+        <text x="320" y="530" text-anchor="middle" font-size="11.5" fill="currentColor">fresh traces?</text>
+
+        <!-- 1.E no -> loop back to 1.A (accent, resolved) -->
+        <polyline points="170,520 30,520 30,44 150,44" fill="none" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#g1arrow)"/>
+        <text x="30" y="282" text-anchor="middle" font-size="10.5" fill="var(--accent)" transform="rotate(-90 30 282)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no &mdash; fixed, no Harbor task needed</text>
+
+        <!-- 1.E yes -> down to exit -->
+        <line x1="320" y1="576" x2="320" y2="612" stroke="currentColor" stroke-width="1.5" marker-end="url(#g1arrow)"/>
+        <text x="340" y="594" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes</text>
+
+        <text x="320" y="636" text-anchor="middle" font-size="12.5" fill="var(--accent)" font-weight="600">Earns a Harbor task &#8594; Phase 2</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">1.A</span><p>Take the next candidate: either a failure mode from the taxonomy, or a behavior you've deliberately chosen to protect going forward.</p></div>
+      <div><span class="tag">1.B</span><p>A confirmed failure still needs the fix-or-eval check below. A protected behavior skips straight to earning a Harbor task &mdash; there's nothing to try fixing, and it's expected to come back clean.</p></div>
+      <div><span class="tag">1.C</span><p>Ask whether a prompt tweak, a tool fix, or a product change could plausibly kill this failure outright, inside your timebox. Most confirmed failures should be resolved here, never reaching a Harbor task at all.</p></div>
+      <div><span class="tag">1.D</span><p>Make the change you believe fixes it. Writing and running a Harbor task isn't free, so it's always worth trying the cheap fix first.</p></div>
+      <div><span class="tag">1.E</span><p>Regenerate traces and look again, the same way you did the first time you found this failure mode. Gone for good means no task needed. Still there means it earns a Harbor task &mdash; Phase 2 decides what checks it needs.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 1.</b> Two ways in, one way out. A confirmed failure gets a chance to be fixed first; a protected behavior skips straight through, since it's already expected to be reliable. Both paths land on the same outcome: a candidate for Phase 2.</figcaption>
+  </figure>
+
+  <p class="phase-tag">Phase 2 of 5</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 650 700" role="img"
+         aria-label="Draft about five requests for a candidate, each becoming one Harbor task. Write one Harbor task at a time: a request, a starting state, and whatever combination of checks verifies the expected result, a programmatic check, an already-frozen judge, or both. Run that Harbor task five times in a fresh environment and classify it from the result: five of five passes makes it a regression that blocks on any future failure, fewer makes it a capability whose pass rate becomes the baseline. If requests remain in this batch of five, write the next Harbor task. Once the batch is used up, check whether every candidate from phase one has at least one Harbor task yet; if not, draft another candidate's requests; if so, exit to phase three.">
+      <defs>
+        <marker id="g2arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <!-- 2.A -->
+        <rect x="150" y="16" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.A  Draft ~5 requests</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10.5" fill="var(--muted)">each becomes one Harbor task</text>
+
+        <line x1="320" y1="72" x2="320" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#g2arrow)"/>
+
+        <!-- 2.B -->
+        <rect x="150" y="100" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="122" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.B  Write one Harbor task</text>
+        <text x="320" y="140" text-anchor="middle" font-size="10.5" fill="var(--muted)">request + starting state + whatever checks verify it</text>
+
+        <line x1="320" y1="156" x2="320" y2="184" stroke="currentColor" stroke-width="1.5" marker-end="url(#g2arrow)"/>
+
+        <!-- 2.C -->
+        <rect x="150" y="184" width="340" height="60" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="206" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.C  Run the Harbor task 5 times</text>
+        <text x="320" y="224" text-anchor="middle" font-size="10.5" fill="var(--muted)">fresh environment each run</text>
+
+        <line x1="320" y1="244" x2="320" y2="272" stroke="currentColor" stroke-width="1.5" marker-end="url(#g2arrow)"/>
+
+        <!-- 2.D accent -->
+        <rect x="150" y="272" width="340" height="60" rx="10" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="320" y="294" text-anchor="middle" font-size="13" font-weight="700" fill="var(--on-accent)">2.D  Classify from the result</text>
+        <text x="320" y="312" text-anchor="middle" font-size="10" fill="var(--on-accent)" opacity="0.85">5/5 &#8594; regression &middot; fewer &#8594; capability, baseline = c/5</text>
+
+        <line x1="320" y1="332" x2="320" y2="360" stroke="currentColor" stroke-width="1.5" marker-end="url(#g2arrow)"/>
+
+        <!-- 2.E diamond -->
+        <polygon points="320,360 470,416 320,472 170,416" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="411" text-anchor="middle" font-size="11.5" fill="currentColor">2.E  Requests left</text>
+        <text x="320" y="426" text-anchor="middle" font-size="11.5" fill="currentColor">in this batch?</text>
+
+        <!-- 2.E yes -> loop back to 2.B -->
+        <polyline points="170,416 50,416 50,128 150,128" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#g2arrow)"/>
+        <text x="50" y="272" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 50 272)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes &mdash; more requests</text>
+
+        <!-- 2.E no -> down to 2.F -->
+        <line x1="320" y1="472" x2="320" y2="500" stroke="currentColor" stroke-width="1.5" marker-end="url(#g2arrow)"/>
+        <text x="340" y="490" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no</text>
+
+        <!-- 2.F diamond -->
+        <polygon points="320,500 470,556 320,612 170,556" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="551" text-anchor="middle" font-size="11.5" fill="currentColor">2.F  Every candidate</text>
+        <text x="320" y="566" text-anchor="middle" font-size="11.5" fill="currentColor">covered?</text>
+
+        <!-- 2.F no -> loop back to 2.A -->
+        <polyline points="170,556 14,556 14,44 150,44" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#g2arrow)"/>
+        <text x="14" y="300" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 14 300)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no &mdash; candidates remain</text>
+
+        <!-- 2.F yes -> exit -->
+        <line x1="320" y1="612" x2="320" y2="648" stroke="var(--accent)" stroke-width="2" marker-end="url(#g2arrow)"/>
+        <text x="320" y="672" text-anchor="middle" font-size="12.5" fill="var(--accent)" font-weight="600">All candidates covered &#8594; Phase 3</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">2.A</span><p>Write about five distinct requests for this candidate, so it isn't judged on a single phrasing. Each becomes its own Harbor task.</p></div>
+      <div><span class="tag">2.B</span><p>Turn one request into a complete, reproducible Harbor task: the request itself, the state the world starts in, and whatever combination of checks verifies the expected result &mdash; a programmatic check, an already-frozen judge, or both together. Prefer code wherever the result is exact; reach for a judge only where it depends on meaning. If this Harbor task needs a judge that isn't frozen yet, that's a detour out to the Judge Loop to build and calibrate one &mdash; never write a new judge inline here.</p></div>
+      <div><span class="tag">2.C</span><p>Run the same Harbor task five times, in a fresh environment each time. The variance you're measuring is the agent's, not the grader's &mdash; sampling, serving variation, and tool timing all come from the system under test, so this holds whether the Harbor task is graded by code, by a judge, or both.</p></div>
+      <div><span class="tag">2.D</span><p>Five of five makes it a <b>regression</b>; fewer makes it a <b>capability</b>, with the observed pass rate as its baseline. A clean result is unsurprising for a task sourced from a protected behavior (1.B) &mdash; that's the point of writing it. For one sourced from a confirmed failure, a clean result is worth a second look before you trust it: with only five trials, a real but moderate failure rate can look clean by chance alone.</p></div>
+      <div><span class="tag">2.E</span><p>If more requests remain in this candidate's batch of five, write the next Harbor task; once the batch is exhausted, check the suite as a whole.</p></div>
+      <div><span class="tag">2.F</span><p>Stop once every candidate that earned a Harbor task in Phase 1 has at least one Harbor task written. There's no total count to hit &mdash; a dozen or so candidates is typical, but that's a description, not a target. How many requests each candidate gets is a judgment call too: weight it by prevalence or business impact, not by whichever one you found first. Don't force a mix of regression and capability tasks just to check a box; whichever the baseline runs produce is the honest result.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 2.</b> Writing and classifying Harbor tasks. The classification in <b>2.D</b> comes entirely from the five baseline runs &mdash; it's observed, never assigned by how important the candidate feels.</figcaption>
+  </figure>
+
+  <div class="note">
+    <h2>Reading pass@k vs. pass&#710;k</h2>
+    <p>Three inputs, always: <code>n</code> is how many trials you observed, <code>c</code> is how many passed, and <code>k</code> is how many attempts you're asking about &mdash; not something the data gives you, a question you choose to ask of it (e.g. "if the product only gets 3 silent retries, what's the real success rate?").</p>
+    <p>
+      <code>pass@k&nbsp;=&nbsp;1&nbsp;&minus;&nbsp;C(n&minus;c,&nbsp;k)&nbsp;/&nbsp;C(n,&nbsp;k)</code><br>
+      <code>pass&#710;k&nbsp;=&nbsp;C(c,&nbsp;k)&nbsp;/&nbsp;C(n,&nbsp;k)</code><br>
+      where <code>C(x,&nbsp;y)</code> is "x choose y."
+    </p>
+    <ul>
+      <li><b>pass@k</b> is the chance at least one of <code>k</code> attempts succeeds. It rises as <code>k</code> grows. Use it for a <b>capability</b>: can the agent do this at all, given a few tries.</li>
+      <li><b>pass&#710;k</b> is the chance all <code>k</code> attempts succeed. It falls as <code>k</code> grows. Use it for <b>reliability</b>: must this hold on every single interaction &mdash; a permission boundary, a confirmation step &mdash; not just most of them.</li>
+      <li><b>The gate never needs the general formula.</b> At <code>k=1</code>, pass@1 reduces to exactly <code>c/n</code> &mdash; no combinatorics &mdash; which is the "baseline = c/5" in <b>2.D</b>, and what <b>3.B</b> compares a fresh run against. At <code>k=n</code> with <code>c=n</code>, pass&#710;n = 1 &mdash; a regression's "blocks on any of the 5 failing" rule <i>is</i> that one special case. Both get computed exactly twice: once in 2.D to set them, again in every 3.A/3.B cycle to check a fresh run against them.</li>
+    </ul>
+    <p><b>Going deeper on one capability (optional, outside the gate):</b> run its Harbor task 10&ndash;20 times instead of 5, then compute pass@k for several different k from that same set of runs &mdash; 1, 3, 5, 10, 15. If it climbs fast and plateaus near 1 at a small k, that means retries would actually rescue the outcome: build that retry or fallback path into the product rather than spending more effort on the prompt. If it plateaus early and low, no number of retries will save it &mdash; that's a real capability gap needing real work. Either way, if this capability is anywhere near reliability-sensitive, compute pass&#710;k at that same k before reporting results to anyone; it will look much worse than pass@k for the same data, and that's the honest number for "must hold every time."</p>
+    <table class="metrics">
+      <caption>worked example &mdash; 6 passes out of 8 observed runs, k = 4</caption>
+      <thead><tr><th>metric</th><th>value</th><th>reads as</th></tr></thead>
+      <tbody>
+        <tr><td>pass@4</td><td class="num">1.0</td><td>no group of 4 can be drawn entirely from the 2 failures</td></tr>
+        <tr><td>pass&#710;4</td><td class="num">&#8776;0.214</td><td>most groups of 4 still contain at least one failure</td></tr>
+      </tbody>
+    </table>
+    <p>pass@k never decreases as k grows, and typically plateaus somewhere in that 10&ndash;20 range &mdash; that plateau's height is what tells you which of the two situations above you're in.</p>
+  </div>
+
+  <p class="phase-tag">Phase 3 of 5</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 650 320" role="img"
+         aria-label="On every change, run every Harbor task five times in a fresh environment. Decide by kind: a regression blocks the merge if any of its five runs fails; a capability reports pass at 1 and blocks only if the rate falls below its recorded baseline. Once clear, merge and deploy. From here, two separate activities take over on their own schedules: phase four watches production continuously, and phase five recalibrates the judges periodically. Neither is triggered by this figure finishing.">
+      <defs>
+        <marker id="g3arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <!-- 3.A -->
+        <rect x="150" y="16" width="340" height="60" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">3.A  On every change</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10.5" fill="var(--muted)">run every Harbor task, 5 trials each, fresh environment</text>
+
+        <line x1="320" y1="76" x2="320" y2="104" stroke="currentColor" stroke-width="1.5" marker-end="url(#g3arrow)"/>
+
+        <!-- 3.B accent, two subtitle lines -->
+        <rect x="150" y="104" width="340" height="74" rx="10" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="320" y="126" text-anchor="middle" font-size="13" font-weight="700" fill="var(--on-accent)">3.B  Decide by kind</text>
+        <text x="320" y="144" text-anchor="middle" font-size="10" fill="var(--on-accent)" opacity="0.9">regression: blocks on any of the 5 failing</text>
+        <text x="320" y="160" text-anchor="middle" font-size="10" fill="var(--on-accent)" opacity="0.9">capability: pass@1 (c/5), blocks only below baseline</text>
+
+        <line x1="320" y1="178" x2="320" y2="206" stroke="currentColor" stroke-width="1.5" marker-end="url(#g3arrow)"/>
+
+        <!-- 3.C -->
+        <rect x="150" y="206" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="228" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">3.C  Merge &amp; deploy</text>
+        <text x="320" y="246" text-anchor="middle" font-size="10.5" fill="var(--muted)">once every regression is clear</text>
+
+        <line x1="320" y1="262" x2="320" y2="290" stroke="currentColor" stroke-width="1.5" marker-end="url(#g3arrow)"/>
+
+        <text x="320" y="312" text-anchor="middle" font-size="12.5" fill="var(--accent)" font-weight="600">Deployed &#8594; Phase 4 (continuous) &amp; Phase 5 (periodic)</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">3.A</span><p>Every change runs the full suite, the same five-trial protocol used to classify each Harbor task in Figure 2.</p></div>
+      <div><span class="tag">3.B</span><p>A regression is zero-tolerance: any of its five runs failing blocks the merge. A capability never blocks on an absolute number &mdash; only on a drop below the baseline it was given when classified.</p></div>
+      <div><span class="tag">3.C</span><p>The gate's job ends here. It protects every failure mode you already know about; it says nothing about the ones you don't. What happens next is two separate, independent activities &mdash; not a continuation of this one.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 3.</b> The gate decides one thing: can this change merge. It has no opinion on anything that happens after &mdash; that's Figures 4 and 5, each running on its own clock.</figcaption>
+  </figure>
+
+  <p class="phase-tag">Phase 4 of 5</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 650 430" role="img"
+         aria-label="Continuously, independent of any code change: sample a small percentage of live traffic and grade it with the frozen judges only, since code checks are already covered by the gate in phase three. Correct the raw rate using each judge's last-measured true positive and true negative rate, and watch the corrected rate over time. If it is not rising, loop back and keep sampling. If it is rising, fix the agent, the same corrective action as phase one's 1.C, then loop back and keep sampling to confirm the corrected rate comes back down. This figure can only re-measure failure modes already in the taxonomy; finding a genuinely new one takes a separate, periodic human review of production traces. A judge's own accuracy is checked separately, in phase five, not shown here.">
+      <defs>
+        <marker id="g4arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <!-- 4.A two subtitle lines -->
+        <rect x="150" y="16" width="340" height="74" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">4.A  Sample &amp; grade with judges</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10" fill="var(--muted)">small % of live traffic, continuously, async</text>
+        <text x="320" y="72" text-anchor="middle" font-size="10" fill="var(--muted)">code checks don't need this &mdash; Phase 3 already covers them</text>
+
+        <line x1="320" y1="90" x2="320" y2="118" stroke="currentColor" stroke-width="1.5" marker-end="url(#g4arrow)"/>
+
+        <!-- 4.B -->
+        <rect x="150" y="118" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="140" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">4.B  Correct &amp; watch the trend</text>
+        <text x="320" y="158" text-anchor="middle" font-size="10.5" fill="var(--muted)">raw judge rate &#8594; true rate, via its last-measured TPR/TNR</text>
+
+        <line x1="320" y1="174" x2="320" y2="202" stroke="currentColor" stroke-width="1.5" marker-end="url(#g4arrow)"/>
+
+        <!-- 4.C diamond -->
+        <polygon points="320,202 470,258 320,314 170,258" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="253" text-anchor="middle" font-size="11.5" fill="currentColor">4.C  Is the corrected</text>
+        <text x="320" y="268" text-anchor="middle" font-size="11.5" fill="currentColor">rate rising?</text>
+
+        <!-- 4.C no -> loop back to 4.A -->
+        <polyline points="170,258 30,258 30,53 150,53" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#g4arrow)"/>
+        <text x="30" y="156" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 30 156)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no &mdash; keep sampling</text>
+
+        <!-- 4.C yes -> down to 4.D -->
+        <line x1="320" y1="314" x2="320" y2="342" stroke="currentColor" stroke-width="1.5" marker-end="url(#g4arrow)"/>
+        <text x="340" y="332" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes</text>
+
+        <!-- 4.D -->
+        <rect x="150" y="342" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="364" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">4.D  Fix the agent</text>
+        <text x="320" y="382" text-anchor="middle" font-size="10.5" fill="var(--muted)">same corrective action as 1.C/1.D</text>
+
+        <!-- 4.D -> loop back to 4.A, right side -->
+        <polyline points="320,398 320,414 580,414 580,53 490,53" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#g4arrow)"/>
+        <text x="600" y="234" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 600 234)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">fixed &mdash; keep watching to confirm</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">4.A</span><p>Code checks don't need this step &mdash; the gate in Phase 3 already re-verifies them on every change, with the matching scenario guaranteed by the Harbor task itself. Judges generalize to live traffic without that guarantee: a judge reasons over whatever trace it's handed, rather than assuming a human already confirmed the scenario applies.</p></div>
+      <div><span class="tag">4.B</span><p>A judge's verdict on one trace is an inference, not a lookup &mdash; right only as often as its last-measured TPR and TNR. Correcting the raw rate, and watching the corrected number over time, turns an imperfect per-trace grader into a trustworthy signal about the agent as a whole.</p></div>
+      <div><span class="tag">4.C</span><p>A rising corrected rate means an already-known failure mode is happening more often in the wild than its Harbor task suggested &mdash; not a new discovery, just a more honest reading of an old one. A judge only ever answers the one question it was built for; finding a genuinely new failure mode takes an actual human reading traces with no checklist, the same open coding the Taxonomy Loop runs, applied periodically to a fresh production sample. That's a separate activity this figure doesn't do.</p></div>
+      <div><span class="tag">4.D</span><p>This is the same move as 1.C, triggered by a different signal: not one Harbor task's baseline, but the agent's actual rate across the full diversity of real traffic. Verify the fix by watching this same corrected number come back down over the next few sampling cycles &mdash; not by rechecking the narrow Harbor task, which may never have reflected the real-world severity to begin with.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 4.</b> The gate in Figure 3 only ever tests a candidate's five scripted requests. This re-measures the same known failure modes against the full diversity of real traffic &mdash; a more honest number, not a new discovery. If it's worse than the gate ever showed, the fix is the same move as 1.C; confirm it worked by watching this same number, not the narrow task.</figcaption>
+  </figure>
+
+  <p class="phase-tag">Phase 5 of 5</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 650 480" role="img"
+         aria-label="Periodically, independent of the gate and the continuous sample: hand-label a fresh batch of production traces from scratch, then recompute the judge's true positive and true negative rate by comparing its calls on that batch to the human labels. Check whether those numbers have drifted from what is currently on file. If they have, the judge needs revising in the judge loop, using these fresh labels as a starting point. If not, the refreshed numbers simply replace what is on file, feeding the correction step in phase four until the next cycle.">
+      <defs>
+        <marker id="g5arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <!-- 5.A -->
+        <rect x="150" y="16" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">5.A  Hand-label a fresh batch</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10.5" fill="var(--muted)">new production traces, labeled by a human from scratch</text>
+
+        <line x1="320" y1="72" x2="320" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#g5arrow)"/>
+
+        <!-- 5.B -->
+        <rect x="150" y="100" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="122" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">5.B  Recompute TPR/TNR</text>
+        <text x="320" y="140" text-anchor="middle" font-size="10.5" fill="var(--muted)">the judge's calls on this batch, vs. the human labels</text>
+
+        <line x1="320" y1="156" x2="320" y2="184" stroke="currentColor" stroke-width="1.5" marker-end="url(#g5arrow)"/>
+
+        <!-- 5.C diamond -->
+        <polygon points="320,184 470,240 320,296 170,240" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="235" text-anchor="middle" font-size="11.5" fill="currentColor">5.C  Drifted from</text>
+        <text x="320" y="250" text-anchor="middle" font-size="11.5" fill="currentColor">what's on file?</text>
+
+        <!-- 5.C no -> down to 5.D -->
+        <line x1="320" y1="296" x2="320" y2="324" stroke="currentColor" stroke-width="1.5" marker-end="url(#g5arrow)"/>
+        <text x="340" y="314" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no</text>
+
+        <!-- 5.C yes -> bypass to external exit -->
+        <polyline points="470,240 580,240 580,420 340,420" fill="none" stroke="var(--warn)" stroke-width="1.5" marker-end="url(#g5arrow)"/>
+        <text x="600" y="330" text-anchor="middle" font-size="10.5" fill="var(--warn)" transform="rotate(-90 600 330)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes &mdash; accuracy has shifted</text>
+
+        <!-- 5.D -->
+        <rect x="150" y="324" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="346" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">5.D  Record the refreshed numbers</text>
+        <text x="320" y="364" text-anchor="middle" font-size="10.5" fill="var(--muted)">this is what Phase 4 corrects against next</text>
+
+        <!-- 5.D -> loop back to 5.A -->
+        <polyline points="320,380 320,398 60,398 60,44 150,44" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#g5arrow)"/>
+        <text x="60" y="221" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 60 221)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">wait for next cycle</text>
+
+        <text x="320" y="444" text-anchor="middle" font-size="12.5" fill="var(--warn)" font-weight="600">Drifted &#8594; revise in Judge Loop</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">5.A</span><p>Draw a fresh sample of production traces &mdash; different ones from whatever Phase 4 is currently sampling &mdash; and have a human label each one from scratch: is the failure really there or not, in their own judgment.</p></div>
+      <div><span class="tag">5.B</span><p>Compare the judge's calls on this same batch to those human labels, the same way the Judge Loop measured it the first time. This produces a TPR and TNR measured right now, not whenever the judge was originally frozen.</p></div>
+      <div><span class="tag">5.C</span><p>Check the new numbers against whatever's currently on file. A small, expected amount of noise batch to batch isn't drift; a real, consistent shift means the judge itself needs attention &mdash; revise the prompt or collect new examples in the Judge Loop, using these fresh labels as a starting point, before trusting its verdicts further.</p></div>
+      <div><span class="tag">5.D</span><p>If nothing's drifted, the refreshed TPR/TNR simply replace what's on file &mdash; this is the exact number Phase 4 corrects against until the next cycle.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 5.</b> Keeping the grader honest, on its own periodic schedule &mdash; every few weeks, independent of both the gate and the continuous sample. Phase 4 trusts a TPR/TNR number; this is the only place that number ever gets checked against real ground truth again.</figcaption>
+  </figure>
+
+  <div class="note">
+    <h2>Three things this isn't</h2>
+    <ul>
+      <li><b>Not a push for a fully green suite.</b> A 100% pass rate across the whole suite usually means you've stopped finding problems, not that there aren't any. It's fine &mdash; expected, even &mdash; for one cheap regression check to sit at 100% forever; what should make you uneasy is the aggregate, when nothing left in the suite is still failing.</li>
+      <li><b>Not a reason to eval everything you observe.</b> Most failure modes should die inside the timebox in Figure 1, to a prompt tweak or a product change, before they ever reach a Harbor task. Each trial is a full agent run, and a judge check adds a model call on top &mdash; a suite built to cover every observed behavior stops being one you can afford to run.</li>
+      <li><b>Not one pipeline.</b> Figure 3 only protects against failure modes you already know about, and only on their five scripted requests. Figure 4 gives those same known modes a more honest reading against real traffic &mdash; it can't surface one that was never in the taxonomy; that takes a human reading traces with no checklist. Figure 5 keeps the judges doing that reading honest. All three are separate activities on separate schedules &mdash; not sequential stages of a single process.</li>
+    </ul>
+  </div>
+
+  <footer>
+    A process guide for building and maintaining a versioned Harbor task suite: gated on every change, watched continuously after deploy, and kept honest by its own periodic judge recalibration &mdash; not a record of any particular run.
+  </footer>
+
+</div>

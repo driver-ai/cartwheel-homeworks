@@ -1,0 +1,1774 @@
+Shreya Shankar
+
+Hey.
+00:01:02
+Hamel Husain
+
+Hello.
+00:01:03
+
+Alright, let me, get it going.
+00:01:06
+Shreya Shankar
+
+Sounds good. Let me share my screen.
+00:01:08
+
+You can see my screen.
+00:01:32
+Hamel Husain
+
+Yeah, I can see your screen.
+00:01:34
+Shreya Shankar
+
+Excellent. Okay, for some reason, I can't see… okay, now I see the Zoom bar, so I can see people's faces, and…
+00:01:36
+
+Whenever I hover over it, I can see the chat. Perfect. Okay, so welcome to the last lesson of the cohort to everyone. We're going to be talking about improving cost. So concretely that means actually how do you decrease the cost of your agents as your agents get very expensive. And actually the reason why we cover this at the really end is because you need to make sure you have evals that you could be confident that the accuracy of your agent is
+00:01:46
+
+high enough before you start thinking about cost optimization. So you know, a lot of people think.
+00:02:10
+
+Why don't we talk about this first? Well…
+00:02:16
+
+The point being is that you shouldn't really try to be reduced cost before you actually know your application is good. So anyways, finally, we have made it to the point where we can start talking about improving cost.
+00:02:19
+
+So far, you know, we've been going through this analyze, measure, improve lifecycle of evals. So in Analyze, we talked about how we can instrument our application to log the traces, look at the traces, do error analysis, which involves open coding, axial coding.
+00:02:30
+
+So we did that in Lecture 3. In Lecture 4, we talked about how we might use LLM judges.
+00:02:47
+
+or sorry, in Lecture 4, we talked about axial coding. In Lecture 5, we talked about how we might use LLM judges to start measuring the prevalence of those axial codes at scale.
+00:02:54
+
+Lecture 6, we talked about CI. Lecture 7, CI, CD, as well as some sort of stuff around safety.
+00:03:04
+
+And then finally, this past week, we've been in the improve part of the lifecycle. We've been talking about — last time, we talked about how we might improve accuracy and specifically how we might invoke auto research style tools to help us.
+00:03:13
+
+Then today, we're going to do the flip side of that, which is how do we improve cost? And before I go into the four points of today's agenda, I want to hand it actually over to Hamel.
+00:03:26
+
+To talk a little bit about, you know, he has a few slides he wants to share, so…
+00:03:36
+Hamel Husain
+
+Yeah, let's go do it. Okay, I have a little bit of surprise for everybody.
+00:03:42
+
+And let's start… let's, get into it.
+00:03:46
+
+Alright, so… All right. Can you see my slides?
+00:03:48
+Shreya Shankar
+
+No.
+00:03:53
+Hamel Husain
+
+Oh, you can? Okay, let me try again.
+00:03:54
+Shreya Shankar
+
+Maybe I need to stop.
+00:03:58
+Hamel Husain
+
+Potentially. There's, like, could be different paths.
+00:04:01
+Shreya Shankar
+
+the.
+00:04:05
+Hamel Husain
+
+On top of Zoom? Okay. Yeah, like, Zoom is kind of unintuitive sometimes.
+00:04:05
+
+Okay, so really quickly, first I want to say thank you.
+00:04:12
+
+We have up, you know, this is the first time we're teaching this updated material.
+00:04:16
+
+We worked really hard over the summer, particularly Shreya, like, redoing the entire course to, like, update it.
+00:04:21
+
+And it's been a very… it's been a pleasure teaching y'all. Really enjoyed this experience.
+00:04:29
+
+Let me… okay. But, we know you want to learn more.
+00:04:37
+
+Okay.
+00:04:41
+
+Some people… we've heard from the comments, like.
+00:04:42
+
+And it's natural, like, okay, some, you know, you might have questions about retrieval, machine learning. We've heard questions like, hey, like, how do you train these models? Like, you know, some people are interested in…
+00:04:46
+
+sort of using evals in their work. They might be training small models. Some people have questions with data science, because I brought up data science several times. I have a data science background, so people wanted to know, oh, like, how do we learn data science?
+00:04:58
+
+A lot of questions in the Discord about Agentic architecture, okay? Like, how do you…
+00:05:12
+
+you know, beyond evals, like, how do you make these systems? Design has come up quite a lot, like, how do you design products? Cybersecurity?
+00:05:19
+
+And a lot more.
+00:05:28
+
+But, okay, so we can't teach you all of that, because… So, first of all.
+00:05:30
+
+That's a lot. If we try to throw all of that out at you.
+00:05:36
+
+You won't learn anything.
+00:05:40
+
+Secondly, we believe in focus, so we go really deep on evals.
+00:05:41
+
+And we, kind of, We make sure that you get the best education possible when it comes to evals.
+00:05:46
+
+And it wouldn't be… it wouldn't be right for us to teach you all those things, honestly. We may know some of those things.
+00:05:53
+
+But you should be, sort of, getting your information from the experts. Now, is the solution just take 15 courses? Like, what is Hamel gonna… you might be racing through your mind, what the is Hamel gonna say? Is he gonna take 15 courses? And, like, no! No, you can't do this! Like, don't just take a whole bunch of courses. Plus, everybody's interests are so different.
+00:06:00
+
+Okay? And, like, evals is a good foundation. Now you know, like, how to think about what good looks like.
+00:06:20
+
+Now you can branch out according to your strengths and your interests. I've had people email me, like, about design or data science, machine learning, and those are, like, different paths.
+00:06:26
+
+And so, like, how did we learn all this stuff? Or I could say, like, how did I learn all this stuff? Okay, lots of practice.
+00:06:37
+
+But we might be thinking, that's great Helm of Loster practice, how am I going to get practice? How are you going to get practice?
+00:06:46
+
+And, like, learn all this stuff.
+00:06:53
+
+is a chicken and egg problem, right? It's like, okay, great, like, go get a job, and then learn it, but how am I gonna get the job?
+00:06:56
+
+It's classic, right?
+00:07:02
+
+So, like… From a practical perspective, where have I learned a lot? Books.
+00:07:04
+
+So, a lot of books out there. These are some of my favorite ones, and I'll give you a link.
+00:07:11
+
+Sebastian Roshka, really like it. This is, like, my favorite book, because I'm a data, like, data scientist machine learning person. So these are some books.
+00:07:16
+
+And the thing is, like, okay, this is, you know, kind of going towards books that
+00:07:25
+
+Sort of help you explore those interests is a really good idea.
+00:07:32
+
+Now, There is a platform called O'Reilly, which I want to show you real quick.
+00:07:37
+
+And, let me… Just… Changed my window to that.
+00:07:45
+
+I don't know if it's… Is it showing the browser, or what is it showing?
+00:07:51
+
+Is it showing?
+00:07:57
+Shreya Shankar
+
+Your browser. Yeah.
+00:07:58
+Hamel Husain
+
+Showing O'Reilly.
+00:07:59
+Shreya Shankar
+
+Yep.
+00:08:00
+Hamel Husain
+
+Okay, great. Okay, so this is a platform called O'Reilly. It's really, like, convenient. You can, like, browse all kinds of books. Like, we actually have an evals book here. It's… your course reader is way more detailed, so don't worry about that.
+00:08:01
+Shreya Shankar
+
+Yeah, that's true.
+00:08:15
+Hamel Husain
+
+This takes a long time to publish a book, and that, you know, so that is, like,
+00:08:15
+
+sort of, like, a basic version of what you have. But, in here, you have, like, all kinds of things you can do. There are, of course, books, there's courses, there's all kinds of stuff.
+00:08:20
+
+And… Because Shreya and I have been Publishing a book with them.
+00:08:31
+
+you know, Sharon and I put our heads together, like, okay, how do we, like, give people the resources to go off and explore all these topics?
+00:08:39
+
+And because we were authors on this platform, We…
+00:08:46
+
+sort of negotiated as hard as we could with O'Reilly to say, like, oh, hey, we need you to give our students access to this.
+00:08:51
+
+So they gave us… we tried to get as many seats as possible. They only give us a limited amount of seats.
+00:08:59
+
+But they gave us, like, 500, which is quite a lot.
+00:09:07
+
+And so.
+00:09:11
+
+What we've done is we said, okay, like, what we would ask for you is, like, hey, we would like honest feedback on this class, because we use that to keep improving the course and, like, understand what to do.
+00:09:13
+
+We have this sort of…
+00:09:24
+
+link here, bit.ly evals-review, I'll put it in the chat. You can…
+00:09:29
+
+Sort of put your Maven email in there.
+00:09:34
+
+We ask you to…
+00:09:37
+
+you know, for a review, if you want to give it. If you don't want to give a review, you can link to, like, a random LinkedIn post or whatever, if you just want to go past the screen, but please don't do that. We would really like your review. We really appreciate it, okay? And we want an honest review, okay?
+00:09:39
+
+In return, like, you'll get access to this platform for 30 days. Now, it's only… there's only 500, it's first come, first serve.
+00:09:56
+
+You'll see a page like this, there'll be a video like this, I'm wearing the same sweater, and you can make fun of me for that later.
+00:10:05
+Shreya Shankar
+
+the.
+00:10:12
+Hamel Husain
+
+But, yeah, and it expires on October 18th.
+00:10:13
+
+So there's that, and I also want to tell you that everybody who has registered for Cohort 6, who is eligible, which is, like, 99.9% of the people, we have, as of this morning, we have enrolled everybody in the next cohort.
+00:10:19
+
+So, all of you can continue learning with us.
+00:10:33
+
+And yeah, we went ahead and just did that automatically for all of you.
+00:10:37
+
+So, that's a… that's a… Usually, we have you fill out a form and blah blah, whatever, but since this is the first cohort of this kind.
+00:10:43
+
+We want to make sure, like, you can continue learning. We know this is a lot of information.
+00:10:52
+
+So yeah, I just wanted to let you all know about that. Again, this is the link.
+00:10:58
+
+I'll put this link in the chat.
+00:11:03
+
+And…
+00:11:05
+Shreya Shankar
+
+Awesome.
+00:11:06
+
+People are super happy about this.
+00:11:07
+
+They're all very happy to be enrolled in the next cohort, and many are saying either they can catch up on the homework, or they need not catch up on homework, because they could just do it next time. So…
+00:11:10
+
+That's fun.
+00:11:21
+
+Alright, let's get back to the slides. Also, by the way, huge shout out to Hamel to get this O'Reilly
+00:11:23
+
+kind of deal. It took a long time, a lot of effort. It was really all him. He's very generous to give me the credit, so really thank him.
+00:11:30
+
+He is really bullish about making sure folks really have access to… to go on and do the next thing post the evals course. There's so many things we taught you, but obviously people are going to want to go into more… some topics in more depth, so.
+00:11:38
+
+Very excited for you guys to have that opportunity.
+00:11:53
+
+Alright, so today's lecture, going… paging back in this context, we're going to talk about cost, cost optimization. First, our… most of it is actually going to be whiteboard, but I have a few slides to ground us.
+00:11:56
+
+First, we're going to talk about the cost and accuracy frontier, so thinking about, you know, how cost and accuracy are actually two sides of the same coin. I think a lot of people don't realize this, so it's not either I drop cost or I improve accuracy. Really, there is this space
+00:12:10
+
+of cost and accuracy that we're trying to navigate. And improving one might decrease the other, and so forth.
+00:12:27
+
+Then the next thing we'll talk about is two ways to reduce costs. So the first broad category of ways to reduce costs is to do less work with the LLM. So try to reduce the number of tokens, reduce the number of agent steps, stuff like that.
+00:12:34
+
+Then.
+00:12:49
+
+The other category of ways to reduce costs is make the work that the LLM sees, make that work cheaper. So I'll talk about a couple of strategies there.
+00:12:50
+
+And I'll point you to one strategy that I like to use called Model Cascades that is far more in-depth. We have a lightning lesson that we've recorded that's really good about that.
+00:13:00
+
+And then, last but not least, we'll talk about, you know, a lot of frequently asked questions we get of, you know, when do I fine-tune my own models, change my model's weights? What do I… you know, what do I need to consider when I'm updating model versions, and so forth? So, we'll talk about that at the end.
+00:13:10
+
+And feel free to post in questions as we go along, yeah.
+00:13:29
+
+Great, so let's talk about this cost accuracy frontier. Hopefully people can see my… Excalidraw screen.
+00:13:35
+
+Yeah. Yes, I can.
+00:13:42
+Hamel Husain
+
+I'm excited about the whiteboard, yes.
+00:13:43
+Shreya Shankar
+
+Hamel's favorite thing. Great. So, first thing I want to talk about is the cost.
+00:13:45
+
+Accuracy Frontier.
+00:13:54
+
+And I want to distill this principle, or instill this principle in everybody, which is cost and accuracy are two sides.
+00:13:58
+
+Of the same improvement.
+00:14:07
+
+point.
+00:14:10
+
+Okay, we actually shouldn't consider them separately, but for the sake of the lecture, we do.
+00:14:14
+
+And you might hear the term Pareto frontier thrown around a lot.
+00:14:19
+
+Oh.
+00:14:26
+
+It's not too bad.
+00:14:28
+
+Okay, so I actually never really remember which access is cost and which access is accuracy, because people will.
+00:14:48
+
+people will use different ones, but I'm gonna put cost on the x-axis, because it's a little bit more controllable.
+00:14:58
+
+And then accuracy is more so for unknown.
+00:15:07
+
+Alright, so if you were to imagine all of the models out there in the world, and, you know, what their performance might be, you might be tempted to think, okay, I will only measure the accuracy of this model, and then I will store the accuracy somewhere. And if I were to pick the best model for my task, I'll just pick the model with the best accuracy.
+00:15:14
+
+Often that is not the case. What we end up seeing is if we actually plot the cost as well as the accuracy, I'm gonna put different, I'm gonna I'm gonna put some circles for things.
+00:15:32
+
+What ends up happening is, most of the time.
+00:15:43
+
+You know, the low-cost ones have… Low accuracy.
+00:15:48
+
+Can you guys see what I'm putting here, actually? Or…
+00:15:54
+Hamel Husain
+
+Yeah.
+00:15:57
+Shreya Shankar
+
+Is it too small? Is it too small? Let me, maybe it's, you know, it'll be easier if I just do this.
+00:15:57
+
+For some reason, I can't make this… All right.
+00:16:15
+
+So, most of the ones that are low cost will be low accuracy, higher cost, and usually it's, like, exponentially higher cost leads to a linear increase in accuracy. All that means is, if I move very far along the cost spectrum, so let's say here.
+00:16:23
+
+I get a slightly higher increase, so let's move it here.
+00:16:41
+
+And then I move even further.
+00:16:45
+
+It ends up looking like this.
+00:16:48
+
+And then if I were to actually give concrete model names, you know.
+00:16:54
+
+I'm really just making this up, but maybe this is, like, Fable.
+00:17:01
+
+Maybe… I don't know, Hamel, pick your favorite cheap model.
+00:17:07
+Hamel Husain
+
+Luna.
+00:17:12
+Shreya Shankar
+
+Luna.
+00:17:13
+
+Okay.
+00:17:17
+
+All right, everyone with me so far, this idea that you know a small increase in accuracy.
+00:17:18
+
+probably is only a result of, you know, exponential increase in cost. That's just how these models are working. So now, the point that I want to make
+00:17:24
+
+Is that… Sometimes.
+00:17:33
+
+You… for your task, you might end up seeing A point, like, right here.
+00:17:38
+
+Or you might end up seeing a point, like, right here.
+00:17:50
+
+And this is extremely task-specific. Like, I… you won't…
+00:17:57
+
+You can imagine having this plot, right, for a frontier model benchmark, but when you run your task on many different models, you will find a different-looking plot.
+00:18:02
+
+But the shape of the plot is going to look something like this. And so, when you think about, okay, like, what is the best point on this frontier for your application?
+00:18:12
+
+Right? What…
+00:18:22
+
+I guess maybe I'll poll the audience. Which point here, which one of these points would you probably think that you want to deploy?
+00:18:25
+
+Lots of stuff coming in.
+00:18:47
+
+It depends, yes. Okay, of course, the answer is it depends, right? Your application might have accuracy requirements.
+00:18:50
+
+But generally, I like to think, okay, we probably want to deploy this red dot in the middle, right? Because it is almost the same accuracy as, like, a Fable-style model. I don't know, maybe this is, like.
+00:18:57
+
+Soul with… Or Astra with high reasoning, or something.
+00:19:11
+
+But anyway, so we could, in theory, deploy this.
+00:19:17
+
+And most people might jump to, okay, I'm going to deploy Astra, because that's the only thing that gives me high enough accuracy.
+00:19:21
+
+But often, when you actually do measure the cost and accuracy of all the models, you'll find that there is a point like this, and you'll want to deploy this.
+00:19:27
+
+And so when you think about accuracy and cost here, you could think about, okay, if I want to improve my model, right, I could either try to take these points on the right, these fable points.
+00:19:36
+
+And try to say, okay, how can I reduce the cost of them while trying to maintain the same accuracy?
+00:19:48
+
+Or I can think, okay, maybe I can take a model like Luna.
+00:19:54
+
+And then run auto-research-style methods on Luna to then try to improve the accuracy while maintaining similar cost.
+00:19:58
+
+So that's what you want to think about. It's never…
+00:20:08
+
+either-or accuracy or cost improvement. It is, where are we on this Pareto frontier? I've done some work to measure out the model performance for my task on my own evals, and then depending on where these points are, like, for example, I really like this red point in the middle.
+00:20:11
+
+Or, I have a feeling that, you know, this blue point can probably be increased in accuracy without much improvement in the cost, and so I can work on doing auto-research on this blue point to get us, like, maybe up here. Ideally, that would be nice.
+00:20:27
+
+Let's see… can even visualize that for… Us.
+00:20:46
+
+I'm gonna do plus auto research, so people know that it's…
+00:21:02
+
+I did auto research, and therefore I…
+00:21:05
+
+was able to move this point up to this. If this one is Astra.
+00:21:08
+
+Then, another technique that I could try to do is, okay, I'm going to try to make this reduce in cost.
+00:21:19
+
+With some cost reduction techniques.
+00:21:26
+
+Here.
+00:21:41
+
+And then usually in practice, it ends up being, like, slightly less accurate.
+00:21:43
+
+And then I'll call it plus KV caching.
+00:21:51
+
+That's a technique that we'll go over today.
+00:21:54
+
+Okay, so this is kind of how you want to think about development.
+00:21:58
+
+You know, there's… there's no one great model. Every model has different costs and accuracy, and you…
+00:22:02
+
+add a technique to either… to push points on the Pareto frontier. And actually, there will be a lot of points when you do measure out all of the models that you could use, like, there will be a lot of pretty useful… useless points, like, you'll see a lot of stuff, like, here, like…
+00:22:08
+
+I don't know, I don't want to call out anybody's models by name.
+00:22:23
+
+But, like, you'll end up seeing… points here that
+00:22:27
+
+You know, or just… they never make sense to use, unless you have, like.
+00:22:32
+
+I don't know. It's a regulation that you have to use that.
+00:22:37
+
+Alright, let me check the chat for any questions so far, and maybe Hamel, if there is something that comes to mind for you here.
+00:22:41
+Hamel Husain
+
+Not really. I mean, just keep in mind, folks, that, okay, by accuracy, we are meaning accuracy on the task that you care about.
+00:22:52
+
+And when you see, when you see this graph from foundation model providers, OpenAI,
+00:22:59
+
+Anthropic, whatever, they're showing you this graph.
+00:23:06
+
+on benchmarks.
+00:23:09
+
+But for you, you probably care about it for your evals.
+00:23:12
+
+Some people have commented like, hey, like, how does is this change over time? Yeah, it definitely changed over time.
+00:23:16
+Shreya Shankar
+
+Absolutely.
+00:23:23
+Hamel Husain
+
+you know, that is not so interesting. I mean, there's always going to be a Pareto frontier.
+00:23:23
+
+people are going to be competing with each other. This will shift and kind of wiggle around. But that's fine. Like, you know, these are… they're always competing with each other. As soon as, like, somebody drops their price, we see other people drop their price, and it's like, there's market dynamics.
+00:23:29
+
+Someone, awesome ask about harness… harnesses. So…
+00:23:45
+
+Yeah, there's… is… are, you know, other things… can other things increase accuracy? Yes, but we're not focused on that. We're… this graph, this.
+00:23:51
+
+Framing is about, hey, keep everything else fixed, your agent architecture, your harness, whatever, and then we are just talking about model choice versus cost.
+00:24:00
+Shreya Shankar
+
+Yeah. I mean, you can… so all of these dots are versions that you define. So I like to… when you start out building your agent, I like to try a lot of different models and say, version equals different model, because I haven't done anything to think about harness optimization or different prompts under consideration or whatever.
+00:24:11
+
+The point that I want to… when I start getting into, like, okay, I'm gonna try maybe the OpenAI harness versus the Claude harness, then that actually leads to two different points that you could try out, right? You could benchmark the OpenAI harness, you could benchmark the.
+00:24:29
+
+Claude SDK harness, and then each of those will lead to a different point.
+00:24:43
+
+on this frontier, and then you can pick the one that is better on the frontier for you. I like what Hamel said, like, this is a framing for you to think about, right? So, just don't start thinking about optimization before you've…
+00:24:47
+
+put this framing in front of you, you understand, okay, there are trade-offs between this accuracy and cost, and you want to also know where here you are.
+00:24:59
+
+like, if you are… maybe you're working on an application that really needs to have low cost, so you should only really focus on, okay, how can I either bring these right points to the left, or bring these bottom points up, right? Like, you want to get to low cost, high accuracy. Like, this top left is…
+00:25:08
+
+It's, like, the dream spot, right, for your agent.
+00:25:27
+
+Okay.
+00:25:31
+
+Yeah, can we also add timeline? I think Hamel answered that question. Like, this Pareto frontier is always evolving. When a new model comes out, I always just run it on my evals and try to see where on the frontier that it lies. And, as over time, generally.
+00:25:33
+
+the Pareto frontier of this chart ends up moving, like, to the top and to the left, but often new models come out that
+00:25:49
+
+don't. They get subsumed by the frontier because they just weren't good for my task. They were good for, I don't know, like, cybersecurity or something that the frontier models are training for. Actually, 100% of the time that I've worked on a task, the frontier model, like.
+00:25:58
+
+the benchmarks do not align with my own application's Pareto frontier. So, I never look at the benchmarks anymore.
+00:26:12
+
+To try to determine which model is going to be better for my use case.
+00:26:21
+
+Alright, so I think that folks probably get a sense for what this framing is like, and then I want to move towards the next thing, the strategy of, okay, now imagine that
+00:26:26
+
+I am working with an Astra-like model, so I'm working with a right… top right point here. So, high accuracy, high cost.
+00:26:39
+
+How can I move it towards the left?
+00:26:49
+
+But still keep it at the top of the plot.
+00:26:53
+
+Okay, so I don't want it to move it to the left and down very much, I just want to move it to the left, not down.
+00:26:56
+
+So, the first thing that we recommend everybody does, this is the easiest, the lowest hanging fruit, is to try to make sure your model is operating on as few tokens as possible. So, I like to call this, do less work. Do less work for your models.
+00:27:02
+
+And so there are many different strategies that I'll talk about here. Here are just the ones that are really easy. So one is, you know, can we have shorter outputs? So instruct our models to be a little bit more concise.
+00:27:16
+
+Especially with reasoning efforts.
+00:27:29
+
+Right? Some of these models just think a lot, output a lot of tokens.
+00:27:31
+
+So you can, in practice, ask it to reason less, and see if that works… gives you the same high accuracy. Or you can still ask it to reason, but then after it's finished reasoning, throw away that reasoning tokens from your trace, and as you issue subsequent calls on your trace, at least you have fewer tokens to reason about.
+00:27:36
+
+Also smaller tool results, like, the number of times I've seen applications that do retrieval, that are retrieving, like, 200, 300 items and dumping them in context into an LLM, that is a surefire way.
+00:27:56
+
+to pay a lot more than you need to. One thing that we… I like to do in the case where you might eventually need all top 200 or 300 things to retrieve, maybe you could do some sort of progressive disclosure here.
+00:28:11
+
+So what that means is you can ask your agent to only retrieve, you know, the top 10 items from the database, and then if the agent says, no, the answer is not in there.
+00:28:26
+
+Then you can go and retrieve the next 10 items.
+00:28:36
+
+And so forth, so on and so forth, until the agent has found the answer. So think of this as a more paginated search. This ends up almost always being far cheaper than if you just dump all of the search results into your agent's context, which, you should check your agents, because they might actually accidentally be doing that.
+00:28:39
+
+Less retrieval depth, very similar. Actually, I gave a retrieval example for these tool results, but.
+00:28:58
+
+Less retrieval depth, same thing of just, you know, don't retrieve too many outputs, retrieve as few as you need.
+00:29:05
+
+There's another strategy, then, of, okay, like, imagine that you have tried to, you know, make your prompts and your tool calls and everything as concise as possible. Maybe an agent is just too expensive for the task.
+00:29:13
+
+So, if the agent's act of reasoning over the steps that it needs to do, maybe you can do that up front. You can realize, like, for example, for Cartwheel, Cartwheel's agent, maybe we know
+00:29:27
+
+we could, have a cheaper way to determine, you know, what kind of more rigid pipeline the request goes into, instead of having an agent try to basically come up with the steps that we need to solve the cartwheel question. So we might realize, like, oh, the customer has a question, so we're going to route it to a customer-specific pipeline. A store manager has a question, we might route it to a store manager pipeline. It's a little bit more work.
+00:29:41
+
+to hand engineer all of these pipelines. But it can be a lot cheaper because we have fixed all of the steps and I'm not going into it in too much detail. But you can check out this article here from Anthropic on building effective agents and they make a good distinction about workflows.
+00:30:06
+
+versus agents. So workflows here are systems where LLMs and tools are orchestrated through the predefined code paths.
+00:30:25
+
+Agents, on the other hand, are systems where LLMs dynamically direct their own processes and tool usage, such as the Cartwheel agent that we've been building in this course.
+00:30:33
+
+And it talks about, you know, when to use agents, when not to, and when you can use more workflows, frameworks for workflows, and they also have very good pictures of, you know, how you might think about building such things.
+00:30:44
+
+Here's a workflow around prompt chaining. So basically, you just fix whatever LLM steps that you want to do and then push your data through it to get the output. This ends up being you know far cheaper than using an agent. The downside, right, is that it's not as flexible.
+00:31:00
+
+So this is very, very task-specific. You need to, like, really think about how are your evals doing, what's the complexity of your task, right? Can you afford to use this kind of cheaper architecture? You can save orders of magnitude of cost this way, but again, it's not as flexible.
+00:31:18
+
+I'll let you guys read this on your own time. Just something that I've linked here, because I think it's pretty good.
+00:31:36
+
+The last point that I want to bring up here for doing less work is often you don't need to do LLM work in the real time, in the critical path. It is something that can be done in a background or async job.
+00:31:43
+
+And I encourage you to really think about your applications, and think about, okay, do we really need real-time responses or not? Because
+00:31:57
+
+Sometimes… most of… many times, you actually don't need to. For example, for this new JEF model that's come out, if you're using it to kind of tag some of your unstructured reports or your unstructured data, and then you want to do analysis on that.
+00:32:06
+
+These are the kinds of jobs that can be done in an async or offline setting. And then…
+00:32:20
+
+when you do that, then you can try to batch the work together. You can use the batch API that's provided by many of these model providers, like OpenAI and Claude have a 50% discount. Actually, Claude might be more, but OpenAI's batch API discount is 50%, right? And you just won't get the results in real time, but you'll still get them.
+00:32:25
+
+And in practice, when I have used this, actually, I get the results within 2 hours, so…
+00:32:45
+
+Maybe 24 hours is, like, a long latency for them.
+00:32:50
+
+I know I've been saying a lot so far, I just… these aren't really difficult strategies, per se, I just want folks to get a sense for, you know, how you can first principles think your way into trying to reduce context in your agents, and try to not even have agents at all. Hamel, anything more you have to add to the, kind of, like.
+00:32:55
+
+Simple suite of strategies here.
+00:33:14
+Hamel Husain
+
+No, I think it's really good. You know, it comes down to experimentation. There is no recipe.
+00:33:17
+
+Necessary to give you, it takes practice and you'll get a hang of what kinds of things.
+00:33:24
+
+Might work as you work on your product, and every product is different.
+00:33:31
+
+Yeah. And so, but these are some examples.
+00:33:37
+Shreya Shankar
+
+Yes, totally. And also, don't jump to more complex strategies before you do these simpler strategies. And now that we have harnesses, also, I know there's some questions about harnesses in the chat.
+00:33:42
+
+Harnesses are, like, glorified prompts, right? So you could also think about how you cut the tokens that are in your harness prompts, in your tools, in your skills, all of these skills. AI-generated skills are insanely verbose. I don't know about you, but if you just look at them.
+00:33:52
+
+There are so many tokens in there. I've got to show you my favorite skill. Sorry for the aside. Open AI data agents skill.
+00:34:08
+
+I don't know if I'll find it. Skill… Search up skill.
+00:34:27
+
+Okay, I know they have skills.
+00:34:38
+
+They're telling us… they're giving us lots on their skills, but not linking it.
+00:34:40
+
+Oh.
+00:34:45
+
+Okay, well… Let's try one more thing.
+00:34:47
+
+Wow.
+00:34:55
+
+No, this is not it.
+00:34:59
+
+Data Science.
+00:35:05
+
+No.
+00:35:09
+Hamel Husain
+
+I know what you're talking about. I think there's a plugin also in Codex.
+00:35:14
+
+That will bring it in. It's like under a plugin.
+00:35:18
+Shreya Shankar
+
+Their data plugin. Wow. I, that was like six searches that I had to do to find that they could improve the SEO.
+00:35:22
+
+But how do I see the actual scale file?
+00:35:29
+Hamel Husain
+
+Oh, good luck with that. Yeah, that's, yeah, you're gonna have to find the GitHub somewhere. I don't… it's like…
+00:35:34
+Shreya Shankar
+
+Okay, I'll try one more search. GitHub.
+00:35:41
+
+Aha.
+00:35:46
+Hamel Husain
+
+Hmm, there you go, okay.
+00:35:47
+Shreya Shankar
+
+the.
+00:35:48
+Hamel Husain
+
+Oh.
+00:35:49
+Shreya Shankar
+
+laughs
+00:35:50
+
+Okay, this is their plugins. Alright, here. This is it. Sorry, it took so long.
+00:35:55
+
+Will I find it? Will I not? Data.
+00:36:02
+
+Analyze data quality… is that it?
+00:36:10
+
+Yeah, just… Crazy, some of these things. Okay, now that one wasn't even as long as I…
+00:36:15
+
+Thought, maybe it's, like, validate data or visualize data?
+00:36:21
+
+Okay, one of these is just insanely long, and I don't think any of these are the…
+00:36:29
+
+Data agent one.
+00:36:35
+
+Great, dude, I'll do.
+00:36:37
+
+Maybe build report.
+00:36:39
+
+Yeah, so there's, like, a bunch of different skills.
+00:36:42
+
+and building a report. So, like, this is insanely long. I don't know about you.
+00:36:45
+Hamel Husain
+
+There's no way I'm using that, yeah.
+00:36:50
+Shreya Shankar
+
+And they link to the greatest thing is like they link to all of these other skills.
+00:36:52
+
+Like, here's an executive report.
+00:36:57
+
+Here's an MCP app report.
+00:37:00
+
+here's this technical report. Anyways, I don't have to go into this in detail, but, like, you know, this is what happens when you load skills, right? It just, like, takes up a lot of prompt text, so just do some work to try to cut out unnecessary tokens in your skills. Like, you know that you could cut out a lot.
+00:37:05
+
+Just by seeing, you know, some of these things that can be preloaded in your harnesses.
+00:37:22
+Hamel Husain
+
+Yeah, when you see skills like this, keep in mind a lot of times it's someone's, it can be overfit to somebody's.
+00:37:29
+
+Workflow.
+00:37:35
+Shreya Shankar
+
+Mmm.
+00:37:36
+Hamel Husain
+
+So when I see that, I'm like, hmm, okay, this is probably what someone at maybe OpenAI is doing. I don't know, I don't work there.
+00:37:37
+
+At the moment, but like… you know, They… yeah, just be careful.
+00:37:44
+Shreya Shankar
+
+Yeah.
+00:37:50
+
+There's a good question in the chat, given the LLMs are really good at what they do, do we even have to specify so much in the skill? I don't think we need to. Like, I think skills, you should actually… you should just try to write them yourselves, or, one…
+00:37:51
+
+heuristic for whether to write a skill or not is you have a long-running agent session that you've been doing, and over time, you had to instruct the agent how to do the task you wanted, so you had to specify, no, don't do this other thing, do this thing instead.
+00:38:06
+
+And all… I kind of like to think of skills almost like memories in that sense, where, you know, I had a bespoke way of trying to do something that I wanted to do, and, you know, rather than try to go through these 100 turns in another conversation, I'm going to simply, like, ask my agent to write a skill.
+00:38:20
+
+that contains all of the things that I did in this session, and how, like, my preferences, and then I'll save that skill to reuse later. So this is things like.
+00:38:38
+
+I like to have plots generated in a certain style.
+00:38:48
+
+Or I like my React apps to be genera… like, my error analysis skills is a great example of this. Like, I just want the dashboard to be done in a certain way. I want there to be open coding features, axial coding features, and so forth. I could manually specify all of those every time that I open up a new Claude session, but…
+00:38:52
+
+I don't want to do that. Instead, I'm going to invoke a skill. So that's how I think about skills here.
+00:39:11
+
+Okay, and oh, the other thing is, like, when you have a skill and the agent decides to read the skill, it's reading the whole skill. So… And when it reads the whole skill, then it's stuck in the context, it doesn't go away.
+00:39:18
+
+Great.
+00:39:31
+
+Alright, so let's move on to, you know, more complicated strategies to try to reduce the cost. So, there are three
+00:39:32
+
+big, and this is very researchy, actually. There are 3 types of strategies that I think are relevant here with trying to reduce cost when you've already reduced as many tokens as possible.
+00:39:40
+
+The first one is what I'll call caching, KV caching, or prompt caching, and I'll explain that on the whiteboard. The second one, which I won't be able to talk about, today, is model cascades, and I'll just give intuition for it.
+00:39:51
+
+And then the third one is model routing. And model routing is really simple, it's just
+00:40:06
+
+Have some other cheap model analyze the context of the message, the request, and then determine what level of intelligence or what model is needed to be able to accurately
+00:40:13
+
+answer the original question. So think of it as, like, dynamically dispatching an LLM of the appropriate cost and accuracy.
+00:40:25
+
+given the specific request content at hand. And, there's a bunch of research on how to do routers, but you could also use
+00:40:34
+
+routers online, such as, like, OpenRouter has an LLM router, Databricks has an LLM router, so you can… I recommend you kind of use somebody else's router rather than try to train your own, because it can be pretty complicated.
+00:40:43
+
+And the devil is in the details. If you're familiar with model training and you are comfortable doing that, then absolutely train your own router. It's not that complicated, but if you've not really trained models before, I recommend not trying to go down this rabbit hole of training your own router.
+00:40:57
+
+Okay, so let's get back to the whiteboard and let's talk about prompt caching.
+00:41:14
+
+And… Okay.
+00:41:20
+Hamel Husain
+
+So just to recap, we covered a bunch of methods on how you might
+00:41:25
+
+Climb to different areas in this.
+00:41:29
+
+Prato curve, or, like, get to a new…
+00:41:32
+
+Pareto optimal by doing the strategies that Shreya has been talking about. Just so you know where we're at.
+00:41:35
+Shreya Shankar
+
+Yeah.
+00:41:41
+
+And you'll see, this… Names.
+00:41:42
+
+Sorry, I lost my train of thought. You'll see prop caching and KV caching kind of interchangeably used, so… I'm gonna use them interchangeably here, so you know that they're interchangeably used.
+00:41:48
+
+So first, actually, to get into this, the higher level motivation is whenever you are sending, you know.
+00:41:59
+
+requests, or agent requests to your LLM, Right.
+00:42:08
+
+Actually, let me give these different colors.
+00:42:15
+
+Okay, so… The messages that are ending up sent to an LLM
+00:42:18
+
+Often… or, sorry, not just… they are usually an append-only log.
+00:42:26
+
+And you want to think of it as an append-only log, you will dramatically increase the cost.
+00:42:32
+
+Otherwise. So here I'm alternating colors between system, user.
+00:42:39
+
+Just, Sorry, assistant user. Sometimes the assistant has multiple messages if it's reasoning. Okay.
+00:42:45
+
+Let's just move down here.
+00:42:53
+
+And then let's dot dot dot here. So you know that this goes on and on.
+00:42:56
+
+System.
+00:43:02
+
+Oh, sad.
+00:43:05
+
+user.
+00:43:19
+
+Alright, so blue is system, yellow is user.
+00:43:25
+
+So this is usually what a message list looks like, right? Every single time you get a new message, like, the system gives a new message, or the user gives a new message, it gets added or appended to this list, and then you send a new request to your large language model. Everyone kind of following me so far?
+00:43:28
+
+Hopefully.
+00:43:48
+
+Yep. Call this the LLM.
+00:43:49
+
+And… Let's give this a different color.
+00:43:53
+
+And then the LLM outputs some message.
+00:43:58
+
+Could be anything, really.
+00:44:01
+
+So.
+00:44:03
+
+Just make it.
+00:44:04
+
+Like this.
+00:44:05
+
+Alright. So this is kind of how you can think about Let's close the loop here.
+00:44:22
+
+Alright, so this is how… You know, agents go on and on, create message.
+00:44:44
+
+invoke the LLM to get a new message, and then it comes back. Sometimes the user is the one that adds the new message, sometimes the LLM is the one that adds the new message.
+00:44:50
+
+All right, so…
+00:44:59
+
+Now, I want to kind of give you intuition for how the LLM works under the hood, so you can actually understand what I mean by prompt caching, being able to reduce the cost. So, the LLM
+00:45:01
+
+is how many folks here are kind of familiar with transformer models? Is transformer a term that people have heard before?
+00:45:14
+
+All right.
+00:45:22
+
+So.
+00:45:23
+
+Transformer.
+00:45:26
+
+And if not, no worries, you're gonna learn some new technical concepts today.
+00:45:28
+
+Alright, so a transformer for an LLM,
+00:45:33
+
+So think of it as sequence to sequence.
+00:45:39
+
+And then an autoregressive model.
+00:45:43
+
+Which is most of these models that you're using.
+00:45:46
+
+predicts One token at a time.
+00:45:49
+
+I think this is the chief limitation of LLMs that make them extremely expensive.
+00:45:53
+
+This one token at a time prediction that we just can't seem to get around. And so, what this ends up looking like When you invoke a request to an LLM, is the request gets what's called tokenized, so maybe I'll have some tokens here.
+00:45:59
+
+I… Love.
+00:46:15
+
+AI.
+00:46:23
+
+Okay, and the transformer's job is to predict what the next token is.
+00:46:26
+
+So.
+00:46:31
+
+We'll just… it's obviously going to say evals, but, you know, we want to invoke the LLM… we want to invoke the transformer to see what it will predict next. So how this ends up working.
+00:46:33
+
+If you… I'll give you some abstract details. So all of the request gets tokenized into these specific tokens.
+00:46:45
+
+And then, they all kind of go to the LLM in parallel. This is an important part, because this kind of…
+00:46:54
+
+allows for some efficiency here. So, in parallel, they go to… let's call this a transformer layer.
+00:47:02
+
+And then let's make this smaller.
+00:47:12
+
+And then the transformer.
+00:47:16
+
+Ken essentially comes up with these.
+00:47:18
+
+I'll call them hidden states.
+00:47:22
+
+Okay, so, say, hidden states here.
+00:47:30
+
+And if you're familiar with data science, you'll kind of know what I mean, because these transformations are kind of all matrix multiplies, but if you're not familiar, no worries with that.
+00:47:39
+
+Just think of these as big matrices.
+00:47:53
+
+That we can't really interpret, but the transformer somehow has some meaning in those.
+00:47:55
+
+Okay, so these go through layers, create hidden states. This actually happens in a loop many times. There is also a component called a projection, actually, that occurs right after this.
+00:48:03
+
+And I could just mention that, I suppose.
+00:48:17
+
+Here.
+00:48:20
+
+Another matrix multiply.
+00:48:24
+
+Okay? And then, after this, essentially every single one of these positions.
+00:48:42
+
+You'll get logits over the next token.
+00:48:48
+
+So, concretely, it just means probabilities over the distribution of tokens. And really, the only one that we care about is this last one.
+00:48:54
+
+And, actually, I'll… Change this visual so that it's really clear that it's, like…
+00:49:08
+
+on a per-token basis. So this will end up being a vector, the size of the whole vocabulary, which is how many distinct tokens we have.
+00:49:16
+
+And each one of these will be.
+00:49:25
+Hamel Husain
+
+That just means, vocabulary just means, what are the possible… tokens available.
+00:49:27
+Shreya Shankar
+
+Yep.
+00:49:34
+
+And so all of these are just probabilities. One of these probabilities will be the maximum, so we'll just take the token with the maximum probability, and that will end up being the token.
+00:49:37
+
+So maybe I don't know.
+00:49:49
+
+It ends up being.
+00:49:51
+
+All the tokens.
+00:49:57
+
+And then we end up selecting one of them, so I'll just… maybe this one is the one we'll select.
+00:50:01
+
+And this ends up being evals.
+00:50:06
+
+Well, that didn't work out for me, but…
+00:50:09
+
+Alright. So, I know there's a lot of detail that I've missed, so if you're, you know, if you're an expert on transformers, you know, don't get mad at me, I just want to keep this approachable. The insight one that I want to communicate here is that
+00:50:19
+
+You really only need, you know, this last hidden state. So this is simply just some sort of internal matrix representation. The key insight is that you only need this last hidden state, or OpenAI, or your model provider only needs this last hidden state, in order to come up with the next token.
+00:50:34
+
+Then the second insight here is that
+00:50:52
+
+If you were to drill down onto these transformer layers, like, what the… the actual computation that's happening in these transformer layers and creating those hidden states.
+00:50:56
+
+Let me actually do that here.
+00:51:07
+
+There's 3 types of vectors, or 3 types of matrices that every transformer has.
+00:51:09
+
+So.
+00:51:16
+
+There's a query matrix, I'm gonna call it Q.
+00:51:17
+
+And then there's a K.
+00:51:28
+
+And there's a V. So there's 3 different matrices.
+00:51:31
+
+Or think of them as types of vectors.
+00:51:36
+
+And these are generated for every single token. Okay, this is what creates our hidden states.
+00:51:39
+
+Now… These K and these V vectors, without getting into the math, trust me on this.
+00:51:54
+
+These essentially get reused for every subsequent token.
+00:52:02
+
+So now I have evals, right? Suppose I've sampled evals, then I can add evals back to here in these original tokens, and then go through my path of the transformer again.
+00:52:08
+
+And when I do that, I'm still using the same keys in the Vs that I had in the previous tokens. That is a key insight to, kind of, how we accelerate a transformer under the hood, which is we are able to reuse these KV vectors.
+00:52:19
+
+If we don't save or cash them.
+00:52:34
+
+Then, transformers will be essentially
+00:52:38
+
+quadratically… transformers will be incredibly slow, because you'll be essentially computing the Q, the K, and the V for every single token, every single time.
+00:52:41
+
+For there's the queue can't really be cached because the queue, is depends on attention, so it depends on all of the tokens in the sequence. But the k's and the v's can be cached.
+00:52:52
+
+So if you've ever heard of an inference engine, right, their primary goal is to be able to store all of these KVs.
+00:53:04
+
+Efficiently, given limited memory.
+00:53:11
+
+So that way you can do… you can decode long sequences very fast.
+00:53:14
+
+Okay, so all of this is to say that
+00:53:20
+
+The only reason… the only way that we can leverage this KV caching optimization, which is how any inference engine works under the hood.
+00:53:25
+
+Is to make sure that we never change the prefix.
+00:53:35
+
+of our request. So, tomorrow, if I come in, and I put in something here.
+00:53:39
+
+I don't know, decided that I'm gonna put in
+00:53:46
+
+So, new token here.
+00:53:57
+
+I love… I don't know, what can go in here?
+00:54:00
+
+My. I love my AI. Yeah, great. So if I come in and I put this here.
+00:54:03
+
+I get… I lose… All of the KV states.
+00:54:11
+
+After my.
+00:54:16
+
+Which is very unfortunate.
+00:54:17
+
+And it's going to cost our inference provider a lot more.
+00:54:20
+
+And, in fact, all of the inference providers, if you look at their cost model, if they're reading a cached token.
+00:54:25
+
+They will actually only charge you, like, 10% of the per-token cost.
+00:54:33
+
+Sometimes even like 5% or even less.
+00:54:38
+
+But if they're seeing the prefix for the first time.
+00:54:41
+
+then they will charge you the full token price. This is not something that that many people talk about, but I don't know, 10% is.
+00:54:46
+
+A 90% cost reduction is huge, so…
+00:54:53
+
+You want to make sure that you are never, ever putting in text.
+00:54:56
+
+In the middle of your sequences, otherwise you lose that
+00:55:01
+
+caching benefit. And there's a question around prefix. What is prefix? Prefix just means, like, all of the tokens in the sequence that we have sent so far. So it's not just system instructions, it's everything. It's now going back to here, it's system, it's user. Basically, when I receive new things from the LLM.
+00:55:05
+
+I… I want to just append it to the end.
+00:55:24
+
+There's nothing that… I want to append it to the end. I don't want… if the user says something, I don't want to go and edit the system prompt. This is a common mistake people make, is in the middle of the session, they like to edit the system prompt for some reason.
+00:55:28
+
+or add a new tool in there, that's a really bad idea, because now it has invalidated the KV states for all of the subsequent messages, and then you end up paying a lot more. So I think that.
+00:55:43
+
+If you just take a look at your agents, especially if you're vibe coding your systems, or you're coding your agents with AI, they don't necessarily always respect this prefix caching.
+00:55:56
+
+property. So just double check and make sure that they're doing that, because you're probably paying a lot more than… than you need to.
+00:56:09
+
+We have.
+00:56:15
+Hamel Husain
+
+The question that I think was good is, like.
+00:56:17
+
+Hey, while we… why are we learning all this? Doesn't the LLM provider just do it for you?
+00:56:19
+Shreya Shankar
+
+And…
+00:56:24
+Hamel Husain
+
+And if you're using a harness, they will make a best attempt to do this for you. However, it's not magic. They're trying to do their best thing and this is a very important variable in cost.
+00:56:25
+
+If you invalidate the cache, it will blow up your costs exponentially, especially if you have a lot of context. We think about, like, a really long Claude or Codex session.
+00:56:41
+
+What's a very simple, dumb way you can invalidate your cache? Switching your model using Astra.
+00:56:52
+Shreya Shankar
+
+Yep.
+00:56:57
+Hamel Husain
+
+Are you using Luna, switch to Astra? Boom, invalidates CAS, it's a different KV.
+00:56:58
+Shreya Shankar
+
+Oh, I was just gonna get to that.
+00:57:02
+Hamel Husain
+
+Oh, okay.
+00:57:04
+Shreya Shankar
+
+No, you spoiled the punchline. I was like, I was going to give a list of ways people inadvertently miss the KV, but please keep going. No, but.
+00:57:05
+Hamel Husain
+
+But, like, okay, if you change your, if you change the reasoning level, that may not, and it… I know that it doesn't invalidate the cache, it might in some cases, but it doesn't. And for most cases, if you change the speed, because some people have fast mode, slow mode, whatever, that doesn't invalidate the cache in a lot of cases. So it's good, like, why are you learning this?
+00:57:14
+
+You need this mental model.
+00:57:33
+
+Because this is such an important dimension in cost.
+00:57:35
+Shreya Shankar
+
+It is the most important dimension, like, not even just such.
+00:57:40
+
+Yeah.
+00:57:46
+
+Okay, so this goes to my next point of what invalidates the KV cache. Actually, the first point is, you'd still need to know about it, because you control the messages you're sending to the agent. So, you control the messages, you control the exact tokens, in what order. So, if you mess up your own order.
+00:57:47
+
+client side, on your side. OpenAI is not going to be like, oh no, this user messed up their order, let's reorder it to try to, I don't know, use our KV cache. They're not going to do that. They're just going to execute exactly what you tell them.
+00:58:05
+
+So it is on you to make sure that you're only appending.
+00:58:19
+
+to your messages, essentially. So what invalidates the KV cache? So, here are the common ones that I see.
+00:58:24
+
+Editing, system prompt.
+00:58:32
+
+Midway.
+00:58:34
+
+Changing the model, as Hamel says.
+00:58:37
+
+Kind of want to move this.
+00:58:43
+
+I.
+00:58:45
+
+removing Messages.
+00:58:49
+
+In the middle.
+00:58:54
+
+Of the.
+00:58:57
+
+Trace. I see this also. People are like, oh, let me remove messages in the middle of the trace. And they end up invalidating the KV for everything after what they have removed.
+00:58:59
+
+Pamela, are there other… Things that come to mind here.
+00:59:10
+Hamel Husain
+
+No, this is good. Like, yeah, like, there's a lot of stuff around JEV, like, having JEV do compaction by classifying all of the turns in your trace, and then, like, deleting them. Now, that can invalidate your cache! Yeah.
+00:59:17
+Shreya Shankar
+
+Audiocast.
+00:59:31
+
+Yeah.
+00:59:32
+
+Yeah, so when you do compaction.
+00:59:33
+
+you want to make sure you're doing it in the most cache-optimal way. So, like, keep the system prompt, and then throw out everything after that, just have, like, a small representation of, you know, what happened before. So maybe, like, a summary.
+00:59:36
+
+of what the user wanted, summary of what the agent did, or use some existing compaction algorithm. But basically, yeah, don't just, you know, select some random subset of the messages and include that for the post-compaction. Like, that is a surefire way to have a lot of tokens and fully invalidate your KV cache.
+00:59:51
+Hamel Husain
+
+One important mental model here is that you notice in Shreya's diagram the word my, right? I love my. So, the cache would be invalidated after the word my.
+01:00:10
+
+Yes. And so, when you think of, like, the way that people try to do this, like, cash management, is they try… like, harnesses will try to be smart about what is going in the front.
+01:00:20
+
+They're like, oh, like, this stuff should go in the front, because it might be reused, or whatever. And then, like, you might have some dynamic stuff after that. So they try, like, there's a lot of experimentation that can go into this, but it's, like, that's good for you to know, right? Like, it's a linear thing.
+01:00:32
+
+And if there's a change, it just invalidates it up until that point.
+01:00:48
+Shreya Shankar
+
+Yep.
+01:00:52
+
+Oh, yeah.
+01:00:53
+Hamel Husain
+
+After that point, sorry.
+01:00:53
+Shreya Shankar
+
+Good questions.
+01:00:56
+
+Some… another question that I've been seeing is, is there a TTL on this cache? Like, when does it expire? So, don't get too caught up on this. Like, I think it depends on the model provider. Some are 24 hours, some are 72 hours.
+01:00:57
+
+But I promise you that every single inference provider is, like, this is a top-of-mind priority for them, and they are working on ways to extend the TTL. So, like, assume that, you know, within the next 6 months to a year, that they will solve this problem, that they will be able to infinitely persist the KV cache for infinitely long amount of time.
+01:01:11
+
+And so you want to make sure you're engineering your harness, your application, everything to
+01:01:31
+
+Be as cash optimal as possible.
+01:01:38
+
+Yeah.
+01:01:42
+
+So 5 minutes for Anthropic, 30 minutes, yeah, so I… oh, that's interesting. I…
+01:01:44
+
+I believe it was in the 24 hours, but maybe, yeah, folks who have read the page more recently are probably correct. And it also depends, like, if you're using, like, Base 10 or some other inference provider, right, they have different.
+01:01:51
+
+different limits. Yeah, but don't get too hung up on it, because it's always in flux, and it's…
+01:02:06
+
+Gonna only get longer.
+01:02:12
+
+Alright, so I know we're going well over, so I'm gonna switch back to…
+01:02:15
+
+prompt caching. That is the primary one that you should be.
+01:02:19
+
+primary one that you should be thinking about. For model cascades and model routing, I have a bunch of resources here, including a video we have done before. Like, here is a video on Hamel's YouTube channel that Hamel and I did for how to do a cascade, also routers, won't get into that.
+01:02:24
+
+I'm actually gonna go for, like, 5 more minutes. No, I mean, feel free to drop out now if you want, but since this is the last lesson, I might as well make it through.
+01:02:40
+
+I'm going to talk about two frequently asked questions here. So, one is, you know, when do I fine-tune models? Should I fine-tune my models to make a cheaper model? And our answer to that is only after you've done everything else we've mentioned. So, change your prompt.
+01:02:51
+
+cutting out tools, cutting out unnecessary bloat, you've done… you've made sure that you're very KV cache optimal, you've tried model cascades and routing. Okay, after all of this, it makes sense to maybe do some fine-tuning, or distillation. Distillation essentially means, you…
+01:03:05
+
+create a bunch of labels, or you create a bunch of ground truth outputs using a big model, or, like, something like OpenAI's Astra, and then you try to fine-tune a small model to match what that big model did.
+01:03:24
+
+But there are a bunch of guides on how to do this, and there's a bunch of techniques, for example, SFT or RLHF, there might be… those are words you might have heard. Those are things, tools that you could use here.
+01:03:37
+
+Some people ask, oh, should I do RL, or should I do SFT? My…
+01:03:50
+
+It's hard to give, like, a prescriptive answer to this question.
+01:03:56
+
+I have not done either too many times to be able to give a great answer here, but my intuition is that… so first of all, you need to have full trajectories, or full traces, to be able to do SFT, which is this
+01:04:00
+
+distillation fine-tuning. With RL, you don't actually need these ground truth trajectories, you just need some reward or some eval function, like the functions.
+01:04:13
+
+Or LLM judges or verifiers that we have been writing in this course.
+01:04:23
+
+So RL is something you can do without the golden traces. However, it is really finicky and difficult to make work.
+01:04:27
+
+Bottles like to do reward hacking all the time, so really only get into this if you are
+01:04:35
+
+If you're an expert in this. And I would say if you've never fine-tuned before.
+01:04:43
+
+go learn about SFT or distillation-based fine-tuning before you do RL. Like, don't try to jump the gun here.
+01:04:48
+
+This last point I really want to hammer, which is don't do this unless you really, really need to. Many times we've seen people try to fine-tune models, and it's, like, great. It's Pareto optimal. If I were to go back to my slide here. They managed to go…
+01:04:56
+
+puts Astra thing, like, really low on this, so they managed to get some Pareto optimal point, but the minute a new model comes out, like.
+01:05:12
+
+Astra++ comes out, and maybe Astra++ is cheaper, I don't know, then you might end up switching to that.
+01:05:21
+
+And there's no way to really compose the gains that you get with fine-tuning or training with new models that come out, unfortunately. Like, you do need to retrain models from scratch, relabel, etc. So it's a really big ops effort that…
+01:05:29
+
+Yeah, I don't… again, we don't recommend this unless you really need to.
+01:05:43
+
+And I know Hamel also has a lot to say. He taught a fine-tuning course, actually, in the past.
+01:05:48
+Hamel Husain
+
+Yes, you know, so evals let you do… evals is a foundation for a lot of this, like, if you are going to train your models, like, you have to have evals, because you have to know whether it's worth it. To reinforce Shreya's point, you can Google, like, AI engineer Hamel. I have this talk that I did with a company called ReChat.
+01:05:53
+
+Where we talk about how we fine-tune the model. Right after that talk, like, maybe one month after that talk, we, we.
+01:06:12
+
+We abandoned the fine-tuned model because the next model that was released was so good.
+01:06:21
+Shreya Shankar
+
+Yeah, it just beats the Pareto optimality.
+01:06:26
+
+Yeah, so don't… Don't nerd snipe yourself. I think it's fun, like, it's a fun.
+01:06:30
+
+I don't know, like, educational exercise to get into RO, but… Yeah.
+01:06:36
+
+Sorry, I cut you off. Any other things that…
+01:06:44
+Hamel Husain
+
+Nope, that was good.
+01:06:46
+Shreya Shankar
+
+Cool. Cool. So this is about fine tuning. TLDR, don't do it unless you really need to and you have the resources to do it.
+01:06:47
+
+We're in a market which is tight with GPUs and compute anyways, so it's going to be really expensive to fine-tune. Keep that in mind as well.
+01:06:54
+
+Then last point on an FAQ that we get is, hey, should I change my model? How do I think about updating my model to a new frontier model? So, the… it's pretty simple, you know, you just change the model, and then you run your evals, and you see the point on your.
+01:07:04
+
+Burrito Frontier, see if it's better. The one point that, I want… first point I want to bring up here is that there's this notion of prompt drift. I see this all the time, which is, I've changed my model.
+01:07:22
+
+And I have the same prompt.
+01:07:36
+
+But the behavior now, the whole harness and model, etc, is different. Like, my evals definitely change. And that's very surprising. It often happens to be the case, actually, that the evals can even get worse whenever we upgrade the model. Like, from Soul to Astra, your evals that you've created might
+01:07:39
+
+I don't know, do worse. It's very disappointing and very unfortunate. This happened a lot, like, a year ago. I don't know how frequently it's happening now, so hopefully it's less of a problem as model gets better.
+01:07:59
+
+and newer models do more of the right behavior without being told, but one thing that kind of causes this prompt drift, oops, I have seen, is, there's a lot of prompt instructions, or harness instructions that are really bespoke, or sign…
+01:08:12
+
+are specific to your previous model, like, do's and do nots that are really weirdly specific to that model's behavior, and you probably want to remove those
+01:08:27
+
+As you update the model, and then redo your error analysis, redo your LLM judge alignment, Yeah.
+01:08:37
+
+Hamel, I know you also have horror stories of… Switching your models.
+01:08:45
+Hamel Husain
+
+Yeah, okay, the main horror story of people of switching models is people being too over-eager with switching the models. They want to try every model.
+01:08:54
+Shreya Shankar
+
+own.
+01:09:01
+Hamel Husain
+
+the sun, like, and they reach for, let me try a new model too aggressively. They think, like, the new model is the…
+01:09:01
+
+solution to every problem, like if I just can find the new model, and it's like a never-ending quest. You need to have evals first before you go.
+01:09:09
+Shreya Shankar
+
+Yes.
+01:09:17
+Hamel Husain
+
+an endless hunt for new models. So they are endless models.
+01:09:17
+Shreya Shankar
+
+Yeah. And what ends up happening actually is this is not a bad thing, but most people end up overfitting their harness and prompts and so forth to specific models because, you know, if you do your evals, you do your LLM judge, you do alignment, you, like, really solve all the problems with that particular model harness configuration.
+01:09:23
+
+New ones are gonna emerge when you change to some other configuration, so… You know, just keep that in mind.
+01:09:42
+
+All right, so…
+01:09:50
+
+This concludes the stuff that I would talk about for cost optimization. Just to recap, I think we learned a lot in this course, guys, like, learned about error analysis, measurement, improvement.
+01:09:52
+
+A lot of the work really, if if you had to take away anything from this course, I would hope that it is, you know, how you do error analysis. Like, I have not seen too many information out there on the internet.
+01:10:03
+
+About how to do error analysis, so that is the key, kind of, takeaway, look at your data, how to look at your data, do it in a structured way, and the rest will follow, you know, always you can refer back to the course reader, watch the lectures if any questions come up.
+01:10:14
+
+And we do have a homework, though it is, of course, optional like the other homeworks, but there's a homework around doing cost optimization for, for your agents, and we talk about prompt caching, we talk about running a model cascade, which is explained better in the homework. Anyways, do as little or as much as you like.
+01:10:30
+
+And, without…
+01:10:51
+
+Before I end, I also want to give a huge shout out to our TAs, Antaripa and Eleanor, who have really painstakingly made sure that folks have been able to get their questions answered. Antaripa has led, you know, these homework study sessions that have been fantastic. The recordings are out there, so please watch those. We really could not have done it without both of them, so thank you.
+01:10:53
+
+We have one more office hours. The Discord lives forever until Discord ceases to exist, I suppose.
+01:11:17
+
+And with that, yeah, echoing Hamel, thanks again, this was super fun, and I'm sure that I will see many of you at office hours, and even the next cohort.
+01:11:26
+Hamel Husain
+
+Thank you. It was a really big pleasure to teach all of you.
+01:11:36
+
+See you in 4 minutes.
+01:11:43
+Shreya Shankar
+
+Sorry, I, like, didn't give us a break.
+01:11:46
+Hamel Husain
+
+No, no, it's okay. All right. That's it.

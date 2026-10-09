@@ -1,0 +1,1604 @@
+Shreya Shankar
+
+Hey, can you hear me?
+00:02:43
+Hamel Husain
+
+I can, yeah. Okay.
+00:02:44
+Shreya Shankar
+
+Well, I can't hear you…
+00:02:46
+Hamel Husain
+
+Can you hear me?
+00:02:49
+Shreya Shankar
+
+Not the greatest thing.
+00:02:50
+
+Let's see.
+00:02:52
+
+Bluetooth.
+00:02:55
+
+My Airpods Pro.
+00:02:58
+Hamel Husain
+
+Testing, testing. Can you hear me?
+00:03:03
+Shreya Shankar
+
+Okay.
+00:03:07
+
+Not good.
+00:03:19
+
+Okay.
+00:03:25
+Hamel Husain
+
+Can you hear me now?
+00:03:27
+Shreya Shankar
+
+Is it okay if I use my Mac speakers? I think my AirPods are not working.
+00:03:29
+Hamel Husain
+
+Yeah, I use my Mac speakers.
+00:03:33
+Shreya Shankar
+
+Oh, okay. And you can hear me and everything's fine.
+00:03:34
+
+Perfect. Okay, then let's just do that.
+00:03:38
+
+Sorry, technical difficulties, everybody. Anyways, we have made it. Let's share a screen.
+00:03:42
+
+Don't need to show you this.
+00:03:54
+
+Cool.
+00:03:56
+
+All right, let's get started.
+00:04:00
+
+So today, we're gonna finally make our way into the improvement part of building agents. So we talked about error analysis, we talked about measuring, the failure modes that you find via error analysis, and finally, we've made it to improvement. So I thought it would also be nice to do a little bit of a recap on what we've done so far, because we have quite…
+00:04:03
+
+Done a lot.
+00:04:26
+
+We spent the first four lectures kind of set… setting up our foundations, as well as doing error analysis. So, concretely, what that meant, right, is that we traced our agent, we logged our traces to Langfuse.
+00:04:27
+
+We generated synthetic data, and then we learned what it meant to look at our data, to do open coding, axial coding, to end up finding failure modes, where
+00:04:41
+
+Axial code essentially means failure mode.
+00:04:51
+
+Then we pivoted into the measure part of the lifecycle, which is, given all these failure modes, you know, how prevalent are they, and how can we, you know, measure them repeatedly as we make fixes to our application or deploy them over time?
+00:04:55
+
+So we talked about how we can build automated evaluators, so Lecture 5 was all about LLM judges as one type of
+00:05:12
+
+Automated evaluator.
+00:05:19
+
+In Lecture 6, we talked about how to kind of use these LLM judges in… turn those into eval cases in continuous integration.
+00:05:21
+
+And then in our previous lecture, we talked about creating a dashboard in Langfuse, and we also talked a little bit about agent safety. We talked about that hugging face incident, so kind of a side or tangent that I thought was interesting.
+00:05:32
+
+And so what we're gonna end up doing for today and Saturday is talking about improvements. So, high level, think about it as today we're going to talk about improving agent accuracy and how we can think about that, and
+00:05:47
+
+On Saturday, we'll think about improving agent costs, so that means how do we reduce the cost of our agents while trying to maintain the same accuracy as what we had before.
+00:06:00
+
+And for improvement, hopefully you'll notice that because you've done all the work with error analysis and in measurement, hopefully improvement is actually the easiest part of evals, because as we'll talk about today, it should be as simple as, you know, handing our application to an agent to do auto research, or…
+00:06:11
+
+some other automated optimization algorithm, like, we'll talk about Jeffpa today. But we want to be able to get to a point with evals where, you know, we are not playing whack-a-mole. I think Hamel has a really great meme around playing whack-a-mole. He should send it in the chat if he can find it. But we really want to get to this point where we're not playing whack-a-mole and just trying to think, oh, let me… how do I improve my agent? I'm just gonna guess out of thin air to try to
+00:06:33
+
+improve it. No, we want to, like, actually know, okay, based on our error analysis and our measurement, we found particular failure modes we want to improve on, and then because we have implemented automated evaluators, we can finally trigger auto-research loops.
+00:06:58
+
+If what I said just now doesn't make any sense, no worries at all, because that's what we'll talk about today. We're going to talk about how we begin to fix Accuracy. So, step one being, there are going to be a number of obvious fixes that you'll want to make to your application as a result of Analyze and Measure.
+00:07:13
+
+Then, we'll… you'll realize some of the errors are not obvious to fix. It's actually difficult. You try a number of ideas, and then after some time, you're like, oh, but my performance is not improving, my accuracy… I didn't fix the failure.
+00:07:33
+
+So we'll talk a little bit about auto research, which is a method to try to invoke coding agents to help you hill climb on your evaluators in an automated way. So we'll talk about Karpathy's auto research project.
+00:07:50
+
+folks are familiar, I'm sure, with Andre Karpathy. We'll talk about lessons we can port over to building agents. He doesn't quite do it for agents, but we'll talk about that. And then, we'll do a whiteboard exercise on JEPA. So, folks, I'm sure some folks have heard of JEPA, you know, feel free to post in the chat if…
+00:08:03
+
+If that is,
+00:08:25
+
+if you've heard about it. But anyway, so we'll talk a little bit about JEPA and, you know, where methods like auto-research blindly might fail, and then the kind of intellectual ideas behind JEPA and what you can get out of that.
+00:08:27
+
+So this is today's agenda. Hamel, do you have any administrative stuff to add? I know that there's, like, your evals session around interviews, and there's some other stuff going, so…
+00:08:41
+Hamel Husain
+
+No, nothing else. Just keep an eye on the course calendar for the bonus sessions.
+00:08:55
+Shreya Shankar
+
+Yes, I'm really excited.
+00:09:00
+
+I feel like I'm gonna learn so much from those
+00:09:02
+
+Cool, so let's talk about obvious fixes. Okay, so this slide I've been kind of bringing repeatedly in different lectures. Remember, imagine that this is the failure modes that arise from your axial coding.
+00:09:05
+
+So here, actually, 4, 8, 8 different failure modes, so they're all of different prevalences.
+00:09:18
+
+So we did this exercise last time, but just want to recap, not all failure modes are going to lead to LLM judges, right? This should be a key takeaway from the whole course. Some of these failure modes are gonna be things that you can obviously try to fix.
+00:09:25
+
+And some of these things are going to be things that, you know.
+00:09:42
+
+someone else, or like, you know, you can imagine what the fix might be, and then hand it off to somebody else on the team to fix, that also makes sense.
+00:09:47
+
+And some of these are going to be things that you have no clear fix for.
+00:09:56
+
+And what are the kind of smells over here for no clear fix? Actually, maybe let's talk about how do you know if something… if a failure mode is something you can immediately fix with, like, a line, or an edit to a prompt, or an edit to a tool?
+00:10:00
+
+Hamel, do you have any heuristics for this? I can… I have some of my own, but…
+00:10:16
+Hamel Husain
+
+Of like how many failure modes?
+00:10:22
+Shreya Shankar
+
+No, like, how do you know if a failure mode is something you can obviously fix in a prompt? Because I know we get questions.
+00:10:24
+Hamel Husain
+
+Mmm.
+00:10:29
+Shreya Shankar
+
+this.
+00:10:30
+Hamel Husain
+
+Oh yeah.
+00:10:30
+Shreya Shankar
+
+And, you know, vibes and experience.
+00:10:31
+Hamel Husain
+
+Yeah, a lot of his experience.
+00:10:34
+
+You know, it'll be obvious to you, like.
+00:10:38
+
+if you know your application well enough, or, like, if you've been working with your product long enough, it'll be obvious, like, hey, we're just missing this entire, like, document store. Like, we weren't even able to retrieve the right thing in the first place. Okay, that's, like, a bug, go fix that first, like…
+00:10:41
+
+You know, or, hey, like, we didn't… we, like, have this tool call, or this tool wired up incorrectly. Okay, like, go fix that first. So those are the kinds of things that are obvious to me that, okay, just go fix it.
+00:10:58
+Shreya Shankar
+
+Yeah, other heuristics that I like to have is if you used a spec MD or you tried to write some document that your application that describes your application's behavior.
+00:11:13
+
+Go and check these failure modes. Is it in the spec Md. Or not? If not, you probably have specification issue golf of specification issue. Another
+00:11:24
+
+heuristic that I like to use is.
+00:11:34
+
+is… maybe this is what Hamel said, but is there, like, a tool that, you know, if we magically had it, it would fix the application? And then we should just go and, like, try to
+00:11:37
+
+include that context, or include that tool. Often, I find a lot of agent failures are just, you know, not having enough context to reason about the problem, like, especially as agents are getting more and more accurate at some of these knowledge work tasks.
+00:11:48
+
+So, it's a question of, like, figuring out, does your agent have all the context needed in order to get the right answer? If not, how can you provide that via a tool?
+00:12:02
+
+So you… another rule of thumb for myself, at least, is, like, if I can timebox my involve… or my fix ideas, maybe I'll have 2 or 3 ideas to fix the failure mode, I'll timebox it to a couple of hours, and if I'm not able to fix it in a couple of hours, I move on to auto-research, which I'll talk about.
+00:12:10
+
+And the other thing is, once you do try to fix your application, you know, you'll have to generate new traces, right? You'll have to generate new sample synthetic traces, do a little bit of error analysis on it, and then try to actually measure the prevalence of a failure in that.
+00:12:30
+
+Yeah, so it's a little bit involved, so that's why I usually just try one or two different ideas. If they work, great, and if they don't work, then that's not great.
+00:12:48
+
+Okay, so… let me skip this.
+00:12:57
+
+let's imagine that, you know, we've gotten to a point in our development cycle where, you know, we tried to fix the failure mode, it didn't quite work, and so we need some… a little bit more power to try to fix it. So this gets into the auto research part of today's lecture.
+00:13:01
+
+So, what do you need… before we define auto-research, let's talk about the prerequisites, or what we need before using… invoking auto-research. So here, we need some sort of automated evaluators to measure the failure, and it's totally fine if this is LLM judges.
+00:13:19
+
+It's fine if it's code checks. If it is LLM judges, you need to make sure that you've gone through some alignment process to make sure it actually aligns with your human labels, because this is the easiest way to, like, have your agent go off the rails in auto research. So, essentially, you need to have some automated evaluators you can trust here.
+00:13:35
+
+And today, I'll try to do a demo with two different failure modes, but this morning, I found that I ran out of credits in my OpenAI API key, and so maybe, unfortunately, we will have to do a theoretical exercise.
+00:13:54
+
+And, we can maybe have a follow-up session later about actually doing this.
+00:14:09
+
+So let's think about one of our failure modes, uninformative replies, that maybe might be hard to fix. So, a concrete example that has triggered this, you know, maybe the user said, has my Bluetooth speaker shift?
+00:14:15
+
+Shipped, sorry. The agent said yes, did that, you know, and then it… I don't know if you remember this kind of failure mode that always occurred, but it kind of just had this massive list of
+00:14:29
+
+you know, lots and lots of different things that Hamel really did not like, so, you know, it wasn't… had a little bit too much in there. And at least I tried to fix this issue by editing the prompt to have another instruction, answer only the question asked.
+00:14:40
+
+It didn't quite work for me.
+00:14:56
+
+So, I also tried to change the getOrder tool to return fewer fields, right? It doesn't need to return, like, all 12 fields that showed up in the list.
+00:14:58
+
+I hesitate to, like, prescribe to people, you know, you should edit the tools, but I just want to demonstrate that in this case, you know, you did… we did try several things.
+00:15:09
+
+And then we also… I also tried to change the model to GLM 5.2, other than OpenAI.
+00:15:19
+
+TLDR is that none of these really worked, and when I say none of these worked, I actually ran the newly updated ATIC configuration on a bunch of samples.
+00:15:24
+
+on at least 10 different samples, looked at those outputs, and then found that, you know, it didn't quite change the agent response.
+00:15:35
+
+So this is a good candidate for using auto research. What is auto research? So if anyone has followed Andrej Karpathy, they're probably familiar with this. Actually, I can probably click on this tweet, because… Why not?
+00:15:45
+
+Yeah.
+00:16:02
+
+Hopefully people can see my screen.
+00:16:03
+Hamel Husain
+
+I can, yeah, I can see the tweet.
+00:16:06
+Shreya Shankar
+
+Yeah, great. So Andrej Karpathy in the context of trying to train his own LLM, okay, so it's not about agents. He's trying to train an LLM. It's called NanoGPT. What he found is that if he asked his AI coding agent.
+00:16:08
+
+To try to edit the training code, it produced
+00:16:25
+
+Training code, that was very good.
+00:16:29
+
+So, concretely, what that meant is he was able to have his own agent train a small model with very little loss. And this is the kind of graph that he.
+00:16:32
+
+showed here, so he started out in Xero with, you know, some sort of baseline training code, and then he instructed his agent, you know, improve on the training code.
+00:16:43
+
+And over time, right, this metric that he had defined, which I won't get into.
+00:16:53
+
+That really, really went down.
+00:16:59
+
+So…
+00:17:02
+
+These experiments are all about, you know, training a model, that's fine, but the core insight that he had here was, after every iteration of the agent proposing something, he ran his validator, which measured validation bits per byte, which is a metric specific for his NanoGPT, and then he kept at it.
+00:17:03
+
+Basically, he kept the experiment if the validation bits per byte improved.
+00:17:22
+
+Otherwise, he reverted back to the previous experiment and had the agent try again.
+00:17:28
+
+And so this kind of idea of, in a loop, invoking an agent to improve on your versions, you know, you can do this for 100-plus experiments. This is something that a human might, you know, not really want to do. I don't know about you, but I don't want to, like, try to whack-a-mole 100 different prompt edits.
+00:17:33
+
+So you can have an agent do this, and I want to point out that this kind of idea extends beyond model training into improving agents generally, right? You can imagine, as long as you have some validation number and way to measure it, ideally deterministic.
+00:17:48
+
+However, if you need to have an LLM agent, like, so be it.
+00:18:06
+
+Ideally, if you have this… if you have this metric, and you have this automated evaluator, you can, in a loop, invoke your agent. So, concretely, if we were to look at his actual auto research project, I wanna… this is the auto research project, by the way. I think it's really great to… to look into, so maybe I'll just copy-paste this.
+00:18:10
+
+into the chat so folks can look at it while I'm talking. Here.
+00:18:28
+
+Paste.
+00:18:34
+Hamel Husain
+
+One thing to call out, you know, when this first was, like, announced, a lot of people got nerd sniped immediately, and they, like, tried to use auto-research on every single thing you can imagine.
+00:18:37
+
+like, you want a metric that you have put a lot of work into, and that you think is really solid. And so, it's worth noting, like, this auto-research task that Andrej did.
+00:18:48
+
+You know, this loss that he's optimizing against, that is a very carefully crafted thing.
+00:19:01
+Shreya Shankar
+
+deterministic.
+00:19:08
+Hamel Husain
+
+Yeah, and there's a data set.
+00:19:09
+
+And basically, what I'm trying to say is, you know, you want your evals, like, all that work that you did with evals, like, that is the work of auto-research. Like, you know, him preparing the data, that metric, those, like, you know, like, getting this, like, data set used to train this model.
+00:19:10
+
+You know, basically, in this metric, this deterministic.
+00:19:28
+Shreya Shankar
+
+don't.
+00:19:32
+Hamel Husain
+
+you know, basically, like, gave him a stable foundation on which to do this. So don't… like, you don't want to jump to this too fast.
+00:19:33
+Shreya Shankar
+
+No.
+00:19:40
+
+I'm actually gonna go into some…
+00:19:43
+
+cases in which auto research totally failed for people, so you don't make all those mistakes. So Hamel read my mind. Anyway, so looking at this auto research repo, I think the README is pretty nice, but I really like how he structured the repo.
+00:19:46
+
+So, he has created only 3 files that are useful, and actually, let me go back to my slides here. And the idea here
+00:20:01
+
+is that there's one file, only one file, that the agent is allowed to edit, and you can kind of instruct your coding agent, say, only edit train.py in your prompt, and also you could even have some sort of guardrails or hooks.
+00:20:11
+
+To actually enforce that the agent only edits one file, that works.
+00:20:26
+
+Then, he has this program.md, which I'll show you his example, and this instructions is what is edited by the human. So in there, he's put in a lot of instructions for how to guide his coding agent up front.
+00:20:32
+
+And then there's this prepare.py, which is very, very sacred. It's the evaluator code and the data that no one is allowed to touch, neither the agent nor the human being. It programmed, like, it's just something that is fixed up front.
+00:20:48
+
+And, I can't remember how… where it might… here.
+00:21:04
+
+Yeah, so fixed constants, one-time data preparation, just downloads the training data, trains the tokenizer. So this is something that's not modified, and you want to make sure that, you know, no one can modify it.
+00:21:10
+
+So those are the three files that are important in his repo. And I want to talk about this program.md. I really like he's externalized all of, kind of, the context of how to hill climb. Hill climb means, you know, how to try to improve on the metric.
+00:21:21
+
+He's externalized all this context into this markdown file. So, let's see what he's said. So, first he's talked about the setup, so how one can set up a new experiment, how an agent can. So.
+00:21:38
+
+Stuff that can go in your setup is something like, you know, make sure you have all the data that exists. If not, then you need to run prepare.py.
+00:21:51
+
+Right? You need to, like, download it to make sure we have the data. Maybe you want to check out a new branch, right? In Karpathy's auto research, he publishes every experiment as a commit, so that way he has versioning. I think that's quite important, so… and unfortunately, you know, you do need to specify those instructions for versioning.
+00:22:00
+
+Such as he has in step two here. Otherwise the agent won't automatically do it.
+00:22:21
+
+Then he talks about experimentation, and here what I really like is stuff that… he separates things into what agent can do and what agent cannot do, right? So, these are the different ways the agent can try to modify train.py.
+00:22:26
+
+And he says everything is fair game. So, hopefully the agent that's looking at this, you know, can actually see this, can actually reason about what these objects are and try to improve on it.
+00:22:41
+
+Of course, he says, you know, don't modify these things.
+00:22:53
+
+The goal is simple, get the lowest validation, bits per byte.
+00:22:57
+
+Is it called bits per byte? Actually, I Can't remember.
+00:23:04
+
+The.
+00:23:12
+
+Let me go back.
+00:23:14
+
+Yeah, MITS provides.
+00:23:16
+
+So the goal is to get the lowest validation bits per byte. And then there's some other soft constraints that, in my experience, the agent has never really.
+00:23:18
+
+kind of optimized, but maybe it works in this particular use case, like, that's fine. And then some other kind of stylistic guides that he has. So, simplicity criterion, so all else being equal, simpler is better.
+00:23:30
+
+You know.
+00:23:45
+
+If you just improve a very little bit.
+00:23:46
+
+Maybe by adding hacky code, probably not worth it. If you're able to simplify and get… maintain the same validation bits per byte, or improve on it, then that's great.
+00:23:49
+
+Anyways, so you can kind of imagine that, you know, there's concrete what the agent can do, what the agent cannot do, and then also some stylistic things that Andre would like the agent to be able to follow, but might not.
+00:24:01
+
+And then he talks about output format, which is basically every experiment that the agent tries. Log.
+00:24:14
+
+And some metrics that are useful, and you'll realize that these are task-specific metrics, okay? So for your agent, for the failure mode you are trying to print, you know.
+00:24:21
+
+They're gonna be metric specific to you.
+00:24:32
+
+And then he also has a format for which he wants to log the results, so there's, like, a results.tsv, which we adopt for our homework. But anyways, so here, imagine this is a log of all the experiment results that have happened over time.
+00:24:35
+
+Okay, so he has here, loop forever, do all of this, right? Look at the git state, make some edit to train.py, commit that experiment, run the experiment, read out the results.
+00:24:49
+
+Record the results in the TSV. If the validation metric has improved.
+00:25:01
+
+then advance the branch, keeping the Git commit. Otherwise, if the validation bits per byte is equal or worse, you get reset back to where you started. So, if you don't… if you're not familiar with Git, that's totally fine. All he's saying here is, if the metric did not improve, we're gonna throw away this experiment and not iterate on it.
+00:25:06
+
+And then he has a bunch of prompt engineering instructions that, I'm not gonna get into. So hopefully, you know, people see this program.md. This is the important part of auto research, okay? If you don't have a good program.md, then…
+00:25:26
+
+your agent is gonna kinda go off the rails, so this is the important part, and hopefully you realize it's also totally approachable, right? It's not too long, it's something that you could totally write, and these are all the different facets you want to reason about when doing auto research.
+00:25:41
+
+So I kind of walked through this loop already, and some other things I want to call out is whenever… the human is the one that writes program.md, okay? So I've seen people have agents write the program.md, and so they don't have any idea, kind of.
+00:25:58
+
+The humans don't have any idea what the agent is auto-researching on, so it's really important that you write the program.md, it doesn't take too long.
+00:26:13
+
+And you also…
+00:26:22
+
+I also want to call out this point here that Andre says, which is, essentially, any metric we care about
+00:26:25
+
+that is reasonably efficient to evaluate can be auto-research. So there's two components to this that are important. So one is any metric. So I totally agree with this. If you can codify your failure mode as a metric, which you do in automated evaluators, you can have an agent hill climb on it. So that powerful.
+00:26:33
+
+Then, efficient is the other term here that I think is important. So, you want to make sure that, you know, your validator can actually run, so, you know, you have the sample data ready to run the validator. You can imagine, you know, if this
+00:26:52
+
+if you were trying to auto-research on, like, biology or chemistry or something that needs a wet lab, that's not a very efficient way to validate, right? It might take days or months or a very long time to run that experiment. So efficiency is quite important, you know, not…
+00:27:07
+
+Any metric in any domain, especially if human in the loop is involved directly in that validator, auto research might not be a good fit for that.
+00:27:22
+
+Okay, so before I get into some failure modes in auto research, Hamel, I have a question for you if there are tasks that you feel like are a particularly good fit for auto research that…
+00:27:32
+
+You've kind of discovered.
+00:27:46
+Hamel Husain
+
+A spicy question for me.
+00:27:50
+
+I tend to not like it.
+00:27:53
+Shreya Shankar
+
+Yeah, I think.
+00:27:56
+Hamel Husain
+
+This is great.
+00:27:56
+Shreya Shankar
+
+I want you to talk about why you don't like auto research.
+00:27:58
+Hamel Husain
+
+Yeah. I feel like, it seems really cool, right? Like, okay, I'm just gonna unleash the magic on…
+00:28:00
+
+you know, my system, I did this eval work.
+00:28:11
+
+But I find that, like, anytime I've done auto, like, this, like, auto research, or JEPA, or anything else, my prompts become weird.
+00:28:14
+Shreya Shankar
+
+And.
+00:28:25
+Hamel Husain
+
+And
+00:28:25
+
+they are, they feel like they're overfit a bit in the language, even though, like, the metrics might work out or something like that. I'm like, I don't feel comfortable with this prompt. It feels like it's just trying to hack its way… it is trying to hack its way towards something.
+00:28:26
+
+And so, you know, I haven't really… and I've been able to
+00:28:43
+
+what I do… what I do think is useful is to look at the prompt from the auto-research and learn something from it. Like, oh, okay, that's a good idea, like, that's a good idea to, like, I forgot to explain this thing, or whatever, and then, like, just rewrite it in my own way without the bloat.
+00:28:49
+
+You know what I mean? So I try to learn from the AI and not just let the AI take the wheel.
+00:29:08
+Shreya Shankar
+
+Yeah, let's just…
+00:29:14
+
+ship it directly. Yeah, I think that's a good point. So, I think of auto research as, like, also a
+00:29:16
+
+You get it for free, right? If you've done all the work of writing really good evaluators.
+00:29:21
+Hamel Husain
+
+you.
+00:29:26
+Shreya Shankar
+
+then you might as well just run auto research and see what it comes up with, right? If a hill climbed on your metrics, like, that's amazing, surely it did something. And so you can exactly, as Hamel said, learn from that, even if you don't directly use that prompt. But the point is, right, that, like.
+00:29:26
+
+This should be very simple.
+00:29:41
+
+Doing the evaluator definition and the metrics, and coming up with those test cases, that's the hard part, which you've spent all the other time doing.
+00:29:43
+
+There's also a couple of questions in the chat that I think are pretty good. So, one is that auto research looks pretty greedy. Is that a concern? Is it worth it to explore from earlier commits?
+00:29:53
+
+Yes, that's exactly why we're gonna motivate Jeppa in a few minutes, so hang tight. And then another question of how does auto research keep track of bad branches so it doesn't revisit them? I am not particularly sure how it's done in NanoChat or in Andreas Auto Research.
+00:30:04
+
+repository, I don't know if it does anything for it, like, it might be that the agent does hypothesize bad ideas it had in the past, but you can imagine a simpler, like, a simple extension you could do to auto-research is just to keep track
+00:30:25
+
+of all the bad experiments in some sort of markdown file, so your agent can just read those and make sure not to propose that in future experiment iterations. So this is highly extensible and configurable, right? Like, you shouldn't just adopt auto-research blindly, like, you can actually think about it, you can put files in there, you can think about how to extend it to be a little bit smarter for your use case.
+00:30:39
+
+Alright, so hopefully folks got a sense of what auto research is, and, you know, it is exciting, but don't nerd snipe yourself, of course, as Hamel says.
+00:31:03
+
+And let's talk a little bit about case studies of, you know, where is auto research not gonna work? So there's a bunch of them out on the internet. So some of them work and some of them don't. I think most of the auto research experiments come from Shopify, so that's why you'll see a lot of them. There's a couple of them that I thought were quite interesting.
+00:31:12
+
+There's.
+00:31:35
+
+basically, people are finding that if you just have some sort of metric, right, that is efficient, the agent will find a way to hill climb on it, you know, by hook or by crook. So, you kind of do need to keep it on a tight leash. And in some of these, you know, for example, in Shopify, when they invoked auto research.
+00:31:37
+
+some of… somebody actually said in the poll request, like, I think this metric is probably somewhat overfit.
+00:31:55
+
+Another problem that was reported is, you know, they wanted to hill climb on how fast the codebase could build. So Shopify CI
+00:32:03
+
+they found, after auto research, that it got 65% faster build, but then they went and actually looked into what the agent actually did in auto research and found that the agent deleted files to cut build time. So this might mimic some of the stuff we were talking about in the Hugging Face incident in the last lecture, right? Like.
+00:32:14
+
+You know, assume that your agent is going to do whatever it is because of reward pressure.
+00:32:32
+
+Some other auto research not being a silver bullet, you know, I love looking at some of these failure cases. So, in this meter study.
+00:32:37
+
+they found that their agent actually edited the evaluator in 30% of the runs. So, you know, you want to have some sort of guardrails to make sure that your agent doesn't edit your evaluator files.
+00:32:49
+
+I don't know if they used Andre's repo of auto research directly or that method, but they probably just used some generic idea of having an agent hill climb on a metric.
+00:33:02
+
+Agent extending its own timeouts, you know.
+00:33:13
+
+that happens. Hard coding answers per test case, so Codex had this.
+00:33:17
+
+what else? Oh, Cerebras did auto research. I think this is a fun, article that I've linked in the slides that you should also look into in your own time, but basically, yeah, it's about how to stop your auto research loop from cheating. And so it talks about a bunch of things, so…
+00:33:24
+
+Going back to this, you need to set a run budget, so agent just spent a lot of compute on experiments that might not be a good idea. And then there's also this failure mode that they observed, where the agent stopped working on the experiment that the original
+00:33:40
+
+engineer asked it to do, and then proposed, like, a totally different experiment. I think they mention here.
+00:33:57
+
+Yeah. Well, this might be, you know…
+00:34:04
+
+very hype-y. By morning, it had abandoned our experiment and started its own. But you can get the point here, right? Like, the agents will do whatever they can, right, to hill climb on your metric. Often, that is, they will edit the metric directly, unless you have a guardrail there.
+00:34:07
+Hamel Husain
+
+Same idea as the reward pressure as we discussed earlier in safety.
+00:34:26
+Shreya Shankar
+
+Exactly, right? So don't just blindly use these things, we see all the time where people blindly use them, and then their prompts devolve into something that's not intelligible, as Hamel said, and also, you know.
+00:34:29
+
+there's reward pressure, reward hacking, and it's actually very difficult to catch that at scale. So don't trigger too many auto research agents on your agents.
+00:34:42
+
+Alright, so… Oh, we have someone accidentally annotate the screen. Hopefully I can… Delete that.
+00:34:53
+Hamel Husain
+
+Really, that blue line?
+00:35:02
+Shreya Shankar
+
+Yeah.
+00:35:03
+Hamel Husain
+
+Wow, I didn't know that was a thing.
+00:35:05
+
+Let me see if I can help.
+00:35:07
+Shreya Shankar
+
+Yeah.
+00:35:09
+Hamel Husain
+
+area.
+00:35:09
+Shreya Shankar
+
+Oh, it went away. Okay, perfect.
+00:35:10
+
+Cool.
+00:35:13
+
+All right, so.
+00:35:14
+
+I… part of the homework is to invoke… we wrote this skill called Improve Loop, that is going to tell your coding agent to hill climb on the dev set for your, for your cartwheel agent.
+00:35:16
+
+And I went through the auto research in a little bit more detail because
+00:35:32
+
+we probably won't do… we're not going to do this demo, my OpenAI key is not working right now. The one thing I'll want to highlight here that we need to do that other, auto research agents probably don't do is that we need to kind of split our data sets into this train dev test, or this dev and test. So we want to make sure that, you know, whatever
+00:35:38
+
+edits the agent is proposing to our harness, you know, they generalize to a held-out test set beyond whatever the auto research agent has access to. So that way we can prevent overfitting. So again, it's the same kind of issue around overfitting we've been talking about in lectures.
+00:36:00
+
+So let's skip this part, and then let's go into JEPA now. Hamel, any last thoughts you have on, kind of, auto research?
+00:36:18
+Hamel Husain
+
+No, I mean, I just want to, I'm actually curious about your experience. I gave you like.
+00:36:29
+Shreya Shankar
+
+Yeah.
+00:36:33
+Hamel Husain
+
+Like my opinion, like what happens to me? What about you? How do you feel?
+00:36:33
+Shreya Shankar
+
+I, okay, I really like auto research, and my opinions have really come around, and I think it's because I have…
+00:36:37
+
+I spend a lot more time developing evaluators that I can trust, and I have a lot of confidence in those. So for LLM judges, for example, like, I know I have aligned them, and I've aligned them on lots and lots of examples, you know, so I feel very confident in them. And so therefore, like.
+00:36:46
+
+I don't know, for me, I feel like auto research is this free thing that will just, like, try edits, and then I will see what auto research did, and if auto research couldn't hill climb on the metric, then, you know, I don't feel too bad, because
+00:37:05
+
+I didn't spend my time on it, I just spent my, like, Codex subscription on it. And then if auto-research does improve the metric, which it always has in my experience, you know, I just… I check it for smells of reward hacking or reward pressure. But even if so.
+00:37:19
+
+I… there's still something I can learn from it. Like, maybe there are parts of the prompt, or maybe, you know, there's a part of the code base that is obviously bad and worth my human attention to fix. So I'll give a concrete example of, like, if I'm building a computer system, like, I'm building a query engine in my research group.
+00:37:36
+
+often my auto-research loop is profiling parts of the query engine in order to figure out what part is slow, and then try to propose edits to fix… to improve it. Even if the edits are quite hacky, the profiling that it has done is very nice.
+00:37:54
+
+So I can see that and learn something from it. So… so maybe this all ties back to Evals, where it's, like, you know, I really like it, but I also really read the logs and the traces of what the auto research agent does, and I treat it, like, as another engineer or collaborator where I'm learning.
+00:38:10
+Hamel Husain
+
+Have you used it for quail?
+00:38:26
+Shreya Shankar
+
+I am using it for Quail right now, which is very exciting. So Quail is a research project that I'm working on in my lab. It's an open source AI SQL query engine. And so we're trying to, like, have AI help us build parts of it, and… and.
+00:38:28
+
+I mean, it's a great fit for that, because also the evaluators are deterministic, they're not LLM judges, you know?
+00:38:43
+
+the evaluators are, like, truly, like, measuring the performance of a particular component in it, like system performance. I would love to be able to have LLM judge metrics in it. Like, I think we can… I can have LLM judge metrics around judging, like, the simplicity or elegance of edits, but then I would…
+00:38:50
+
+do a lot of work to make sure that those LLM judges are calibrated with my preference. Other… I wouldn't just, like.
+00:39:08
+
+You know, let the… let the auto research agent run amok.
+00:39:15
+
+Yeah.
+00:39:21
+Hamel Husain
+
+Nice. Thanks for sharing.
+00:39:22
+Shreya Shankar
+
+Yeah, yeah.
+00:39:24
+
+There are not that many questions, so I don't know, maybe people are
+00:39:25
+
+Either everything makes total sense, or people are tuned out second to last lecture, which, you know, is totally understandable.
+00:39:30
+
+Okay.
+00:39:38
+
+So that was auto research, and now I want to talk last, you know, 20 minutes or so about JEPA. So…
+00:39:40
+
+To motivate JEPA, let's talk about limits of improved loop or auto research. And one thing that… that is bad about this naive approach is that the coding agent kind of has so much leeway to decide what is next. And often, the coding agent might even be overwhelmed, or might, you know.
+00:39:48
+
+think about the surface area of places where it has to do improvements, right? The agent has to figure out, oh, like, I think this place is the right place to make the edit. Like, I think I should edit the system prompt, or I think I should edit the tool call surface, or I think I should create a new skill, or, like, you can imagine the surface area is really massive, and
+00:40:06
+
+Maybe the coding agent is not well equipped to figure out what to try next, because all it has, right, is the previous experiment that did well.
+00:40:26
+
+So…
+00:40:35
+
+Why is this coding agent also limited? Well, it's only keeping one good experiment at a time, essentially, so one candidate version of the agent at a time.
+00:40:37
+
+And, as somebody mentioned in the comments, right, like, we… the auto-research loop throws away edits that could be good for some cases, but are bad overall, right? Because it just doesn't do well on our metric for our particular dev set. So those edits get thrown away, but maybe there are some things in those edits that we would use to help us come up with an even better
+00:40:48
+
+of edit.
+00:41:12
+
+So this motivates.
+00:41:13
+
+JEPA. So JEPA is, called Genetic Pareto. It was initially introduced as a prompt optimizer, but again, right, in this class, I want to generalize, you know, the idea. It might be specific to a prompt, it might be specific to a particular task, like in Karpathi's auto research, but we could generalize it to our agent setting.
+00:41:14
+
+JEPA came out of UC Berkeley, came out of, honestly, some folks that I work with in my PhD, but the idea here is that let's equip our.
+00:41:35
+
+Agent that is making edits, with the ability to read traces, and also reflect on them, as well as reflect on multiple different candidate configurations of the agent, so that it can propose better edits.
+00:41:45
+
+Okay, so it actually keeps several candidate
+00:42:00
+
+agent configurations, or in the paper, they only do prompt optimization, but it keeps several prompts, not just the current best version, like the auto research loop did.
+00:42:03
+
+And it supposedly does quite well. I think Databricks has tried to deploy it. JEPA has also talked about, you know, how even in recently, even though the paper is, like, over a year old, they've talked about how they've applied, you know, JEPA to.
+00:42:14
+
+more recent benchmarks, like Frontier CS. Auto Research did very well on it. JEPA, by itself, not so good, but JEPA combined with Auto Research, which I honestly don't know what it means, but they have reported good progress on this.
+00:42:29
+
+So I think it's quite interesting, and I will now go over…
+00:42:45
+
+what JEPA is in a whiteboard.
+00:42:50
+
+Can people see my whiteboard?
+00:42:53
+Hamel Husain
+
+Yes, I can.
+00:42:56
+Shreya Shankar
+
+Cool. Actually some questions so far.
+00:42:57
+
+Is… Is JEPA an actual tool or a methodology? It is both. I'm going to teach about the methodology, but there is an open source version of it that you could use. However, as I will show you, it is actually not that complicated, so, you know, you could probably vibe code it yourself. Alright.
+00:43:00
+
+Let's talk about Joppa.
+00:43:21
+
+Chip. Oh, that's too small.
+00:43:25
+
+Is this too small, or we want it bigger?
+00:43:28
+Hamel Husain
+
+Mmm… a little bit bigger. Yeah, that's good.
+00:43:30
+Shreya Shankar
+
+How about that? Perfect. Okay.
+00:43:33
+
+Jepa. And then, let's say goal is, to find… I'm gonna only limit myself to prompt optimization when teaching this, because I think that it'll just make it a little bit easier. So, to find a more optimal prompt.
+00:43:36
+
+by providing It's structured.
+00:43:53
+
+search, procedure to And… Agent.
+00:43:58
+
+Okay? So, that's what you can think of JEPA as, and how we start out with JEPA.
+00:44:06
+
+Start with… Development set.
+00:44:14
+
+So this can be, you know… you can even JEPA your… I would hesitate… I don't recommend JEPA-ing on your, actual dev set and, like… or sorry, actual test set and CI.
+00:44:21
+
+I recommend you having a dev set that's not something that you're using in CI, so that way, you know, you don't overfit. But let's just say that this is 30 or so different tasks. Remember that a task is, like, a user request or a prompt that is designed to, you know, trigger your failure modes.
+00:44:33
+
+So, let me make a table here, then. So, we'll have something like Task 1, Task 2, dot dot dot…
+00:44:51
+
+Actually, Task 3.
+00:45:02
+
+4… Task N.
+00:45:04
+
+Okay.
+00:45:09
+
+And we're gonna start out with… Actually, let me make this… table.
+00:45:10
+
+But Let's do this.
+00:45:21
+
+We're gonna start out with P0.
+00:45:30
+
+Okay, which is in the 1st version of the prompt.
+00:45:33
+
+actually.
+00:45:38
+
+Everyone, hopefully, with me so far?
+00:45:45
+Hamel Husain
+
+Yep.
+00:45:48
+
+A lot of… a lot of positive comments about the whiteboard style.
+00:45:49
+Shreya Shankar
+
+Hamel has been, for reference, Hamel has been pushing me every time, more whiteboard, more whiteboard. So I'm really trying to do it. All right, so we have a first prompt version, P0, and then I'm going to maybe put the algorithm of Gempa.
+00:45:54
+
+Let's make this blue, because this is what I'm going to build up incrementally.
+00:46:13
+
+Okay, so… 2, Oh.
+00:46:18
+
+And I'm also gonna build up this visual of how Jumbo's gonna work. So this is gonna be P0.
+00:46:22
+
+No, that is not nice.
+00:46:31
+
+Let's make this video.
+00:46:33
+
+This part will become clear in a moment, but it's just a visual of kind of what we're building up.
+00:46:39
+
+Okay, so the last concept I need to introduce before we actually walk through what JEPA is, is this concept of the frontier.
+00:46:45
+
+for a task. Or, sorry, Frontier for a prompt. So, Frontier… Put it here.
+00:46:54
+
+So… I keep forgetting an Excalidraw that I need to…
+00:47:05
+
+The frontier basically is… Collection of prompts that are… that, Lead to highest.
+00:47:17
+
+Accuracy
+00:47:33
+
+For at least one.
+00:47:38
+
+Or how do I say it?
+00:47:41
+
+I should have thought about a better way to say this, but essentially, what it means is that a prompt is on the frontier if it has the highest accuracy for at least one of the tasks.
+00:47:44
+
+Maybe that's how I will say it.
+00:47:54
+
+But…
+00:47:56
+
+Actually, this is probably good enough. Does that make sense to people?
+00:48:03
+Hamel Husain
+
+Yeah.
+00:48:07
+Shreya Shankar
+
+So.
+00:48:08
+Hamel Husain
+
+It's kind of like tying into this Pareto frontier idea of like.
+00:48:08
+Shreya Shankar
+
+Yeah.
+00:48:12
+Hamel Husain
+
+tests.
+00:48:12
+Shreya Shankar
+
+Exactly, but in this case, the Pareto frontier.
+00:48:13
+
+if Frontier is over tasks, like, typically what you'll see Frontier Labs talking about the Frontier, they'll be talking about this trade-off between accuracy and cost. Here, there's nothing about cost. It's just trying to maintain the best prompt configuration per task, because
+00:48:16
+
+Prompts will do well on some tasks, but not others, and it's going to be different per prompt.
+00:48:33
+
+Okay, so now we can go into the JEPA algorithm.
+00:48:37
+
+So, for step one is to select prompt from Frontier.
+00:48:42
+Hamel Husain
+
+There's some confusion about what is a task.
+00:48:51
+Shreya Shankar
+
+So, a task is, like, a user request. And coupled with, like, the evaluators. So, it's something that, like, you can run your agent on and get a score out of. Maybe I should write that.
+00:48:54
+Hamel Husain
+
+And concretely, it's like one session, or, you know, it's not a collection of sessions.
+00:49:09
+Shreya Shankar
+
+It's one trace, yeah.
+00:49:15
+
+And you could generalize this, like, we don't do it in the JEPA paper, but you absolutely could have it… each task could actually be, like, the average of multiple different tasks. Like, there's nothing stopping you from that. This is just the abstraction.
+00:49:17
+
+Task equals one user request.
+00:49:31
+
+Session.
+00:49:36
+
+with evaluators.
+00:49:39
+
+Okay, so the evaluators part is key, okay? Like, don't go into JEPA. A lot of people do this, they go into JEPA without having evaluators. You want to have evaluators.
+00:49:43
+
+Alright, so step one is we select prompt P from the frontier. Obviously, right, when we just have P0, we're gonna select P0. Then, what we're gonna do is run P on, a sample of tasks. This part is key, just a sample here.
+00:49:53
+
+So, when we do that.
+00:50:13
+
+We're gonna have some Very good.
+00:50:18
+
+I don't know, I'm just making this up.
+00:50:22
+
+Okay.
+00:50:29
+
+So imagine that P0
+00:50:30
+
+And when I say check or X, right, like, I'm just making it binary here, but you can imagine if you run many different trials, which JEPA will run many different trials per task, you actually get a non-1-0 score. You'll get, like.
+00:50:33
+
+0.75, or, like, 0.8, or something.
+00:50:48
+
+But for illustrative purposes, I'll just do check and X.
+00:50:51
+
+So this…
+00:50:55
+
+We've done this, right? We've run P on a sample of tasks, and we get the scores. Then…
+00:50:57
+
+We're going to ask Agent to mutate.
+00:51:05
+
+P.
+00:51:10
+
+To come up… with I'm going to call it P. Prime. So
+00:51:14
+
+All that… oh, run P on a sample of tasks, and this is key, log traces.
+00:51:20
+
+Then, step 3 is you're going to ask the agent to look at the traces, look at the metrics, do some reflection on it, I don't know, think.
+00:51:29
+
+And then come up with P prime.
+00:51:37
+
+Okay, then step four.
+00:51:42
+
+Actually, before I do that… Let's go back here.
+00:51:46
+
+And we could make a new… column.
+00:51:50
+
+And let's say now we're in P1.
+00:51:57
+
+And we've done our mutation.
+00:52:00
+
+Okay, so… here we are.
+00:52:02
+
+Let's come up with P. 1.
+00:52:08
+Hamel Husain
+
+And what kind of mutation happens? Is it like random? You just tell LLM, try your best to like come up with a new one?
+00:52:20
+Shreya Shankar
+
+workplace.
+00:52:26
+Hamel Husain
+
+Whatever, like, what's going on?
+00:52:26
+Shreya Shankar
+
+Good question. You literally tell LLM to read the tasks… sorry, read the traces, and read the metrics, and try to improve.
+00:52:27
+
+That's it.
+00:52:36
+
+Just like auto research would do. So step 3 is extremely similar as auto research, no difference. The difference here was select
+00:52:37
+
+the prompt P from Frontier at random.
+00:52:47
+
+Okay, so the difference is that rather than having the agent try to improve on the previous version.
+00:52:52
+
+We have… we are using a random sampling procedure, it's a sample from the frontier, and then force the agent to improve on that.
+00:52:58
+
+That's the difference with a lot of research. Okay, so we can ask the agent to mutate P to come up with P prime, which now is P1. Then we run P prime on a tiny sample.
+00:53:06
+
+And, of course, all the numbers are…
+00:53:21
+
+you know, you can… it all… it could be… when I say tiny sample, it could be two tasks, it could be four tasks, like, this is up to you. There are defaults in the code base. But essentially, maybe the tiny sample is two. So…
+00:53:25
+
+I'll run it on the first two tasks, maybe I see…
+00:53:39
+
+That looks good. Then, I can go back.
+00:53:43
+
+5. If… P prime.
+00:53:47
+
+Is Pareto optimal?
+00:53:52
+
+In the tiny sample.
+00:53:55
+
+Run P. Prime on the bigger sample.
+00:54:00
+Hamel Husain
+
+Okay.
+00:54:04
+Shreya Shankar
+
+So this is… step 5 is really nice, because for efficiency purposes, like, if P' is bad already on the tiny sample, like, the agent proposed some garbage, you know, you can cut that out early, you don't have to bother running it on all tasks.
+00:54:05
+Hamel Husain
+
+And here Pareto Optimal means in that sample, this prompt is the best prompt so far.
+00:54:18
+
+Like within that sample, across those tasks that it's handled.
+00:54:26
+Shreya Shankar
+
+There's at least one task for which it has the highest metric.
+00:54:29
+Hamel Husain
+
+Okay.
+00:54:33
+Shreya Shankar
+
+That's it.
+00:54:34
+Hamel Husain
+
+Got it.
+00:54:34
+Shreya Shankar
+
+Yeah.
+00:54:35
+
+Great question.
+00:54:36
+
+Alright, so I've announced at 5.
+00:54:38
+
+And then I'm also gonna make this up, of course, so maybe I said that…
+00:54:42
+
+you know, Task 3, he won it very nicely, and Task 4…
+00:54:47
+
+Actually, you know what I'll do here? I'll make it more interesting. Let's…
+00:54:54
+Hamel Husain
+
+So if it is a… if the Pareto optimal is referring to just one task.
+00:54:58
+Shreya Shankar
+
+Isn't there…
+00:55:04
+Hamel Husain
+
+there are many, could we end up in a situation where there's many options that are Pareto optimal?
+00:55:05
+Shreya Shankar
+
+Absolutely.
+00:55:12
+Hamel Husain
+
+Does it just sample from that, or what is it going on?
+00:55:12
+Shreya Shankar
+
+It will sample… yeah, step one will sample from that frontier, Pareto frontier at random.
+00:55:15
+Hamel Husain
+
+Okay.
+00:55:20
+Shreya Shankar
+
+So now…
+00:55:21
+
+you know, imagine we… our small sample is just Task 1 and Task 2, and we ran P1, and it passed Task 1, and it failed Task 2. It's still on the Pareto frontier, because it matches the highest accuracy on at least one task.
+00:55:24
+
+So we would run it, continue to run it on, you know, everything.
+00:55:41
+Hamel Husain
+
+And in this example, this teaching example, to get highest accuracy on one task, you just have to pass.
+00:55:44
+
+Yeah. Okay.
+00:55:51
+Shreya Shankar
+
+Exactly. You just have to, like, yeah, get it correctly. In practice, a DREPA will run multiple trials. So, it'll… it won't just be 1-0.
+00:55:53
+
+So now I've checked the nodes, each of which is on the Pareto frontier. P0 is on the frontier, right? Why is P0 on the front… T. Okay, P0 is on the frontier, right, because there's…
+00:56:03
+
+At least one task for which it has the highest accuracy.
+00:56:14
+
+And then P1 is on the frontier, right? Because it's also there as at least one task for which it has the highest accuracy.
+00:56:19
+
+And then you can imagine, right, we just keep going through this algorithm. So…
+00:56:26
+
+Now I'm back to step one. Select prompt P from Frontier at random. Suppose I have…
+00:56:31
+
+So that means I select one of these two at random. Maybe I've selected P0 again, I don't know, so…
+00:56:38
+
+We'll select P0.
+00:56:45
+
+And so that ends up being P2.
+00:56:48
+
+And then now I'm back here.
+00:57:00
+
+I've made a P2.
+00:57:02
+
+Then.
+00:57:04
+
+I'm gonna… imagine I've already run P0 on a sample of tasks, I already have the traces and the metrics, right? I did that. Now I'm gonna ask the agent to mutate P2.
+00:57:06
+
+Or sorry, we're already there. We got P2 by mutation from P0.
+00:57:18
+
+Hopefully I didn't confuse anyone there. So we've selected P0, we already ran it on a sample of task, we mutated it to get P2 from the agent, then we want to run P2 on the tiny sample. What does that end up looking like? Well, perhaps it…
+00:57:25
+
+Fails both of these.
+00:57:39
+
+So what does that mean? Well, it's not Pareto Optimal anywhere, we don't even need to run it at all for the rest.
+00:57:42
+
+And I can just… big X right here.
+00:57:50
+
+Then I go to the next.
+00:57:55
+
+And you can keep doing this until, in practice, a maximum number of trials, so, like.
+00:58:01
+
+between, like, 30 and 50 different loops of this. So, select prompt P from the frontier at random. Again, remember, our frontier is just P0 and P1.
+00:58:05
+Hamel Husain
+
+Can you — there's some confusion about the term Pareto optimal.
+00:58:16
+
+You know, because a lot… like you said.
+00:58:21
+
+In your mind, when you hear the word Pareto Optimal, you're imagining this, like, XY axis, and then, like, there's, like, some…
+00:58:24
+
+Choice of things that do well on.
+00:58:32
+
+All the examples?
+00:58:36
+
+How does that relate to this? Like, can you just maybe talk about that a little bit? Just to clarify.
+00:58:37
+Shreya Shankar
+
+Pareto frontier, like, okay, so a frontier means that there's just… a Pareto frontier means that there's multiple axes for it to be dominant in. So you can think about the situation in this case, where I actually have…
+00:58:43
+
+On one axis, I have… my metric.
+00:59:00
+
+Okay, this is difficult to… to write.
+00:59:07
+
+On one axis, I have my… Accuracy metric.
+00:59:11
+
+On the other axis, I have… different… Tasks.
+00:59:18
+
+So, each… Prompt is essentially, like.
+00:59:26
+
+Has, so, let's say P0, I'm gonna color it orange, okay?
+00:59:32
+
+So… Each tasks end up being something like this.
+00:59:42
+
+Like, the x-axis is truly, like, task 1, task 2, task 3, task 4, something like that. And then when I have another.
+00:59:53
+
+Let's say I have this one be red.
+01:00:01
+
+I have… Something like this.
+01:00:07
+
+Making this up.
+01:00:16
+
+Okay, so Pareto Optimal means What colors have at least one task?
+01:00:18
+
+where it's the highest accuracy. So both red and orange are Pareto optimal, right, because there's at least one task with the highest accuracy.
+01:00:25
+
+Does that make.
+01:00:36
+Hamel Husain
+
+Makes sense.
+01:00:36
+Shreya Shankar
+
+box.
+01:00:37
+Hamel Husain
+
+Yeah, that makes sense. Yeah, the Pareto frontier is like jagged because whatever is not this smooth, like we are, like you know, whatever, like you see with like people advertising their models, like we beat everything all the time, so you just have to spike on one test to be on the frontier for that.
+01:00:37
+
+Yeah, quite literally on the frontier for that specific task.
+01:00:57
+Shreya Shankar
+
+Exactly. And this is different from, like, OpenAI's plots and all, because for them, they have accuracy and cost as their axes. Jetpod's not about cost.
+01:00:59
+
+The other axis is just the tasks.
+01:01:09
+
+But the concept of Pareto, like, just all you need is two axes.
+01:01:12
+
+Okay, I know we're running out of time, so maybe I'll just do one more here.
+01:01:20
+
+So we did P0, we did P1, P2.
+01:01:25
+
+Now.
+01:01:28
+
+We want to do the sampling again, right? Select prompt P from the frontier at random. Maybe this time we've randomly selected P1.
+01:01:31
+
+Oh, let's do this.
+01:01:40
+
+And so, this ends up being P3.
+01:01:44
+
+Put P. 3 here.
+01:01:54
+
+And then we do the same thing again, right? We've… Kind of check an X.
+01:02:01
+
+Maybe some of these are good.
+01:02:10
+
+I don't know.
+01:02:13
+
+and some of these are bad.
+01:02:14
+
+You can kind of see.
+01:02:19
+
+So this one is also Pareto optimal.
+01:02:21
+
+So, we are happy with it, and then we keep going.
+01:02:23
+
+Right, so by the end of this, right, we just have built out this Pareto frontier, we have some set of nodes that's on the frontier, and then you can just take the prompt that has the highest average accuracy across all of the tasks.
+01:02:28
+
+That's all.
+01:02:42
+
+Let me check the comments.
+01:02:45
+
+Okay.
+01:02:49
+
+We can go over this more in office hours. I feel like…
+01:02:51
+
+There's a bunch of comments here that are technical details.
+01:02:56
+
+Hamel, is there anything that came up in the comments that you're like?
+01:02:59
+Hamel Husain
+
+Yeah, so one thing is, so it is easy to, like, get really, zoned in on the technical details. I wouldn't actually focus on technical details, like, let's, like, what is going on?
+01:03:02
+
+You know, the algorithm is sampling, is, like, trying to improve the prompt.
+01:03:13
+
+Then, you know, it's, having… getting a small sample of tasks and saying, can we improve on the small sample of tasks? If we can.
+01:03:20
+
+Then… it will try a larger set of data. And it's like, can we improve on… did we improve on that? Great. And then it keeps iterating, using prompts.
+01:03:29
+
+From, like, known prompts that are good.
+01:03:39
+Shreya Shankar
+
+Yep.
+01:03:42
+Hamel Husain
+
+And that's really, that's…
+01:03:43
+Shreya Shankar
+
+In at least one task. That's the thing.
+01:03:44
+
+Yeah.
+01:03:47
+
+the key idea here… so let's contrast this with auto research. What would auto research do? It would just compute the average across all tasks, and only keep the prompt with the highest average, and then try to kind of mutate or evolve from that. So JEPA just, like.
+01:03:48
+
+again, gives it a more structured search to the agent. So it allows the agent to consider multiple options rather than just one. And then those options, you know, are Pareto optimal.
+01:04:06
+Hamel Husain
+
+And Shreya said at the beginning, like, you could probably vibe code this.
+01:04:17
+Shreya Shankar
+
+Yes.
+01:04:20
+Hamel Husain
+
+You totally can vibe code this. And actually, you could, like, experiment with your own different sampling procedures and your own whatever, because these are kind of just choices. There's no, like, deep magic here.
+01:04:21
+Shreya Shankar
+
+Yes. Yeah, like, I really hope that people realize that this is all approachable.
+01:04:33
+
+You know, there's a great paper that has a lot of details in it, it's 96 pages. You don't need to read all 96 pages.
+01:04:39
+
+It's okay, I just… just kind of… you know, it's not too complicated. That's my only…
+01:04:49
+
+That's what I hope the takeaway is, okay?
+01:04:55
+
+All right, so I know that we're running well over time, so Homework 8 is going to be about accuracy improvement, so choosing a failure mode, running other auto research, which we just
+01:04:58
+
+turn into an improved loop skill, or JEPA, pick your favorite pick, we'll do both, it doesn't matter. Just to get intuition for this, right? Like, we know that these are small sample sizes, we know that this is a fictitious task of Cartwheel, but the point here is to just get practice with these concepts.
+01:05:10
+
+And the homework should be out, I believe, if not merged already, I'll just check that afterwards. And the course reader is also updated with Module 5, so that is today's content, as well as Saturday's content. And there is stuff in the course reader that we don't get to cover in lecture, by the way, so if you're, like, super excited by these ideas, you should definitely check out the course reader for even more details.
+01:05:29
+
+And with that, I think that's it. Oh, we don't need that.
+01:05:53
+
+Hamel, anything that I missed, or… Let's say goodbye to everybody.
+01:05:57
+Hamel Husain
+
+No, I think we got it. We'll have office hours in 30 minutes.
+01:06:03
+
+Yes, 30 minutes.
+01:06:11
+Shreya Shankar
+
+Sorry.
+01:06:12
+Hamel Husain
+
+9:30 AM Pacific.
+01:06:13
+Shreya Shankar
+
+Yep, 26 minutes, I guess. Great, thanks everybody!

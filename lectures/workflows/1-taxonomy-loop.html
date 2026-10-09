@@ -1,0 +1,472 @@
+<title>The Taxonomy Loop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* layout: three flowchart figures stacked, each paired with a numbered right-column gloss that collapses below it at narrow widths */
+  :root {
+    --bg: #f6f4ef;
+    --panel: #ffffff;
+    --fg: #1d1e1b;
+    --muted: #6b6a62;
+    --line: #dbd8cd;
+    --accent: #0f6e63;
+    --on-accent: #ffffff;
+    --note-bg: #eef1ea;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171a;
+      --panel: #1c1f21;
+      --fg: #e9e7e0;
+      --muted: #9a988f;
+      --line: #35382f;
+      --accent: #57d6c4;
+      --on-accent: #0a1512;
+      --note-bg: #1f2420;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171a;
+    --panel: #1c1f21;
+    --fg: #e9e7e0;
+    --muted: #9a988f;
+    --line: #35382f;
+    --accent: #57d6c4;
+    --on-accent: #0a1512;
+    --note-bg: #1f2420;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .page {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 40px 16px 64px;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: clamp(30px, 6vw, 42px);
+    line-height: 1.08;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .intro {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 56ch;
+    margin: 0 0 40px;
+  }
+  .intro strong { color: var(--fg); font-weight: 600; }
+
+  figure {
+    margin: 0 0 18px;
+    padding: 20px 14px 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .figure-grid {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) 300px;
+    gap: 16px 28px;
+    align-items: start;
+  }
+  figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+  }
+  .block-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+  .block-notes .tag {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    color: var(--accent);
+    margin: 0 0 3px;
+  }
+  .block-notes p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fg);
+  }
+  figcaption {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  figcaption b { color: var(--fg); font-weight: 600; }
+
+  .note {
+    background: var(--note-bg);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin: 0 0 48px;
+    max-width: 720px;
+  }
+  .note h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0 0 10px;
+  }
+  .note ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .note li {
+    margin: 0 0 9px;
+    font-size: 14.5px;
+  }
+  .note li:last-child { margin-bottom: 0; }
+  .note li b { color: var(--fg); }
+
+  .phase-tag {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 6px;
+  }
+
+  @media (max-width: 860px) {
+    .figure-grid { grid-template-columns: 1fr; }
+    .block-notes {
+      margin-top: 4px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .page { padding: 28px 16px 48px; }
+    figure { padding: 16px 10px 14px; }
+  }
+</style>
+
+<div class="page">
+
+  <p class="eyebrow">Error analysis, generalized</p>
+  <h1>The Taxonomy Loop</h1>
+  <p class="intro">
+    How raw transcripts turn into a short, defensible list of named failure modes.
+    Three phases: first <strong>discover and evidence</strong> modes by looping sample → open-code →
+    axial-code; then run a <strong>deductive sweep</strong> for anything the open coding missed; then
+    <strong>consolidate</strong> what survived and apply it to everything reviewed.
+  </p>
+
+  <div class="note">
+    <h2>Sizing this in practice</h2>
+    <ul>
+      <li><b>Underlying corpus:</b> at least ~10&#215; your target reviewed-sample size. Cluster and stratified sampling need enough raw material to actually find structure in.</li>
+      <li><b>Total reviewed, across every batch:</b> at least 100 distinct traces by the end.</li>
+      <li><b>Breadth batch size:</b> 15&#8211;30 traces &mdash; big enough for a pattern to show itself, small enough to stay fast.</li>
+      <li><b>Narrow (hardening) batch size:</b> 10&#8211;20 &mdash; smaller is fine, since the pool is already filtered to look similar.</li>
+      <li><b>Replacement:</b> never. Track every trace_id you've reviewed, in either loop, and exclude it from every future batch.</li>
+    </ul>
+  </div>
+
+  <p class="phase-tag">Phase 1 of 3</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 650 1300" role="img"
+         aria-label="A loop: sample a batch of traces, then open-code one trace at a time. After each trace, check whether it shares a cause with roughly three to five earlier codes; if so, exit early to propose a candidate mode, skipping any remaining traces in the batch. If not, and traces remain, open-code the next one; if the batch is exhausted with no match, sample a new batch instead. Once a mode is proposed, harden it with a second loop of the same shape: sample a narrower, similarity-targeted batch, evaluate traces one at a time as positive, close negative, or neither, and exit once there are at least three of each; if the batch runs out first, sample another narrow batch. Once a mode is hardened, check whether sampling overall has been broad and varied enough to trust that nothing is left undiscovered; if not, loop back to sampling a new batch. Once it has, exit to phase two.">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <!-- A: Sample a batch -->
+        <rect x="150" y="16" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">1.A  Sample a batch</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10.5" fill="var(--muted)">vary the method each time</text>
+
+        <line x1="320" y1="72" x2="320" y2="108" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- B: Open-code the next trace -->
+        <rect x="150" y="110" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="132" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">1.B  Open-code the next trace</text>
+        <text x="320" y="150" text-anchor="middle" font-size="10.5" fill="var(--muted)">first failure only, or none</text>
+
+        <line x1="320" y1="166" x2="320" y2="194" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- C1: diamond, shares a cause? -->
+        <polygon points="320,196 470,251 320,306 170,251" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="246" text-anchor="middle" font-size="11.5" fill="currentColor">1.C  Shares a cause with</text>
+        <text x="320" y="261" text-anchor="middle" font-size="11.5" fill="currentColor">~3&#8211;5 earlier codes?</text>
+
+        <!-- C1 no -> straight down to C2 -->
+        <line x1="320" y1="306" x2="320" y2="334" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="340" y="324" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no</text>
+
+        <!-- C1 yes -> bypass right, down to Propose -->
+        <polyline points="470,251 560,251 560,509 490,509" fill="none" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="518" y="244" font-size="10.5" fill="var(--accent)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes</text>
+
+        <!-- C2: diamond, traces left in batch? -->
+        <polygon points="320,336 490,396 320,456 150,396" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="391" text-anchor="middle" font-size="11.5" fill="currentColor">1.D  Traces left</text>
+        <text x="320" y="406" text-anchor="middle" font-size="11.5" fill="currentColor">in batch?</text>
+
+        <!-- C2 yes -> loop back to B -->
+        <polyline points="150,396 60,396 60,138 150,138" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="60" y="267" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 60 267)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes &mdash; more to review</text>
+
+        <!-- C2 no -> loop back to A -->
+        <polyline points="490,396 590,396 590,44 490,44" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="590" y="220" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 590 220)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no &mdash; batch exhausted</text>
+
+        <!-- Propose a candidate mode (accent) -->
+        <rect x="150" y="480" width="340" height="58" rx="10" fill="var(--panel)" stroke="var(--accent)" stroke-width="2.5"/>
+        <text x="320" y="504" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">1.E  Propose a candidate mode</text>
+        <text x="320" y="522" text-anchor="middle" font-size="10.5" fill="var(--muted)">write the binary rule used below</text>
+
+        <line x1="320" y1="538" x2="320" y2="574" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- sub-loop container -->
+        <rect x="50" y="576" width="540" height="464" rx="14" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text x="72" y="598" font-size="10" letter-spacing="0.06em" fill="var(--accent)" font-family="IBM Plex Mono, monospace">HARDEN THE MODE</text>
+
+        <!-- D: Sample a batch (narrow) -->
+        <rect x="170" y="612" width="300" height="50" rx="9" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="632" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">1.F  Sample a batch</text>
+        <text x="320" y="649" text-anchor="middle" font-size="10" fill="var(--muted)">narrow: similarity to the rule</text>
+
+        <line x1="320" y1="662" x2="320" y2="684" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- E: Evaluate the next trace -->
+        <rect x="170" y="686" width="300" height="50" rx="9" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="706" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">1.G  Evaluate the next trace</text>
+        <text x="320" y="723" text-anchor="middle" font-size="10" fill="var(--muted)">apply the rule: positive / close-neg / neither</text>
+
+        <line x1="320" y1="736" x2="320" y2="754" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- F: diamond, evidence check -->
+        <polygon points="320,756 470,811 320,866 170,811" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="806" text-anchor="middle" font-size="11.5" fill="currentColor">1.H  &#8805;3 positive &amp;</text>
+        <text x="320" y="821" text-anchor="middle" font-size="11.5" fill="currentColor">&#8805;3 close-negative?</text>
+
+        <!-- F no -> straight down to F2 -->
+        <line x1="320" y1="866" x2="320" y2="894" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="340" y="884" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no</text>
+
+        <!-- F yes -> bypass right, exits container, down to H -->
+        <polyline points="470,811 610,811 610,1140 490,1140" fill="none" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="610" y="990" text-anchor="middle" font-size="10.5" fill="var(--accent)" transform="rotate(-90 610 990)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes &mdash; hardened</text>
+
+        <!-- F2: diamond, traces left in this (depth) batch? -->
+        <polygon points="320,896 490,956 320,1016 150,956" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="951" text-anchor="middle" font-size="11.5" fill="currentColor">1.I  Traces left in</text>
+        <text x="320" y="966" text-anchor="middle" font-size="11.5" fill="currentColor">this batch?</text>
+
+        <!-- F2 yes -> loop back to E -->
+        <polyline points="150,956 85,956 85,711 168,711" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="85" y="833" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 85 833)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes</text>
+
+        <!-- F2 no -> loop back to D -->
+        <polyline points="490,956 560,956 560,637 472,637" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="560" y="800" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 560 800)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no &mdash; new narrow batch</text>
+
+        <!-- H: diamond, sampled broadly overall? -->
+        <polygon points="320,1080 490,1140 320,1200 150,1140" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="1135" text-anchor="middle" font-size="11.5" fill="currentColor">1.J  Sampled broadly &amp;</text>
+        <text x="320" y="1150" text-anchor="middle" font-size="11.5" fill="currentColor">diversely, overall?</text>
+
+        <!-- H no -> long feedback to A -->
+        <polyline points="150,1140 16,1140 16,60 148,60" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="16" y="600" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 16 600)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no &mdash; sampling too narrow</text>
+
+        <!-- H yes -> converged, exit -->
+        <line x1="320" y1="1200" x2="320" y2="1244" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrow)"/>
+        <text x="320" y="1270" text-anchor="middle" font-size="12.5" fill="var(--accent)" font-weight="600">Converged &#8594; Figure 2</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">1.A</span><p>Draw a fresh batch of unreviewed traces. Vary the method each time &mdash; random, cluster, a product dimension, or a targeted search &mdash; so different parts of the corpus get covered over time.</p></div>
+      <div><span class="tag">1.B</span><p>Read one trace from the batch. If you spot a failure, write a free-form note describing it in your own words and stop; if there's none, record that explicitly too.</p></div>
+      <div><span class="tag">1.C</span><p>Compare this trace's open code against your other recent ones. If roughly three to five look like the same underlying cause, you've likely found a real pattern rather than a one-off.</p></div>
+      <div><span class="tag">1.D</span><p>If this trace didn't match a pattern, check whether unreviewed traces remain in the batch. If so, open-code the next one; if the batch is used up, draw a new one.</p></div>
+      <div><span class="tag">1.E</span><p>Write the binary rule the matching open codes share: a definition precise enough that another reviewer could apply it to a trace they haven't seen. This rule is what gets tested next.</p></div>
+      <div><span class="tag">1.F</span><p>Draw a smaller batch chosen for similarity to the new rule rather than broadly. You're hunting for more examples of one specific pattern now, not new patterns.</p></div>
+      <div><span class="tag">1.G</span><p>Apply the candidate rule to one trace at a time: does it clearly match (positive), clearly resemble it without matching (close negative), or neither?</p></div>
+      <div><span class="tag">1.H</span><p>Check whether you've accumulated enough evidence to call the rule hardened: at least three positives and three close negatives, the minimum a final mode needs.</p></div>
+      <div><span class="tag">1.I</span><p>If the bar isn't met yet, check whether traces remain in this narrow batch. If not, draw another narrow batch; the loop keeps searching until the bar clears.</p></div>
+      <div><span class="tag">1.J</span><p>Once a mode is hardened, ask whether your sampling overall has covered the corpus broadly enough to trust nothing major is still undiscovered. If not, sample another batch; if so, move to Phase 2.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 1.</b> Discovering and evidencing a failure mode. Both loops share one shape &mdash; sample a batch, evaluate it trace by trace, exit early on a hit or loop back when the batch runs out &mdash; they just differ in how the batch is picked and what counts as a hit. Only the outer loop's result counts toward "have we found everything."</figcaption>
+  </figure>
+
+  <div class="note">
+    <h2>Why this isn't an infinite loop</h2>
+    <ul>
+      <li><b>The inner loop never signals convergence on its own.</b> It's built to search for instances of a mode you already have, so running out of a narrow batch only means that search succeeded or didn't &mdash; it says nothing about whether an undiscovered mode exists elsewhere.</li>
+      <li><b>A falling discovery rate only means something once sampling has actually been broad.</b> A low rate from a narrow slice of the data just means you haven't looked elsewhere yet, not that nothing else is wrong.</li>
+      <li><b>A trace's second or third failure isn't lost</b> &mdash; open-coding deliberately stops at the first one to stay fast. The rest surface later: either a deliberate re-read past that stopping point, or the exhaustive pass in Figure 3.</li>
+    </ul>
+  </div>
+
+  <p class="phase-tag">Phase 2 of 3</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 640 570" role="img"
+         aria-label="A loop: pick an unexamined hypothesis, either an external-taxonomy category or a requirement with no observed violation, then search the corpus for evidence. Check whether it clears the same bar as Figure 1, at least three positive and three close-negative traces. If it clears the bar, add it as a confirmed mode. Either way, check whether hypotheses remain; if so, pick the next one; if not, exit to phase three.">
+      <defs>
+        <marker id="arrow2" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <!-- loop container -->
+        <rect x="50" y="16" width="540" height="462" rx="14" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text x="72" y="38" font-size="10" letter-spacing="0.06em" fill="var(--accent)" font-family="IBM Plex Mono, monospace">DEDUCTIVE SWEEP</text>
+
+        <!-- D: Pick an unexamined hypothesis -->
+        <rect x="170" y="52" width="300" height="50" rx="9" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="72" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">2.A  Pick an unexamined hypothesis</text>
+        <text x="320" y="89" text-anchor="middle" font-size="10" fill="var(--muted)">a taxonomy entry, or an unviolated requirement</text>
+
+        <line x1="320" y1="102" x2="320" y2="124" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow2)"/>
+
+        <!-- E: Search the corpus for evidence -->
+        <rect x="170" y="124" width="300" height="50" rx="9" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="144" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">2.B  Search the corpus for evidence</text>
+        <text x="320" y="161" text-anchor="middle" font-size="10" fill="var(--muted)">targeted, like a narrow batch</text>
+
+        <line x1="320" y1="174" x2="320" y2="194" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow2)"/>
+
+        <!-- F: diamond, same evidence bar as Figure 1 -->
+        <polygon points="320,194 470,249 320,304 170,249" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="244" text-anchor="middle" font-size="11.5" fill="currentColor">2.C  &#8805;3 positive &amp;</text>
+        <text x="320" y="259" text-anchor="middle" font-size="11.5" fill="currentColor">&#8805;3 close-negative?</text>
+
+        <!-- F no -> straight down to F2 -->
+        <line x1="320" y1="304" x2="320" y2="344" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow2)"/>
+        <text x="340" y="324" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no</text>
+
+        <!-- F yes -> bypass right, down to F2 (confirmed) -->
+        <polyline points="470,249 540,249 540,399 470,399" fill="none" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrow2)"/>
+        <text x="540" y="324" text-anchor="middle" font-size="10.5" fill="var(--accent)" transform="rotate(-90 540 324)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes &mdash; confirmed</text>
+
+        <!-- F2: diamond, hypotheses left? -->
+        <polygon points="320,344 470,399 320,454 170,399" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="394" text-anchor="middle" font-size="11.5" fill="currentColor">2.D  Hypotheses</text>
+        <text x="320" y="409" text-anchor="middle" font-size="11.5" fill="currentColor">left to check?</text>
+
+        <!-- F2 yes -> loop back to D -->
+        <polyline points="170,399 90,399 90,77 170,77" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow2)"/>
+        <text x="90" y="238" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 90 238)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes &mdash; more to check</text>
+
+        <!-- F2 no -> exit the loop -->
+        <line x1="320" y1="454" x2="320" y2="478" stroke="currentColor" stroke-width="1.5"/>
+        <text x="340" y="468" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no</text>
+
+        <line x1="320" y1="478" x2="320" y2="522" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrow2)"/>
+        <text x="320" y="546" text-anchor="middle" font-size="12.5" fill="var(--accent)" font-weight="600">No hypotheses left &#8594; Phase 3</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">2.A</span><p>Choose one hypothesis you haven't checked: a category from a published taxonomy your own modes might be missing, or a requirement in your spec you haven't yet seen violated.</p></div>
+      <div><span class="tag">2.B</span><p>Search the corpus for traces that might match this specific hypothesis &mdash; the same shape as a narrow batch, but starting from the hypothesis instead of an observed pattern.</p></div>
+      <div><span class="tag">2.C</span><p>Apply the same evidence bar as Phase 1. A published list or an unchecked requirement only names a possibility; your own traces still have to back it up.</p></div>
+      <div><span class="tag">2.D</span><p>If other hypotheses remain unchecked, pick the next one. Once none remain, exit to Phase 3.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 2.</b> The deductive sweep &mdash; the one place a genuinely new mode can still enter, this late in the process. It starts from a hypothesis rather than from the data: an external taxonomy, or a requirement you haven't yet seen violated. The evidentiary bar is unchanged from Figure 1, so a hypothesis only survives if your own traces actually back it.</figcaption>
+  </figure>
+
+  <p class="phase-tag">Phase 3 of 3</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 640 470" role="img"
+         aria-label="A straight pipeline: merge or split every candidate mode found so far, inductive and sweep-confirmed alike, by whether the same fix would correct them; freeze the set; apply every mode to every reviewed trace as a present or absent judgment; write that judgment to a permanent score and a local record; and report the resulting fractions.">
+      <defs>
+        <marker id="arrow3" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <rect x="150" y="16" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">3.A  Merge or split candidates</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10.5" fill="var(--muted)">same fix &#8594; same mode</text>
+
+        <line x1="320" y1="72" x2="320" y2="108" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"/>
+
+        <rect x="150" y="108" width="340" height="60" rx="10" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="320" y="133" text-anchor="middle" font-size="13" font-weight="700" fill="var(--on-accent)">3.B  Freeze the taxonomy</text>
+        <text x="320" y="152" text-anchor="middle" font-size="10.5" fill="var(--on-accent)" opacity="0.85">no redefining mid-pass</text>
+
+        <line x1="320" y1="168" x2="320" y2="204" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"/>
+
+        <rect x="150" y="204" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="226" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">3.C  Apply every mode &#215; every trace</text>
+        <text x="320" y="244" text-anchor="middle" font-size="10.5" fill="var(--muted)">one present/absent call, each pair</text>
+
+        <line x1="320" y1="260" x2="320" y2="296" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"/>
+
+        <rect x="150" y="296" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="318" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">3.D  Write the judgment</text>
+        <text x="320" y="336" text-anchor="middle" font-size="10.5" fill="var(--muted)">a permanent score + a local record</text>
+
+        <line x1="320" y1="352" x2="320" y2="388" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"/>
+
+        <rect x="150" y="388" width="340" height="60" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="412" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">3.E  Report sample fractions</text>
+        <text x="320" y="430" text-anchor="middle" font-size="10.5" fill="var(--muted)">not prevalence &mdash; see note below</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">3.A</span><p>Look at every mode found in either phase together. Merge two if the same product fix would correct both; split one if its examples actually need different fixes.</p></div>
+      <div><span class="tag">3.B</span><p>Lock the final set of modes and their definitions. No redefining once labeling starts &mdash; a definition that changes mid-pass makes earlier and later judgments incomparable.</p></div>
+      <div><span class="tag">3.C</span><p>Go through every trace in the reviewed set and make one present-or-absent call for every mode, not just the one it was originally coded for. A trace can carry more than one failure.</p></div>
+      <div><span class="tag">3.D</span><p>Save each accepted judgment twice: as a permanent score in your trace store and as a local record, so the labels survive independently of any one tool.</p></div>
+      <div><span class="tag">3.E</span><p>Report what fraction of the reviewed sample each mode appears in, but call it a sample fraction, not a prevalence estimate &mdash; the set was shaped by clustering and search, not drawn at random.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 3.</b> Consolidating and applying the final set. Merge or split now runs once, over every mode found in either phase &mdash; including anything the sweep just confirmed &mdash; so nothing freezes without being checked against the rest. Everything after <b>Freeze</b> is pure bookkeeping, turning frozen definitions into a labeled dataset.</figcaption>
+  </figure>
+
+  <div class="note">
+    <h2>Three things this isn't</h2>
+    <ul>
+      <li><b>Not a prevalence estimate.</b> The fractions in Figure 3 describe a review set you deliberately shaped with clustering and targeted search &mdash; not a random sample of the real population. Estimating true prevalence needs a separate, genuinely random sample of the whole corpus.</li>
+      <li><b>Not every undesirable behavior is automatically a "failure."</b> Something can be bad for the user without yet being a defined rule. Decide explicitly whether to write it down as one before you count it &mdash; otherwise a judgment call quietly passes as an objective violation.</li>
+      <li><b>Not purely inductive.</b> The deductive sweep starts from a hypothesis &mdash; a published category, or a requirement you haven't yet seen violated &mdash; and searches for confirming evidence, the reverse of Figure 1's data-first open coding. Reasoning in that direction invites confirmation bias; the unchanged evidentiary bar (&#8805;3 positive, &#8805;3 close-negative, independently applicable) is what keeps it honest.</li>
+    </ul>
+  </div>
+
+</div>

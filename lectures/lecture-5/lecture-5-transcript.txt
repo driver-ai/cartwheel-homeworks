@@ -1,0 +1,3391 @@
+All right. Welcome everyone to number five. Today we're going to be talking
+00:00:00
+
+about judges,
+00:00:07
+
+specifically, okay, for where to call them by a more broad term, automated eval
+00:00:08
+
+uators,
+00:00:14
+
+and how to automate the development of automated evaluators in a way that you
+00:00:15
+
+can actually
+00:00:19
+
+trust them. Before we get into today's material, just some logistics of what
+00:00:20
+
+happened last
+00:00:27
+
+time, what we're going to talk about today. So last time we talked about open
+00:00:28
+
+coding,
+00:00:32
+
+axial coding, all we can actually look at the data, do error analysis to
+00:00:33
+
+discover what
+00:00:38
+
+the mistakes are. So what we actually did was we built this dashboard, which
+00:00:39
+
+plenty of
+00:00:44
+
+you probably already have done for homework, and we looked at each trace one by
+00:00:44
+
+one, and
+00:00:49
+
+we read these things, and then we highlighted, commented on it, gave feedback,
+00:00:49
+
+and kind of
+00:00:54
+
+moved on. And then we saw it by the end, where we were able to take all of
+00:00:55
+
+these open codes,
+00:00:59
+
+use our coding agent to build a taxonomy of common failure modes in our traces.
+00:01:01
+
+So hopefully
+00:01:05
+
+you guys got some practice with this in the last few days. Today, what we're
+00:01:05
+
+going to
+00:01:10
+
+do is given these failure modes, we're going to take one of the failure modes,
+00:01:10
+
+and we're
+00:01:14
+
+going to walk through the process of building an LLM judge or an automated eval
+00:01:15
+
+uator. So
+00:01:19
+
+what we're going to do is try to write a prompt for it, see how well the LLM
+00:01:19
+
+judge
+00:01:23
+
+aligns with our labels, and then use coding agents to help climb on the
+00:01:24
+
+automated evaluator
+00:01:28
+
+to make it align better with our human labels. At a very high level for
+00:01:29
+
+automated evaluators,
+00:01:35
+
+I and Hamel like to think about, there's two types of automated evaluators,
+00:01:36
+
+there's code
+00:01:40
+
+based evaluators, and there's LLM judge based evaluators. Code based evaluators
+00:01:41
+
+, we talk
+00:01:46
+
+about this a little bit in the reader, we're not going to cover it in lecture.
+00:01:47
+
+It's very
+00:01:50
+
+simply, if you know that there's some criteria that you care about, for example
+00:01:51
+
+, you know
+00:01:56
+
+you want all of your outputs to be less than 100 words, you don't need an LLM
+00:01:57
+
+judge to
+00:02:01
+
+tell you whether something is less than 100 words, you can absolutely just
+00:02:02
+
+write some
+00:02:05
+
+piece of code that is going to run on all your outputs and check whether that's
+00:02:06
+
+within
+00:02:09
+
+100 words. But LLM judges, on the other hand, these are more for criteria that
+00:02:09
+
+'s very difficult
+00:02:15
+
+to express in code. So for example, maybe we want to make sure that cartwheels
+00:02:16
+
+output
+00:02:22
+
+gives enough information without unnecessary detail, and that's actually the
+00:02:23
+
+mode that
+00:02:26
+
+we'll get into in this lecture. But one of the failure modes we encountered was
+00:02:27
+
+we were
+00:02:30
+
+reading these outputs and we're thinking, "Oh my gosh, there's way too much
+00:02:30
+
+detail
+00:02:33
+
+in them." So a good example of a fuzzy failure mode here is too much detail,
+00:02:34
+
+that's something
+00:02:38
+
+we would want an LLM to help us check. Hamel, any thoughts you want to add on
+00:02:39
+
+code based
+00:02:45
+
+versus LLM based? I know a lot of people actually prefer to use code based
+00:02:45
+
+myself included if
+00:02:50
+
+it's possible to express it in code. But kind of in your head, when do you
+00:02:51
+
+think about using
+00:02:55
+
+code versus LLM? I try to come up with, I try to figure out if there's any way
+00:02:56
+
+I can use
+00:03:01
+
+code based checks because they're so much easier to maintain and create and are
+00:03:02
+
+far less
+00:03:08
+
+of pain in the ass than LLM as a judge. You'll see LLM as a judge, you have to
+00:03:09
+
+validate
+00:03:12
+
+the judge. You can't just ask an LLM, "Hey, is this good?" And then go on your
+00:03:13
+
+merry way,
+00:03:18
+
+like how do you know if that judge is good? Well, that's like a meta eval. We
+00:03:19
+
+'re going
+00:03:21
+
+to show you how to do that. That sounds complicated. It kind of is. It's really
+00:03:22
+
+complicated. Try
+00:03:27
+
+to use a code based eval if you can. Hopefully by the end of today's lecture,
+00:03:28
+
+you will realize
+00:03:34
+
+that you want to use code based evaluators as much as possible. But sometimes
+00:03:35
+
+you cannot
+00:03:39
+
+get around it. You have to use an LLM judge. And so hopefully today you'll be
+00:03:40
+
+equipped
+00:03:43
+
+with the knowledge of how to do LLM judge correctly. So let's talk about the
+00:03:44
+
+example
+00:03:50
+
+criteria that we're going to use for an LLM judge. And this came directly out
+00:03:50
+
+of axial
+00:03:55
+
+coding from last lecture. By the way, I looked at my taxonomy, I looked at my
+00:03:56
+
+open codes
+00:03:59
+
+and I found what was the code that I was giving the most. And that was too much
+00:04:00
+
+unnecessary
+00:04:05
+
+detail. So the first thing I like to do is phrase the criteria. So phrase it as
+00:04:05
+
+a sentence.
+00:04:11
+
+But the final message includes all the information the user needs for their
+00:04:12
+
+next decision, but
+00:04:16
+
+doesn't have any irrelevant or excessive detail. So when I say this, like
+00:04:17
+
+phrase it
+00:04:21
+
+as a sentence and phrase it as a sentence that could evaluate to true or false
+00:04:22
+
+for that
+00:04:27
+
+particular output. So think of this as like a rubric item or a rubric criteria,
+00:04:28
+
+like somebody
+00:04:33
+
+gets points if they satisfy it and they get minus points if they don't satisfy
+00:04:34
+
+it. And
+00:04:39
+
+the way that I like to think about too much irrelevant or like what does
+00:04:40
+
+irrelevant or
+00:04:43
+
+unnecessary detail mean? I don't know if folks are familiar with Grice who's
+00:04:44
+
+like a philosopher
+00:04:48
+
+logician. I don't really know somebody from the past. Very, very famous guy. So
+00:04:49
+
+you can
+00:04:56
+
+probably lock this up. So it's a paper that he wrote back in 1975. Yeah, he's a
+00:04:56
+
+logician.
+00:05:03
+
+I'm not going to go into all of this in detail, but he has four very good max
+00:05:04
+
+ims for kind
+00:05:07
+
+of how to communicate or express a thought to somebody. And these four maxims
+00:05:08
+
+are quantity.
+00:05:13
+
+So for quantity, you know, include what is needed. Don't include more aspects
+00:05:14
+
+than needed.
+00:05:18
+
+Quality, say what is true. Make sure everything that you're saying is supported
+00:05:20
+
+by some evidence.
+00:05:23
+
+Relation. So that means stay relevant to the request. So don't say something
+00:05:25
+
+that's
+00:05:29
+
+totally irrelevant. And then manner. So that is whenever you're saying
+00:05:29
+
+something to somebody
+00:05:34
+
+or communicating, avoid ambiguity, be very precise and present information in a
+00:05:36
+
+logical
+00:05:40
+
+order. So these are just four maxims that you came up with that I think are
+00:05:40
+
+really great
+00:05:43
+
+and useful, especially in the age of LMS. And so this is kind of how we want to
+00:05:44
+
+think
+00:05:48
+
+about we want our wheels answers to follow this criteria. Now, of course, we
+00:05:48
+
+cannot express
+00:05:55
+
+this as some code base check. I have no idea how to express evaluating this
+00:05:55
+
+criteria in
+00:06:00
+
+code, but hopefully we're going to try to do this with an LLM judge. And if we
+00:06:01
+
+were
+00:06:04
+
+to see an example of one of the traces that might violate this criterion that
+00:06:04
+
+we looked
+00:06:09
+
+at last time, here's a cookbook return trace excerpt. So I got a cookbook from
+00:06:09
+
+this paper
+00:06:15
+
+liner press. Some of the pages were stuck together. Can I return it? And maybe
+00:06:15
+
+the AI
+00:06:19
+
+agent ran some tools did some stuff. And then it said, if you'd like, I can
+00:06:20
+
+help start
+00:06:24
+
+the refund for this order, since this is a higher value order, it might be
+00:06:25
+
+routed for
+00:06:29
+
+human approval. And I open coded this as this is very bad. I didn't like it.
+00:06:29
+
+There's so
+00:06:36
+
+many issues I found like one, I didn't like then we found amount wasn't
+00:06:36
+
+provided in the
+00:06:41
+
+answer. That seems quite necessary. Higher value is something very ambiguous,
+00:06:42
+
+right? It's
+00:06:47
+
+unclear whether human approval was required or not. And why like if we're going
+00:06:47
+
+to say
+00:06:52
+
+it may be routed to human approval, like that's not a very helpful response
+00:06:52
+
+from an
+00:06:56
+
+agent, right? We want to be definitive. And we want to present like why we
+00:06:56
+
+might route
+00:07:00
+
+that to human approval. There are just three of the issues that I had annotated
+00:07:00
+
+, but you
+00:07:04
+
+can kind of see why that this LLM judge should evaluate this output to be
+00:07:05
+
+giving to not satisfy
+00:07:12
+
+this criterion. Does that make sense of a motivating example? Hopefully, yes, I
+00:07:14
+
+see
+00:07:19
+
+people's heads nodding, so I'm going to go for it. So how might we design an LL
+00:07:19
+
+M judge?
+00:07:24
+
+We want to evaluate this criterion on every single trace. And not just the
+00:07:25
+
+traces that
+00:07:28
+
+we've labeled, but like in theory, we can have an LLM judge run on all the
+00:07:29
+
+traces in
+00:07:33
+
+production, evaluating this criteria. What we need to do is essentially train
+00:07:33
+
+or align
+00:07:39
+
+our judge upfront on a sample. Now, fortunately, we already have a sample of
+00:07:39
+
+information where
+00:07:45
+
+we already have data that we have done open and axial coding on at least 100
+00:07:46
+
+traces,
+00:07:52
+
+hopefully 200 plus. But I'm just going to say 100 for now. And each one of
+00:07:52
+
+these traces
+00:07:58
+
+for the criteria, either it's labeled pass or fail. And you can do this by
+00:07:59
+
+taking your
+00:08:03
+
+axial code taxonomy, you know, you have the failure mode there that you know
+00:08:04
+
+you want
+00:08:08
+
+to evaluate, you could either go through all the traces and annotate one or
+00:08:08
+
+zero for that
+00:08:12
+
+criteria, or you can ask your LLM judge to do the, or sorry, ask your coding
+00:08:12
+
+agent to
+00:08:16
+
+do this, because it already has access to your open codes, it can assign one or
+00:08:17
+
+zero
+00:08:21
+
+for each trace for the failure mode. And let's assume that we have 50 pass and
+00:08:21
+
+50 fail,
+00:08:25
+
+because it's just an easy assumption to make. But in practice, you might have
+00:08:26
+
+more or less.
+00:08:29
+
+We recommend you having at least 20 pass and 20 fail, it's just, you need to
+00:08:30
+
+make sure
+00:08:34
+
+that you have enough examples of both. So you can actually try to train your LL
+00:08:35
+
+M judge.
+00:08:38
+
+And you're going to train your LLM judge just like you would train any other
+00:08:40
+
+binary classifier.
+00:08:43
+
+If you're a machine learning person, this should be super, super in your wheel
+00:08:44
+
+house,
+00:08:49
+
+you should know exactly what I'm talking about here. First thing they're going
+00:08:49
+
+to do
+00:08:52
+
+is split your traces into training, development and test sets. But that would
+00:08:53
+
+become clear
+00:08:57
+
+in a moment. So I like to split it up into 204040, which is a little bit of a
+00:08:58
+
+flip, actually,
+00:09:04
+
+from traditional machine learning, because you don't really need that many
+00:09:05
+
+examples
+00:09:08
+
+for training. You want to reserve most of your examples for development and
+00:09:09
+
+test to make sure
+00:09:12
+
+the alignment of those sets is much better. So in training, you're going to
+00:09:13
+
+just use any
+00:09:18
+
+of these training examples. They could be in the prompt for the LLM judge as
+00:09:18
+
+few shot
+00:09:23
+
+examples for development. This is where you're going to test your LLM judge
+00:09:24
+
+prompt on the
+00:09:30
+
+development set. And you're going to see, okay, how did it align with my labels
+00:09:31
+
+on the
+00:09:35
+
+development set? And you're going to try to hill climb on this development set.
+00:09:36
+
+You're
+00:09:39
+
+going to try to get the alignment score, which I'll define in a bit. You're
+00:09:40
+
+going to try
+00:09:43
+
+to get that as high as possible. Then when that alignment score is very high,
+00:09:43
+
+the test
+00:09:48
+
+set is basically how you're going to ensure that the problem generalizes to
+00:09:49
+
+unseen data.
+00:09:53
+
+So you're going to run that good prompt on this held out test set. And you're
+00:09:54
+
+going
+00:09:58
+
+to see what the alignment score is there. And then hopefully that is good
+00:09:58
+
+enough to
+00:10:02
+
+shift to production. You're going to want to make sure that there's no leakage
+00:10:02
+
+between
+00:10:07
+
+these traces. I cannot tell you the number of times that I've seen people
+00:10:07
+
+trying to hill
+00:10:11
+
+climb on some data set of traces. And the data set that they're evaluating on
+00:10:12
+
+is exactly
+00:10:17
+
+the same as the data set, the few shot examples that they have in the prompt.
+00:10:18
+
+Well, of course,
+00:10:22
+
+it's going to do well in that scenario. You're not try testing anything. So you
+00:10:23
+
+want to make
+00:10:27
+
+sure that these are distinct data sets there. It's know what we call leakage
+00:10:28
+
+between them.
+00:10:31
+
+If you're a machine learning person, everyone should be nodding their head like
+00:10:33
+
+, yes, this
+00:10:35
+
+is my bread and butter. If you're not a machine learning person, that is
+00:10:36
+
+totally okay. This
+00:10:39
+
+is a tried and true process for how to do classification. And we'll actually,
+00:10:40
+
+we have
+00:10:44
+
+a bunch of coding skills for your coding agents to help you with this.
+00:10:44
+
+So one thing I want to say here is this might sound so like, okay, experience
+00:10:49
+
+people get
+00:10:55
+
+this wrong. I've been a machine learning engineer for over 25 years. And I, any
+00:10:56
+
+company I've
+00:11:01
+
+been in, I have found leakage. It's a decision. It's like, it can be decept
+00:11:02
+
+ively like complicated.
+00:11:08
+
+And you have to have really good data hygiene to make sure you're not somehow
+00:11:11
+
+cheating.
+00:11:15
+
+Like you don't look at, you know, make sure we're going to get into this, but
+00:11:16
+
+like you
+00:11:19
+
+have to make sure that you sort of are very disciplined about what data you
+00:11:20
+
+look at and
+00:11:26
+
+like what goes into your prompts and where like, what is informing your prompts
+00:11:27
+
+. And
+00:11:34
+
+so just, just make sure you pay attention to this. And basically like what we
+00:11:34
+
+'re doing
+00:11:40
+
+here, what we're telling you is like your LLM judge is a classifier, and you're
+00:11:40
+
+going
+00:11:45
+
+to need to test that classifier rigorously to make sure that it's good, and not
+00:11:45
+
+just
+00:11:51
+
+go on faith. So what we're showing here is like this data segmentation strategy
+00:11:51
+
+, training
+00:11:57
+
+dev test set. These are kind of, we're going to use this data partitioning to
+00:11:58
+
+do the tests
+00:12:04
+
+and make sure we're not like over overfitting the judge. Yeah, and things like
+00:12:05
+
+that.
+00:12:10
+
+Yeah, a couple of other questions that we're getting is, you know, what is, is
+00:12:11
+
+developing
+00:12:16
+
+the judge mean just finding the prompt for the judge? Yes, you can just think
+00:12:17
+
+of it as
+00:12:22
+
+tuning. What is the correct prompt to have for your LLM judge? That is all we
+00:12:22
+
+'re trying
+00:12:26
+
+to do here. And then the training set here is just the set of examples that you
+00:12:26
+
+'re allowed
+00:12:32
+
+to include as few shot examples in your prompt. You can't include dev set
+00:12:33
+
+examples as few
+00:12:37
+
+shot examples, because then you would have leakage, but you would have this
+00:12:38
+
+overfitting
+00:12:41
+
+that Hamel mentioned. So that's why we split it into these three. Another
+00:12:41
+
+question that
+00:12:46
+
+we got that's good is, well, what model do you use for the LLM judge? And can I
+00:12:46
+
+typically
+00:12:54
+
+like to say, you know, use a cheap model because you want to be able to run
+00:12:55
+
+your LLM judge on
+00:12:59
+
+pretty much all of the traces that you have ever get. It should be like a
+00:13:00
+
+really cheap
+00:13:03
+
+way to scale up your judgment. So don't try to use a really expensive model.
+00:13:04
+
+Try to use
+00:13:08
+
+a cheap model and then make sure the prompt is very good, but this process we
+00:13:08
+
+'re about
+00:13:11
+
+to show you. And then the second thing is it's okay if you use the same model
+00:13:12
+
+for your
+00:13:17
+
+agent as the same model for your judge, because if judge is doing a different
+00:13:18
+
+task than the
+00:13:23
+
+agent is doing, the judge is just trying to evaluate good or bad for this one
+00:13:24
+
+particular
+00:13:29
+
+criteria. So it is a totally different task than your original agent, which is
+00:13:30
+
+trying
+00:13:34
+
+to do, you know, a shopping assistant. So don't worry too much about, oh, my
+00:13:34
+
+judge model,
+00:13:39
+
+like I need to pick the perfect judge model. It can't be the same as the
+00:13:40
+
+original model.
+00:13:43
+
+That is a trap, a rabbit hole that so many people fall into, because you're
+00:13:44
+
+just judging
+00:13:48
+
+one criterion, it's okay to pick the same model. Hamel, you have, oh, actually
+00:13:48
+
+before
+00:13:55
+
+I want to call on Hamel to talk about something. How many examples to have? You
+00:13:55
+
+know, it doesn't
+00:14:01
+
+need to be 50/50. You just need to make sure you have like a good enough sample
+00:14:02
+
+of negatives
+00:14:07
+
+and a good example of positives. And then it doesn't need to be perfectly
+00:14:08
+
+balanced. That's
+00:14:11
+
+fine. Hamel, I want to get your perspective on kind of what model to take. In
+00:14:12
+
+particular,
+00:14:19
+
+you know, this JEV model has come out recently, and people are really excited
+00:14:20
+
+about it. So
+00:14:24
+
+you should give some thoughts about it. And then people also have comments on
+00:14:25
+
+using the
+00:14:29
+
+same model, like, is it going to be biased or not? So I want you to also agree
+00:14:30
+
+with me
+00:14:34
+
+and reiterate the fact that it's okay to use the same model because it's a
+00:14:34
+
+different task.
+00:14:38
+
+Yeah, yeah. So, okay, these are all common questions. So one is like, let's
+00:14:39
+
+zoom out
+00:14:42
+
+a little bit. What is an LLM judge? We can even cross out the word LLM here.
+00:14:43
+
+You could
+00:14:49
+
+say develop this, like you could say the title of the slide could be developing
+00:14:50
+
+a judge.
+00:14:54
+
+And you could even cross out the word judge. You could say developing a class
+00:14:55
+
+ifier. We're
+00:15:00
+
+developing a classifier. The classifier is going to give you pass or fail. Now,
+00:15:00
+
+there's
+00:15:06
+
+a reason we're saying pass or fail. You might be wondering, well, I don't want
+00:15:06
+
+to pass or
+00:15:10
+
+fail. I want to give me a score. No, no, don't do the score thing. We're going
+00:15:10
+
+to tell you
+00:15:15
+
+why. If you are thinking I want to score, if you're going to do a score, it's
+00:15:16
+
+going to
+00:15:20
+
+make your life very, very difficult. You're going to have to calibrate that
+00:15:20
+
+score. You're
+00:15:24
+
+going to have detailed rubrics. The cost of like calibrating a good score out
+00:15:24
+
+of an LLM
+00:15:29
+
+or even anything can be exponential. And it often like slows down decision
+00:15:30
+
+making quite
+00:15:37
+
+a lot. It's, it's very, it looks good. You're like, oh, I feel good. I have a
+00:15:37
+
+score. But
+00:15:44
+
+sometimes, like most of the time, the score can just like help you hide
+00:15:45
+
+decision making
+00:15:50
+
+about what's good or not. So that's, that's one thing. So okay, we're doing a
+00:15:50
+
+classifier.
+00:15:53
+
+Now, it almost doesn't matter like what the classifier is. Like it can be code.
+00:15:54
+
+It could
+00:16:01
+
+be, it could be a machine learning model. It could be like some, it could be
+00:16:02
+
+like a squirrel
+00:16:07
+
+in your window that makes a sound. And that you have wired it up somehow to, to
+00:16:09
+
+, to whatever.
+00:16:13
+
+It can be Jeff. It can be an LLM. It can be whatever the hell you want. It
+00:16:15
+
+doesn't matter
+00:16:19
+
+what it is. The thing is you just need to make sure it's good. You don't want
+00:16:20
+
+to use
+00:16:25
+
+anything blindly. Okay. So like whatever classifier you use, whether it's an LL
+00:16:25
+
+M, whether it's
+00:16:32
+
+Jeff, whether it's anything. Okay, like how do we know if it's good? Well, how
+00:16:32
+
+do you
+00:16:37
+
+know if anything is good in life? You have to check it against some kind of
+00:16:38
+
+ground truth.
+00:16:42
+
+If you don't do that checking, then you run like a really big risk of that
+00:16:45
+
+thing just
+00:16:50
+
+being a bunch of noise. And especially like with L with these classifiers and
+00:16:51
+
+the kind
+00:16:56
+
+of errors that you have been annotating. You know, you've been annotating a lot
+00:16:57
+
+of things
+00:17:01
+
+I have to do with subjective nuance, taste. Hey, this is bad. We don't like
+00:17:01
+
+this experience,
+00:17:08
+
+whatever. This really hard for LMs to pick up on their own. A lot of times it
+00:17:09
+
+requires
+00:17:12
+
+some iteration to like do this correctly. And so you want to just know, okay,
+00:17:13
+
+like, you
+00:17:19
+
+want to be able to answer the question. If someone asks you, so your colleagues
+00:17:20
+
+ask you,
+00:17:22
+
+hey, like, how do we, how can we trust this judge that you have? Like you put
+00:17:24
+
+this metric
+00:17:29
+
+on a dashboard. Okay, like, how do we know it's good? You don't want to just,
+00:17:30
+
+you want
+00:17:35
+
+to have an answer for that, you need to know. And so this kind of procedure
+00:17:36
+
+that we're going
+00:17:39
+
+to be walking you through today, like, let's gives you sort of the procedure on
+00:17:40
+
+which you
+00:17:45
+
+can like measure if the judge is good. And you can reason about like how good
+00:17:45
+
+is the
+00:17:49
+
+judge. Should you rely on this judge? And it also gives you like this harness
+00:17:49
+
+that you
+00:17:54
+
+can use to improve the judge and get it to a point that you're satisfied. But
+00:17:54
+
+it's absolutely
+00:17:59
+
+important that you do that. So don't get sort of nerd sniped by, you know,
+00:18:00
+
+there's different
+00:18:06
+
+choices out there of different things you can do. Now what I like to personally
+00:18:07
+
+do is to
+00:18:11
+
+make my life easier, I like to use the most powerful model to start with when
+00:18:12
+
+developing
+00:18:17
+
+an LLM judge. So I like just take like the frontier model. And then I'm back
+00:18:17
+
+off. Then
+00:18:22
+
+I say, okay, like, you know, can I, can I use a smaller model? And can I keep
+00:18:22
+
+using smaller
+00:18:28
+
+and cheaper and cheaper models? And what does that do to the score? Because
+00:18:29
+
+like, we're
+00:18:32
+
+going to score your LLM judge against the development set and then finally
+00:18:33
+
+against the
+00:18:38
+
+test set. And we're going to talk about that. And you know, you're going to see
+00:18:38
+
+, okay, like,
+00:18:43
+
+how good is the classifier? And you can make the trade offs, you can make the
+00:18:44
+
+cost accuracy
+00:18:48
+
+trade off according to what you want. But again, like, it's, it's a lot easier
+00:18:49
+
+to start
+00:18:54
+
+from often like a more powerful model. And then sort of, once you have a prompt
+00:18:55
+
+you're
+00:19:00
+
+satisfied with like kind of walk your way down, then the other way. But you can
+00:19:01
+
+try the other
+00:19:05
+
+way too, if you want, like, there's nothing, you know, is there's nothing wrong
+00:19:05
+
+with it
+00:19:09
+
+as long as you have this way to grade yourself. That's what you need. And so
+00:19:10
+
+this, and then
+00:19:15
+
+like see, this also answers the question. So the question of, can you use the
+00:19:17
+
+same model
+00:19:22
+
+that you're using like for your agent, can you use it as a judge? Yes, because
+00:19:23
+
+we're
+00:19:28
+
+not, because you have a way to measure it. So you will know from this
+00:19:29
+
+measurement, if
+00:19:34
+
+your judge is biased, you will know if you will know from this measurement,
+00:19:34
+
+that the
+00:19:38
+
+judge is, you know, not good enough or whatever. And then you'll be able to
+00:19:39
+
+reason about that
+00:19:44
+
+and you can try different models. But it almost doesn't matter because what
+00:19:44
+
+ultimately what
+00:19:49
+
+matters is the alignment with you and the alignment with these labels. So there
+00:19:50
+
+'s all kinds of
+00:19:55
+
+choices you can make. What is the model? What is the reasoning effort? Whatever
+00:19:55
+
+it is,
+00:20:02
+
+the answer kind of, this is an eval, this is a meta eval of your judge or your
+00:20:02
+
+classifier.
+00:20:10
+
+And then you can choose within that, like, what do you want to do? And so, like
+00:20:11
+
+, almost
+00:20:15
+
+like don't ask the question necessarily like, can I use the same judge or can
+00:20:16
+
+what model
+00:20:21
+
+should I use whatever, like, kind of focus on the process and say, okay, like,
+00:20:22
+
+you know,
+00:20:25
+
+create this data set and this like a process and then explore within that. That
+00:20:26
+
+'s my advice.
+00:20:32
+
+100%. Yeah. Like, most all, almost all the questions we get about NLM judge are
+00:20:34
+
+like the
+00:20:40
+
+wrong question to ask in the first place. Don't focus on those bits. Like, don
+00:20:41
+
+'t focus on model
+00:20:44
+
+selection. Focus on the process of, you know, making sure that your metrics on
+00:20:45
+
+these data sets
+00:20:51
+
+are aligned with your labels. So let's go through that for this example here.
+00:20:52
+
+Building and, oh, I want to remove my annotations, but my zoom may not be happy
+00:20:57
+
+with that.
+00:21:04
+
+I can try to help you. Hold on. Okay. I deleted it. We're good.
+00:21:05
+
+Right. So now we're going to do is we're going to build a judge for one of our,
+00:21:10
+
+for our criterion. And there's two skills that I have linked here. One is
+00:21:16
+
+called right judge prompt
+00:21:23
+
+and the other one is called validate evaluator. So I'll actually briefly click
+00:21:24
+
+on those before
+00:21:28
+
+because we're going to be using them in this demo. So the first one of writing
+00:21:29
+
+the judge prompt.
+00:21:33
+
+Here, this is all about basically, okay, given the criterion and design an LLM
+00:21:35
+
+judge evaluator.
+00:21:41
+
+And there's many components to it. So first write the prompt that has the
+00:21:43
+
+criteria on,
+00:21:48
+
+which I defined in that slide, then some definitions of pass and fail. And I
+00:21:48
+
+like to kind of use
+00:21:54
+
+what think of this as, you know, a more detailed rubric by the criterion, some
+00:21:55
+
+few shot examples.
+00:22:00
+
+And then a structured output format. So this is very critically pass or fail.
+00:22:02
+
+It's binary here.
+00:22:08
+
+So you can have some rationale or some critique here, but it's very important
+00:22:09
+
+that this part is
+00:22:14
+
+binary because that will allow us to compute the alignment metric, which we'll
+00:22:15
+
+show you.
+00:22:19
+
+If we don't have this be binary, it is very difficult to compute the alignment
+00:22:20
+
+metric and
+00:22:24
+
+feel confident in it. Some of the anti patterns, but this is more just for the
+00:22:25
+
+skill,
+00:22:30
+
+less for you. So hopefully that gives you an idea of what the judge prompt is
+00:22:31
+
+going to look like,
+00:22:35
+
+and I'll show you the example of that. And there's also this validate evaluator
+00:22:35
+
+skill,
+00:22:40
+
+which I will get into in a little bit once we define what our alignment metrics
+00:22:40
+
+are going to be.
+00:22:44
+
+Let me share, move my screen to my terminal. Oh wait, you guys cannot see it,
+00:22:45
+
+can you? No.
+00:22:57
+
+Stop, share, share.
+00:22:59
+
+What? Can you see it?
+00:23:01
+
+Yeah, I can see your terminal.
+00:23:06
+
+Yeah, excellent.
+00:23:09
+
+Let me make it a little bit bigger maybe.
+00:23:10
+
+Well, it doesn't like to be bigger.
+00:23:13
+
+So be it.
+00:23:15
+
+All right, so let's show you the zero prompt for the uninformative response
+00:23:16
+
+criteria that we've been talking about.
+00:23:20
+
+So I invoked the scale ahead of time before lecture because now we didn't want
+00:23:22
+
+to be wasting time here, and this is the prompt that my agent came up with.
+00:23:26
+
+And remember, this is after we split up the data set, and this is just that
+00:23:32
+
+agent looked at the training set and came up with the prompt.
+00:23:36
+
+So it says decide whether the assistance last reply gives the exact information
+00:23:41
+
+needed for the next decision without unnecessary detail, evaluate only the last
+00:23:45
+
+assistant message using any other conversation and tool results as context.
+00:23:50
+
+And then there's some rules for pass.
+00:23:56
+
+Right.
+00:23:59
+
+So use this language appropriate for a customer, no internal IDs.
+00:24:00
+
+If you were in last lecture, you know that this was a big gripe for me when I
+00:24:04
+
+was doing open coding.
+00:24:08
+
+And there are also some fail rules.
+00:24:09
+
+Right. So here dumps fields that the user didn't ask about explains internal
+00:24:12
+
+platform logic.
+00:24:18
+
+So again, right, this, the reason that we want an agent to write our initial
+00:24:19
+
+view V zero prompt in this way is because it can look at our open codes, and it
+00:24:23
+
+can reason about our open codes and figure out what should be in this pass and
+00:24:27
+
+fail.
+00:24:31
+
+And, you know, this will hopefully trigger some folks that are remembering. Oh,
+00:24:32
+
+yeah, like, we did open coding and we didn't want these specific CW refunds or
+00:24:37
+
+CW returns in there.
+00:24:44
+
+Um, then there are some examples.
+00:24:46
+
+So here's one example of a pass.
+00:24:48
+
+Here's one example of a fail.
+00:24:51
+
+Why did we not like it?
+00:24:53
+
+Well, there's also other things that were dumped, which we didn't like.
+00:24:55
+
+And then, I mean, I think the agent just wanted to do this borderline pass
+00:24:59
+
+example.
+00:25:03
+
+Honestly, I didn't write this prompt, right. But overall, this prompt, right,
+00:25:04
+
+the V zero, it follows our skill, what our skill asked for.
+00:25:08
+
+We have no idea how well it performs on our labels. So that's what we're about
+00:25:12
+
+to do.
+00:25:16
+
+But hopefully you can see like what this prompt is trying to do.
+00:25:17
+
+So now I'm going to run the script that I will push the cartwheel.
+00:25:20
+
+And I've actually pre run it in advance enough, cast all the results because I
+00:25:26
+
+want it to be fast. And if the internet went down, I didn't want us to be sad.
+00:25:30
+
+Or, sorry, the LLM judge went down. I didn't want us to be sad.
+00:25:34
+
+And I use GPT for Oh mini for this, by the way. So Hamil likes to start with
+00:25:38
+
+the most expensive model for the judge. I think that's super valid.
+00:25:42
+
+I like to start with a mini model. I don't know. I'm just nervous about
+00:25:45
+
+spending a lot of tokens.
+00:25:50
+
+There's no right way or wrong way to do it. Just know that the model choice
+00:25:51
+
+doesn't really matter. It's about this process.
+00:25:54
+
+So from this, and you can see.
+00:25:58
+
+I think that's good too, by the way. I don't want to just like you're
+00:26:02
+
+absolutely right. Like if also, if you have a sense that like you, like what
+00:26:04
+
+you're judging is easy enough.
+00:26:10
+
+And then like listen to your judgment and just like go start with a small model
+00:26:13
+
+. Then that's don't leave like your intuition at the door.
+00:26:17
+
+Yes.
+00:26:21
+
+Okay, so I've ran this V zero of the prompt and you're going to see some things
+00:26:23
+
+here that we haven't talked about yet.
+00:26:27
+
+But we'll you'll see that. Okay, we've wanted to run for this criterion. We
+00:26:29
+
+used what prop file we used the one that I just showed you.
+00:26:33
+
+And we ran this on our dev split. Right. So this is 40 traces. And then we see
+00:26:37
+
+our metrics here. Okay. So there's three metrics.
+00:26:43
+
+I'm going to get to that in a little bit. There's this true pass rate, which is
+00:26:47
+
+50%.
+00:26:51
+
+And the things in here are brackets. That's a confidence interval, which we
+00:26:52
+
+will also go into. There's a true negative or true failure rate.
+00:26:57
+
+And then there's something called agreement rate. Now, agreement rate is the
+00:27:01
+
+metric that you and I are like the most obvious metric, which is for what
+00:27:06
+
+fractures of the trace.
+00:27:11
+
+Did the Ellen judge and the human or did I say the right, the exact same label.
+00:27:13
+
+So agreement rates are typically actually much higher than TPR TNR, which again
+00:27:27
+
+, I'll get into on the whiteboard and we'll go really slowly through it.
+00:27:29
+
+But one common mistake that people make is just to compute the agreement rate.
+00:27:32
+
+And then they see agreement rate is high and they're happy with it. That's not
+00:27:36
+
+good. We don't want to fall to that.
+00:27:39
+
+Okay, so there's true pass rate, true negative or true failure rate, and there
+00:27:42
+
+'s agreement rate.
+00:27:46
+
+And now let us go to a whiteboard. Let's try to describe exactly what love this
+00:27:48
+
+is.
+00:27:55
+
+Up, share.
+00:27:55
+
+Here.
+00:28:05
+
+Folks can hopefully see my whiteboard. Yes.
+00:28:08
+
+I can see it.
+00:28:13
+
+Okay, great.
+00:28:14
+
+I don't know. Sometimes you don't know saying your thing and I don't know what
+00:28:15
+
+'s happening.
+00:28:18
+
+All right.
+00:28:19
+
+So let's first write down metrics.
+00:28:20
+
+So,
+00:28:24
+
+here are the metrics that we carry about care about TTR.
+00:28:42
+
+Yeah.
+00:28:46
+
+And now here's how to visualize. We want to visualize this as a confusion
+00:28:55
+
+matrix. What is a confusion matrix. Well, this is where human.
+00:29:01
+
+This. And then on this other end, we'll be.
+00:29:07
+
+Judge says.
+00:29:15
+
+And we'll just go through the case by cases here. There's four different cases.
+00:29:18
+
+So human could say, let's change the font size here, maybe, which I thought
+00:29:25
+
+family here.
+00:29:33
+
+This human says pass.
+00:29:36
+
+Human says fail.
+00:29:40
+
+And judge says pass.
+00:29:48
+
+And judge says fail.
+00:29:51
+
+All right, so that's four scenarios, right, that can occur for any trace.
+00:29:53
+
+And let's make this on creates table.
+00:29:59
+
+And sometimes it's caledra is bewildering to me.
+00:30:06
+
+Okay.
+00:30:10
+
+I don't know why that had so many ones.
+00:30:11
+
+Art.
+00:30:19
+
+So now I can actually write down.
+00:30:25
+
+What this is so when the human says pass and the judge says pass, this is what
+00:30:32
+
+we call a true pass.
+00:30:41
+
+Then when the human says fail, but the judge says pass, this is what we call a
+00:30:49
+
+false pass.
+00:30:56
+
+So hopefully that makes sense to people, right, if human said fail, but judge
+00:30:57
+
+said pass, the judge falsely said pass.
+00:31:02
+
+Then here, if the judge says fail, but the human said pass, then this is
+00:31:06
+
+actually a false fail of false negative.
+00:31:14
+
+And then if both human and judge said fail, then this is a true negative.
+00:31:18
+
+And ideally what we want, right, is everything to be in this kind of TP.
+00:31:24
+
+Okay, goodbye for this. Let's try again. Ideally, everything is in this true
+00:31:37
+
+positive and this true negative.
+00:31:46
+
+And ideally, nothing is in the false positive or false negative.
+00:31:50
+
+So now if we were to convert all of this back to English, the PR equals the
+00:31:57
+
+true pass divided by the true pass, plus the false negative, right.
+00:32:06
+
+And this always really trips me up. So I have to like actively think while I'm
+00:32:19
+
+doing this, you can also find these formulas and Wikipedia. So true negative
+00:32:23
+
+free.
+00:32:28
+
+Then is the true negative over true negative plus false pass.
+00:32:29
+
+Yes.
+00:32:36
+
+And then I'm going to annotate this in English, which is here.
+00:32:37
+
+Of the true negative as traces human.
+00:32:45
+
+Zoom out, but failed.
+00:32:52
+
+Judge also breed on fail.
+00:32:55
+
+And then tree pass is other traces, the human pass.
+00:33:06
+
+Judge also breed on pass. Does this make sense to folks at a high level.
+00:33:10
+
+Why it's going to take a while. So that's why I'm presenting it really slowly.
+00:33:16
+
+But the point is here that we don't just care about raw agreement. We care
+00:33:21
+
+about both this TPR and this TNR, both being very high.
+00:33:26
+
+And then not you can think about it. I just want to say one thing about this.
+00:33:31
+
+So it's, you're not going to grok this. If you're new to this, you never seen
+00:33:35
+
+this before, you're not going to get it immediately.
+00:33:40
+
+Even when I saw this the first time when I was in machine learning, I, you know
+00:33:43
+
+, it's helpful to work through some examples. So like, get a spreadsheet out and
+00:33:47
+
+say like, okay, what if I had 100 examples.
+00:33:52
+
+Five of them passed. Sorry. Yeah. Like five, they're sorry. Five of them failed
+00:33:56
+
+. 95 pass.
+00:34:02
+
+And then you can kind of say, oh, what would that look like here in different
+00:34:04
+
+scenarios and kind of see.
+00:34:07
+
+It's also really helpful to compare it with quote agreement. So I put a meme in
+00:34:09
+
+the chat.
+00:34:14
+
+You want to absolutely avoid agreement. Everybody see agreement like, Hey, my
+00:34:15
+
+judge has a 95% agreement.
+00:34:18
+
+You should just stop everything you're doing and you ask that person like what
+00:34:21
+
+they're talking about. Because that's, that's a smell that, okay, somebody is
+00:34:24
+
+not validating their judge. They're just a 95% agreement.
+00:34:28
+
+It comes up a lot. We can laugh and have the meme, but it happens all the time
+00:34:32
+
+where someone will say, Hey, like, compute agreement.
+00:34:36
+
+And you can like show yourself like, Oh, okay. If you only have five failures,
+00:34:40
+
+like, it's really easy to get to 95% agreement by just like guessing everything
+00:34:47
+
+is a pass.
+00:34:51
+
+And then just like play around with some numbers and some scenarios and you
+00:34:52
+
+will commit yourself like why this TPR and TNR is useful to measure separately,
+00:34:55
+
+because they're like two different kinds of errors.
+00:34:59
+
+And you can kind of like sit on it and think about it. And it's only through
+00:35:03
+
+that that you can like internalize. So I would highly recommend kind of doing
+00:35:07
+
+that exercise in whatever way you want to.
+00:35:12
+
+Yeah, I'm going to go through a little bit right now. So the first thing I want
+00:35:15
+
+to motivate is why is general alignment score wise accuracy accuracy means
+00:35:19
+
+human said the same thing as judge.
+00:35:24
+
+And nothing about pass, nothing about fails just dip the human say the same
+00:35:27
+
+thing as a judge for each trace or not.
+00:35:31
+
+So why is accuracy bad. Now imagine that I had a scenario where I have only 100
+00:35:33
+
+traces, and five of them are human label failures.
+00:35:39
+
+And what if I had the squirrel judge.
+00:35:44
+
+If squirrel judge, and the squirrel judge here, this says, you know, says 100%
+00:35:47
+
+pass all the time.
+00:35:58
+
+Says pass 100% of the time.
+00:36:00
+
+This is a very useless judge. What would the accuracy score here be anyone want
+00:36:03
+
+to say it in the chat.
+00:36:11
+
+Let's see.
+00:36:14
+
+95% correct. And so what ends up happening a lot of times, right, is people
+00:36:17
+
+just say, Oh, 95% alignment. This is great. This is the great judge, but is the
+00:36:23
+
+squirrel judge a good judge.
+00:36:28
+
+Not really right. It's all it said is just past 100% of the time. And so this
+00:36:30
+
+is why it's very important to actually compute TPR and TNR.
+00:36:34
+
+And that actually depends on, you know, what the judge said, and just think of
+00:36:39
+
+it as accuracies in two different camps in the past camp and the fail camp.
+00:36:43
+
+So let's give some more intuition. No, on, you know, what are the different
+00:36:48
+
+error types that you could have.
+00:36:53
+
+So the false FP error type. What does this mean in English? Well, it means that
+00:36:55
+
+the, like, if we have a false pass, that means the judge did not file find any
+00:37:06
+
+failure.
+00:37:14
+
+So if you have a lot of FPs, right, that means your judge is not actually
+00:37:16
+
+finding the real failures that are in your set.
+00:37:21
+
+And then the false negative error type.
+00:37:24
+
+That means the judge is crying wolf a lot. Right. So alert fatigue.
+00:37:29
+
+Lots of false alarms.
+00:37:36
+
+And what I end up seeing in practice is often whenever there's a high false
+00:37:42
+
+negative rate.
+00:37:47
+
+People stop paying attention to this LLF judge alerts, right, because the judge
+00:37:48
+
+is just crying wolf for every trace.
+00:37:52
+
+It's hard to know whether that was truly a failure or not.
+00:37:55
+
+So some people ask, okay, what's the better metric here? Like, should I try to
+00:37:58
+
+prioritize minimizing false positives or minimizing false negatives.
+00:38:03
+
+I think that you should try to minimize false negatives more, because what I
+00:38:08
+
+see in practice a lot is just people not trusting their LLF judge because it's
+00:38:14
+
+just firing on everything.
+00:38:18
+
+It's better to, you know, if you have an LLM judge firing on something, you can
+00:38:20
+
+accept that. Okay, it's not going to recall the failures out there.
+00:38:23
+
+But at least for anything that it found, we can trust with the LLM judge.
+00:38:27
+
+It is very good precision if you're familiar with precision and recall.
+00:38:31
+
+Any questions on that, Hamel, or any clarification that you kind of want to add
+00:38:36
+
+to that?
+00:38:43
+
+No, I think it's good. Like someone asked us false positive or false negative
+00:38:44
+
+more important. And I think what you said is correct.
+00:38:48
+
+Also think about the domain. Okay, like, yeah, in certain domains, false
+00:38:52
+
+positive is going to be, it's going to be a lot more impactful.
+00:38:58
+
+You know, like, you know, if you think about like maybe criminal sentencing,
+00:39:03
+
+false positive is way more costly than a false negative.
+00:39:07
+
+But like maybe, you know, like cancer diagnosis of false negative is a lot more
+00:39:11
+
+costly than a false positive.
+00:39:17
+
+It's not the domain right like what you care about, but generally speaking,
+00:39:20
+
+like what Shraya said, like, it is true. So, but the reason I said, it's good
+00:39:24
+
+to know like what they mean.
+00:39:29
+
+And like internalize like, okay, what what is the false positive mean was the
+00:39:31
+
+false negative mean.
+00:39:35
+
+Yeah, maybe I can even elaborate on this one like alert fatigue, and then it's
+00:39:36
+
+like waste human review time.
+00:39:45
+
+It's a little bit smaller and this little bit dynamic whiteboard be sized.
+00:39:49
+
+Okay.
+00:39:54
+
+So to recap, right, what have we done so far? We have said that here are the
+00:39:55
+
+metrics you need to care about when you're building an LLM judge, you need to
+00:39:59
+
+care about the true
+00:40:02
+
+pass rate,
+00:40:03
+
+you need to care about the true negative, true failure rate. Both of them are
+00:40:04
+
+very important,
+00:40:09
+
+try to get both of them very high. Like, I try to get it to be 85% plus. But if
+00:40:10
+
+you had to pick
+00:40:16
+
+one over the other, everyone loves to ask, you know, which one is more
+00:40:17
+
+important, it depends on the
+00:40:21
+
+domain that's handled so. But here, like, if you were to intuitively think
+00:40:22
+
+about the trade-offs,
+00:40:26
+
+right, it's turning off between the judge recalls the failure, or you're
+00:40:27
+
+wasting human review time
+00:40:30
+
+because there's more failures found. Now, the last concept that I showed you in
+00:40:32
+
+the terminal,
+00:40:40
+
+right, is actually, let me go back to that, which we can revisit this. So where
+00:40:41
+
+were we?
+00:40:47
+
+We were seeing that there was a 50% true positive rate, which is really awful.
+00:40:47
+
+We were seeing that
+00:40:54
+
+there is, okay, so let's actually put that back in English. 50% true positive
+00:40:55
+
+rate. What does that
+00:40:59
+
+mean? That means only 50% of the failures were found from our LLM judge. 68%
+00:41:00
+
+true negative rate.
+00:41:06
+
+Okay, so that's like a little bit better. But still, that means like there's 32
+00:41:08
+
+% of them are
+00:41:14
+
+false alarms that waste human review time. And then our agreement score was 62
+00:41:15
+
+%, but hopefully
+00:41:21
+
+everyone's convinced that we don't care about agreement scores. The last thing
+00:41:22
+
+we want to talk
+00:41:26
+
+about is what these brackets mean. So kind of raise your hand if you've heard
+00:41:26
+
+of a confidence
+00:41:33
+
+interval before, or you know what that is. I'm sure folks have heard of this.
+00:41:33
+
+So I'm going to give
+00:41:37
+
+you a very high level intuition for what a confidence interval means. Let me go
+00:41:40
+
+back to the white board
+00:41:44
+
+that is probably easier to share this. Trusty white board. All right, so the
+00:41:45
+
+last bit you want
+00:41:58
+
+to go into is confidence interval. So first let's motivate what is wrong with
+00:42:00
+
+our scenario here.
+00:42:10
+
+Like one thing that we've been doing. Okay, I don't know how to get rid of grit
+00:42:11
+
+. So one thing
+00:42:18
+
+we've been doing right is just operating on a small sample. So one issue,
+00:42:19
+
+compute, we compute,
+00:42:26
+
+TPR, and TNR on samples. Okay, so just because, right, we were able to say a T
+00:42:30
+
+PR of TNR of
+00:42:40
+
+62%, that is just on this one particular sample of traces that we have done.
+00:42:42
+
+Obviously there are
+00:42:47
+
+many more traces that are in our data set. And if you think about in production
+00:42:48
+
+, right,
+00:42:52
+
+we're going to have lots more unseen traces that we've not labeled. So if we
+00:42:53
+
+were to say TNR equals
+00:42:56
+
+62%, that might not be reflective of the TNR on the entire data set. So this
+00:42:58
+
+motivates the question,
+00:43:05
+
+how can we ensure our estimates, generals? So one way of doing this is via
+00:43:06
+
+confidence interval.
+00:43:19
+
+And a confidence interval means you can think of it as a lower bound,
+00:43:21
+
+an upper bound. And what it is is essentially if we were to repeat this process
+00:43:30
+
+of sampling 100
+00:43:40
+
+traces, 100 different traces, we would do this, you know, millions and millions
+00:43:43
+
+of times, 95%
+00:43:48
+
+of these intervals would contain the true estimate of TPR or TNR. Okay, so I
+00:43:49
+
+know
+00:44:00
+
+that's a lot to wrap your head around. So I recommend kind of trying to sit
+00:44:00
+
+with this,
+00:44:03
+
+think about it, read Wikipedia. There are many different ways that you can
+00:44:04
+
+construct a confidence
+00:44:07
+
+interval. That's not the focus of this course. You can check out the skill for
+00:44:09
+
+how we do it.
+00:44:13
+
+But the point being is we can't trust this on a sample, the assessment on a
+00:44:14
+
+sample,
+00:44:18
+
+and the confidence interval is a way to think, okay, 95% of the time, if I do
+00:44:19
+
+the sampling and
+00:44:25
+
+labeling process, my intervals will contain the true estimate. All right, so
+00:44:26
+
+let me go back to the
+00:44:33
+
+terminal. And this is where you get deep into stats. You can go very, very deep
+00:44:38
+
+into stats here,
+00:44:43
+
+and you can have tighter confidence intervals based on more samples. So if you
+00:44:44
+
+label more data,
+00:44:48
+
+you will have smaller confidence intervals, lots of really interesting things.
+00:44:49
+
+If you use
+00:44:52
+
+more rigorous statistics, you can also get tighter confidence intervals. But
+00:44:54
+
+now if we were to
+00:44:59
+
+interpret what these are, right, all this is saying that I reproduce my process
+00:44:59
+
+, you know, 100 times,
+00:45:07
+
+95 of these intervals would contain the true TPR. And so this is really wide,
+00:45:09
+
+right? This is
+00:45:14
+
+25%, 74%, 6%. That is a huge, same thing here. This is 49%, 82%, also huge. So
+00:45:15
+
+in practice,
+00:45:23
+
+right, you're going to want to label more traces. That is the best way to
+00:45:25
+
+reduce
+00:45:28
+
+these, or to make these intervals smaller.
+00:45:29
+
+Well, anything that I'm missing before we get into how we can kind of improve
+00:45:34
+
+these TPRT and
+00:45:40
+
+honest, that's maybe one to talk about how people use confidence intervals.
+00:45:41
+
+Someone wants to know how do you compute the confidence interval? Okay, that's
+00:45:45
+
+that the math
+00:45:49
+
+is in the course reader. You can get your agent to calculate it for you. So you
+00:45:51
+
+don't need to go
+00:45:55
+
+into that. And, you know, this shouldn't be scary to anyone. It's good that you
+00:45:56
+
+know what it is.
+00:46:00
+
+But the idea is like, hey, this is going to, you have a tool to let you know
+00:46:02
+
+how much noise there is
+00:46:06
+
+in your judge. And where is, where are the sources of noise? There's several
+00:46:08
+
+sources of noise. One is
+00:46:13
+
+like, you didn't label enough examples. So of course, it's going to be super
+00:46:15
+
+noisy and you don't
+00:46:18
+
+really, you can't really trust it. That's one. Second is, if you, you know, if
+00:46:19
+
+you have like a
+00:46:24
+
+really like low TNR or, you know, too low TBRTNR, like, you know, that, and
+00:46:24
+
+there's like not that
+00:46:33
+
+much disagreement between your labels, that can lead to noise as well,
+00:46:34
+
+depending on the dynamics.
+00:46:38
+
+And so it just helps you like, look at, hey, this is noise. And like in the
+00:46:39
+
+worst case scenario,
+00:46:44
+
+that interval can include zero. Really, really include zero means like you, we
+00:46:45
+
+don't even know,
+00:46:51
+
+we don't know anything. Like, that's, you know, just to give you an idea. It's
+00:46:52
+
+like, hey, like,
+00:46:56
+
+95% of times like zero. It's like, okay. It's just like, that's, you know, that
+00:46:57
+
+'s an extreme case,
+00:47:02
+
+but that's like a, we can all agree that's an unacceptable, like noise. And
+00:47:03
+
+like how much noise
+00:47:08
+
+is, is okay for you? Well, I mean, that's up to your, like, domain. But it just
+00:47:09
+
+helps you give,
+00:47:15
+
+like, some idea, relatively speaking of, of like how much noise there might be.
+00:47:16
+
+It's just another
+00:47:21
+
+check that you want to do before you move forward.
+00:47:22
+
+Yes, totally.
+00:47:25
+
+Based on your me, I think one of my earbuds done.
+00:47:30
+
+Yeah, yeah, I can't hear you.
+00:47:33
+
+Okay, great. A couple of other questions came in, which is, you know, how the
+00:47:34
+
+human
+00:47:41
+
+have to go through everything the judge is judging, or can we get to a point
+00:47:41
+
+where we can trust the
+00:47:44
+
+judge? Now you don't have to go through everything the judge is judging. You
+00:47:45
+
+have to go through the
+00:47:48
+
+sample that you labeled for, you know, calibrating or like finding the prompt
+00:47:49
+
+for this judge. But
+00:47:54
+
+hopefully once you get to a prompt that has pretty good TPR and TNR and the
+00:47:55
+
+confidence intervals
+00:47:59
+
+are low enough for your deployment, right, then you can just run this judge in
+00:48:00
+
+production on traces.
+00:48:04
+
+And then you can trust what the judge says for the failure rate. So this whole
+00:48:06
+
+process is like to
+00:48:10
+
+get you to a judge that you can just run on lots of data and trust no matter
+00:48:11
+
+what.
+00:48:15
+
+All right, so let that camel please interrupt me if there are other like really
+00:48:16
+
+good questions
+00:48:22
+
+that come up and we haven't gotten to and we probably should. So now, you know,
+00:48:23
+
+you can imagine
+00:48:28
+
+we've have pretty bad TPR and TNR from the V0 of the prompt and doesn't totally
+00:48:29
+
+expect it.
+00:48:34
+
+But now we have modern day coding agents and we can just use our coding agent,
+00:48:35
+
+give it our skill and say, hey, please improve the TPR and TNR. And that is
+00:48:41
+
+what I've done.
+00:48:46
+
+I did that three times and my coding agent gave me three different prompts. So
+00:48:46
+
+let's look at the
+00:48:51
+
+next prompt. So rather than be zero, give me V1 and it looks exactly the same
+00:48:53
+
+as before.
+00:49:04
+
+The side has the same task, maybe has some more, it added an additional pass
+00:49:06
+
+rule.
+00:49:11
+
+It added more fail rules and it changed, it's added some more examples. It
+00:49:12
+
+changed the third
+00:49:21
+
+example here. So again, this is just pulling from the training set to try to
+00:49:21
+
+improve the accuracy
+00:49:27
+
+on the dev set. Again, your coding agent will do this. So it came up with
+00:49:29
+
+another version of this
+00:49:33
+
+prompt. And then maybe we can see.
+00:49:34
+
+I have a question for you. Are you ever paranoid that your coding agent is
+00:49:38
+
+going to cheat?
+00:49:42
+
+Oh, good question. Look at the test set and whatnot.
+00:49:43
+
+Yes, one thing you can do. So I feel like the most recent agents have gotten a
+00:49:47
+
+little bit better
+00:49:54
+
+with this. When you tell it like, hey, you're being a data scientist, don't
+00:49:54
+
+look at the test set.
+00:49:58
+
+Most of the time I've found that it doesn't look at the test set. You can be
+00:49:59
+
+extra paranoid
+00:50:03
+
+or if you use a worse coding agent or one that's more prone to reward hacking,
+00:50:04
+
+you can just take your test set and hide it from this directory. So the coding
+00:50:09
+
+agent,
+00:50:14
+
+maybe it's only limited to this directory that you're working in and then it's
+00:50:14
+
+not going to see that.
+00:50:17
+
+So it's really up to you. In practice for me, because I've already labeled the
+00:50:18
+
+data,
+00:50:24
+
+I'm always looking at the prompts. That's another thing. So I look at these
+00:50:25
+
+examples
+00:50:29
+
+and I know that, okay, if you're in my training set, I'm not worried. But yeah,
+00:50:29
+
+different for
+00:50:34
+
+everyone. Great question. Yeah, and you can tell when you read the prompt
+00:50:34
+
+sometimes,
+00:50:38
+
+it's kind of obvious that the prompt is trying to overfit to some weird edge
+00:50:38
+
+case.
+00:50:43
+
+And that's a smell that like, oh, it's kind of something is weird here. It's
+00:50:43
+
+trying to like cheat
+00:50:49
+
+or overfit because you want the prompt to generalize. You know, you want this
+00:50:51
+
+prompt to be good on all
+00:50:55
+
+the future data it sees. And so if you see like, yeah, if you see like some
+00:50:58
+
+weird edge case being
+00:51:02
+
+called out, right, that doesn't make sense. Right. Just be suspicious. Yeah,
+00:51:04
+
+100%.
+00:51:11
+
+Actually, let me just put the V zero and be one side by side, right? So we can
+00:51:13
+
+just see what those
+00:51:18
+
+were. All right. So V one is the newest one. The zero is the first one. So
+00:51:19
+
+already,
+00:51:25
+
+right, we can see that the TPR went down quite a bit. And the TNR went up quite
+00:51:25
+
+a bit. And this
+00:51:31
+
+is actually trending in the direction that I like personally, because remember,
+00:51:33
+
+I personally care
+00:51:38
+
+about at least for a lot of applications I worked on, I want to make sure that
+00:51:39
+
+TNR is very good.
+00:51:42
+
+Like, I don't want any false alarms in production. I know that, you know, it's
+00:51:44
+
+impossible to recall
+00:51:47
+
+failures and I try to work in domains that, you know, or not life threatening
+00:51:49
+
+or whatever. We have
+00:51:52
+
+to learn, I'm not working in self-driving cars. We're working in like shopping
+00:51:54
+
+assistance or whatever.
+00:51:57
+
+So in this case, right, I want to make sure that my TNR is very high. So I can
+00:51:58
+
+trust what my judge
+00:52:04
+
+said. In this case, you can think about 0.82. What does that mean?
+00:52:05
+
+Approximately one in five alarms
+00:52:10
+
+that come from my agent, or sorry, from my LLM judge, approximately one in five
+00:52:13
+
+of them are bogus.
+00:52:18
+
+So I think we can do better. I think we can improve on the TNR a bit. So what
+00:52:20
+
+you want to do is just
+00:52:24
+
+use your coding agent, right? This is a great case where the coding agent can
+00:52:25
+
+just hill climb
+00:52:29
+
+on TNR TPR. So that's what I did. I did this multiple times. What does V2 tell
+00:52:30
+
+us?
+00:52:35
+
+V2, it improved TNR even more. That's very nice. And of course, you'll want to
+00:52:35
+
+also look at the prompts
+00:52:46
+
+here. Yeah, so here's V2. It got even longer. So that's something that happens
+00:52:47
+
+all the time.
+00:52:57
+
+I'll just get longer. Even more pass rules. Did it change these examples? Oh,
+00:52:57
+
+no, it added
+00:53:05
+
+another one, as you can see right now. We have four examples in the prompt for
+00:53:06
+
+the judge.
+00:53:09
+
+I hope folks are like looking at this and understanding what's happening and
+00:53:09
+
+also like
+00:53:14
+
+realizing like, oh, coding agents can be very helpful in emails. I know in
+00:53:15
+
+previous versions
+00:53:19
+
+of the chorus rate, we did all of this ourselves. We wrote these prompts. We
+00:53:20
+
+split it up. We wrote
+00:53:24
+
+the scripts to try to test these judges. Now, I know the logic. You're going to
+00:53:25
+
+know the logic,
+00:53:30
+
+but you're instructing your coding agent to doing this hill climbing and
+00:53:31
+
+hopefully getting
+00:53:34
+
+even higher alignment. That is super exciting for me. But the moment that I
+00:53:35
+
+could do a lot
+00:53:39
+
+by coding agents to do all this is super happy. So this is, you know, you can
+00:53:40
+
+see
+00:53:45
+
+got a little bit more complex. And yes, if one up, I don't know if I have a V3.
+00:53:45
+
+That would be, oh, yes,
+00:53:53
+
+I do. Don't have V4? I don't know. No, I don't. Okay, so as you can see, my
+00:53:56
+
+judge went three times
+00:54:05
+
+and then, I guess, I gave up on it. But hopefully folks see what's going on
+00:54:07
+
+here, right? We feel
+00:54:11
+
+climbed between V2 and V3, right? We actually have not. It seems that we have
+00:54:12
+
+not changed
+00:54:21
+
+the performance on the deficit. And if I were in this position, I would
+00:54:22
+
+probably want to label
+00:54:27
+
+more traces, right? I probably want to get some more passes and failures so
+00:54:28
+
+that way I can
+00:54:32
+
+give some more signal to the coding agent. Like, you can always add more
+00:54:34
+
+examples to your training
+00:54:38
+
+set to your dev set. You can go back to UI and error analysis, label things,
+00:54:39
+
+and then have your
+00:54:44
+
+agent convert those back into examples here. But basically, you want to go into
+00:54:44
+
+this process
+00:54:50
+
+until you feel like, okay, you know, this judge, it's like 90% TNR. I'm pretty
+00:54:50
+
+happy.
+00:54:56
+
+I could go put that in production and have and trust any of these alerts that
+00:54:56
+
+it comes up with.
+00:55:01
+
+You definitely don't want one big mistake I see people making is like, the TNR
+00:55:03
+
+is very,
+00:55:07
+
+very low, but the TPR is very high. That's very common. And then they will go
+00:55:08
+
+put that
+00:55:12
+
+judge in production and that judge will basically just be the squirrel judge.
+00:55:13
+
+It will just say, like,
+00:55:16
+
+you know, pass all the time. I don't know. It's not very great.
+00:55:18
+
+Handball. Any thoughts or comments? So far. Okay. Actually, someone has a
+00:55:28
+
+question. If this was,
+00:55:35
+
+so you look, Luca is asking, if it's difficult to hill climb, is the word
+00:55:36
+
+splitting into smaller
+00:55:41
+
+criteria to judge? Yes, absolutely. So, so when people, people often come to
+00:55:42
+
+office hours and say,
+00:55:48
+
+hey, like, I have this judge, I can't quite like get it to do what I want. And
+00:55:49
+
+so you want to scope
+00:55:54
+
+your judge, usually fairly small, you want to scope it to one specific error,
+00:55:55
+
+like one specific
+00:56:00
+
+axial code is the mental model. And the reason is, is because you want to, if
+00:56:01
+
+your judges just catch
+00:56:08
+
+all, if you're like having, you know, all the different kinds of failures and
+00:56:09
+
+one judge,
+00:56:13
+
+well, when that judge fails, like, it was not actionable. You're like, okay,
+00:56:14
+
+the judge failed,
+00:56:17
+
+like, mmm, what happened? And you have to go dig through it. It's not
+00:56:18
+
+immediately apparent.
+00:56:21
+
+So you, yeah, you want. So, and also, if you scope your judge, it's much easier
+00:56:24
+
+to align,
+00:56:29
+
+and it's much easier to debug and do this hill climbing. So always try to scope
+00:56:30
+
+your judge,
+00:56:33
+
+like lean on the narrower side. Yeah. So this is actually a great example of,
+00:56:34
+
+like, perhaps,
+00:56:39
+
+you know, we were just not able to get good enough scores that we trusted here.
+00:56:40
+
+Like,
+00:56:43
+
+even this, like, if I ended up 42%, 80%, I wouldn't be that happy. Like, I
+00:56:44
+
+would want like 70%,
+00:56:48
+
+my dream is like 70%, 90% for some of these LLM judges. And so I would think,
+00:56:50
+
+okay,
+00:56:54
+
+let me try to add more labeled data, see if that improves my TPO or TNR. If
+00:56:55
+
+that doesn't,
+00:57:00
+
+then I'm going to split this criteria of uninformative response into the
+00:57:01
+
+multiple different criteria.
+00:57:05
+
+And the hope is that, you know, I have an LLM judge that can then operate on
+00:57:06
+
+these smaller
+00:57:12
+
+criteria. So maybe for each one of the four of crisis maxims, I can have an LLM
+00:57:13
+
+judge for that.
+00:57:19
+
+I don't know, I'm making that up. But you can see here, right? Like iterate on
+00:57:20
+
+this process.
+00:57:23
+
+If you get a judge you like, that's great. And if not, try to add more examples
+00:57:24
+
+, maybe use a more
+00:57:28
+
+powerful model or, you know, split the criterion into multiple.
+00:57:28
+
+Bryce is asking, okay, he's saying he's a little bit lost. Are you trying to
+00:57:33
+
+compare
+00:57:37
+
+agents results using different prompts? So just to zoom out, what we have is we
+00:57:37
+
+have label data
+00:57:42
+
+that has passes and failures. How do we get that data? We did error analysis
+00:57:43
+
+and we did some
+00:57:48
+
+annotation already that has passes and failures. And we built an LLM judge. And
+00:57:48
+
+on the LLM judge,
+00:57:53
+
+we have this TPR, TNR to know how much aligned it is with those labels. And
+00:57:55
+
+then what we're doing
+00:58:02
+
+is having the AI agent hill climb and try to improve the alignment. And that's
+00:58:02
+
+what we're showing
+00:58:07
+
+here. That's what version one, two, three here that Shraya is doing is
+00:58:08
+
+basically, yeah, like,
+00:58:11
+
+trying and having the agent improve the prompt. Yeah, so like, let me get even
+00:58:12
+
+try for a V4,
+00:58:17
+
+right? Because we don't have a V4. So maybe it's like, helpful to just go
+00:58:18
+
+through that example.
+00:58:22
+
+Yes, I trust this folder. All right. So I can see here, I need to re-up the to
+00:58:23
+
+keep my MCP.
+00:58:29
+
+But anyways, I can see here, right? Maybe I'll ask it, can you improve on the T
+00:58:30
+
+PR and TNR?
+00:58:36
+
+This prompt, it has been improving, but like a V4. Use the automated evaluator
+00:58:42
+
+skill.
+00:58:54
+
+Oh, no, let's go.
+00:58:55
+
+I think it'll take some time because at least for me, I've just
+00:59:00
+
+yeah, found that these things are quite slow. But you can see here, right? Like
+00:59:08
+
+, it'll look at,
+00:59:12
+
+you know, what are the different prompts that have happened, the different
+00:59:13
+
+responses that have
+00:59:19
+
+happened. And then the whole point is our agent to propose a V4.txt and then
+00:59:20
+
+run the V4.txt on our
+00:59:25
+
+traces and then see what the TPR, TNR is there. So there are some questions in
+00:59:28
+
+the chat around,
+00:59:32
+
+you know, how do we improve on these judge prompts? Well, you can manually do
+00:59:32
+
+it yourself or you can
+00:59:36
+
+ask your agent to improve on it. The point here is like we have a pretty good
+00:59:37
+
+harness, right? We have a script that computes the TPR, TNR, and we are
+00:59:41
+
+objectively hill climbing
+00:59:46
+
+on those metrics. And that is computed against our human labels. Yeah, see, you
+00:59:46
+
+can see here,
+00:59:52
+
+like I'll examine them as classified examples more closely, etc. So I won't go
+00:59:53
+
+into this in
+00:59:58
+
+greater detail, but it'll take like 10 minutes to come up with this. And we are
+00:59:59
+
+kind of running
+01:00:03
+
+out of time. So let me move to back to the slides. I'm going to skip this stuff
+01:00:03
+
+. I'm going to post
+01:00:12
+
+these slides so people might have questions of like, okay, really trying to int
+01:00:14
+
+uit what happens
+01:00:18
+
+with the false positive, false passes and false failures. You should check out
+01:00:19
+
+these slides. I'm
+01:00:23
+
+putting them on Nathan. But for next time, we have homework five. So homework
+01:00:24
+
+five is all about
+01:00:29
+
+just picking one failure mode from homework four to evaluate with a judge. So
+01:00:30
+
+what you're going to
+01:00:34
+
+do is you're going to split your label choices into training dev and test sets.
+01:00:35
+
+As we did today,
+01:00:39
+
+you're going to use the skill to draft your judge, use the skill to review to
+01:00:40
+
+try to hill climb on
+01:00:45
+
+the TPR and TNR and by the end report that. And you can do this for as many
+01:00:46
+
+criteria as you want.
+01:00:50
+
+You can also skip doing this homework on your data and do your homework on your
+01:00:51
+
+real,
+01:00:55
+
+your real product. So you don't have to use car wheel. It's all really optional
+01:00:56
+
+just for your
+01:01:01
+
+own practice. And I think that concludes this lesson. I'll see you folks in
+01:01:02
+
+office hours.
+01:01:08
+
+And if you didn't get your question answered here, check the Discord. I highly
+01:01:09
+
+recommend asking
+01:01:17
+
+questions in Discord. Then you'll get much more in-depth responses. So I
+01:01:18
+
+encourage you to go
+01:01:25
+
+there. You can post in week four or you can really post to any channel. Just
+01:01:26
+
+make sure you tag us
+01:01:29
+
+when asking questions. And I'll see you in office hours as well.

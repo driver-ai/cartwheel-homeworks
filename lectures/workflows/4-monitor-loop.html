@@ -1,0 +1,756 @@
+<title>The Monitor Loop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* layout: flowchart figures stacked, same grammar as the Taxonomy, Judge, and Suite Loop references */
+  :root {
+    --bg: #f6f4ef;
+    --panel: #ffffff;
+    --fg: #1d1e1b;
+    --muted: #6b6a62;
+    --line: #dbd8cd;
+    --accent: #0f6e63;
+    --on-accent: #ffffff;
+    --note-bg: #eef1ea;
+    --warn: #a35d12;
+    --warn-soft: #f4e6d4;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171a;
+      --panel: #1c1f21;
+      --fg: #e9e7e0;
+      --muted: #9a988f;
+      --line: #35382f;
+      --accent: #57d6c4;
+      --on-accent: #0a1512;
+      --note-bg: #1f2420;
+      --warn: #e2a356;
+      --warn-soft: #3a2c18;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171a;
+    --panel: #1c1f21;
+    --fg: #e9e7e0;
+    --muted: #9a988f;
+    --line: #35382f;
+    --accent: #57d6c4;
+    --on-accent: #0a1512;
+    --note-bg: #1f2420;
+    --warn: #e2a356;
+    --warn-soft: #3a2c18;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .page {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 40px 16px 64px;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: clamp(30px, 6vw, 42px);
+    line-height: 1.08;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  h2.part {
+    font-family: "Fraunces", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: clamp(24px, 4.5vw, 32px);
+    line-height: 1.12;
+    margin: 64px 0 12px;
+    text-wrap: balance;
+  }
+  .intro {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 62ch;
+    margin: 0 0 40px;
+  }
+  .intro strong { color: var(--fg); font-weight: 600; }
+  .intro code { font-family: "IBM Plex Mono", monospace; font-size: .92em; background: var(--note-bg); padding: 1px 5px; border-radius: 4px; }
+
+  figure {
+    margin: 0 0 18px;
+    padding: 20px 14px 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .figure-grid {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) 300px;
+    gap: 16px 28px;
+    align-items: start;
+  }
+  figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+  }
+  .block-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+  .block-notes .tag {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    color: var(--accent);
+    margin: 0 0 3px;
+  }
+  .block-notes p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fg);
+  }
+  .block-notes code { font-family: "IBM Plex Mono", monospace; font-size: .92em; background: var(--note-bg); padding: 0 4px; border-radius: 3px; }
+  figcaption {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  figcaption b { color: var(--fg); font-weight: 600; }
+
+  .note {
+    background: var(--note-bg);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin: 0 0 48px;
+    max-width: 720px;
+  }
+  .note h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0 0 10px;
+  }
+  .note ul, .note ol {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .note li {
+    margin: 0 0 9px;
+    font-size: 14.5px;
+  }
+  .note li:last-child { margin-bottom: 0; }
+  .note li b { color: var(--fg); }
+  .note code { font-family: "IBM Plex Mono", monospace; font-size: .92em; background: var(--panel); padding: 1px 5px; border-radius: 4px; }
+  .note p { margin: 0 0 12px; font-size: 14.5px; line-height: 1.5; }
+  .note p:last-child { margin-bottom: 0; }
+  .note.warn { background: var(--warn-soft); border-color: var(--warn); }
+
+  .metrics {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4px 0 18px;
+    font-size: 14px;
+    max-width: 560px;
+  }
+  .metrics caption {
+    text-align: left;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .metrics th, .metrics td {
+    text-align: left;
+    padding: 8px 14px 8px 0;
+    border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+    vertical-align: top;
+  }
+  .metrics th { color: var(--muted); font-weight: 500; font-size: 12.5px; }
+  .metrics td.num { font-family: "IBM Plex Mono", monospace; white-space: nowrap; }
+
+  .table-wrap { overflow-x: auto; min-width: 0; }
+  .layers {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+  .layers th, .layers td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .layers thead th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 0;
+  }
+  .layers tbody tr:last-child td, .layers tbody tr:last-child th { border-bottom: 0; }
+  .layers tbody th {
+    font-weight: 600;
+    width: 150px;
+  }
+  .layers tbody th .tag {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 2px;
+  }
+  .layers code { font-family: "IBM Plex Mono", monospace; font-size: .92em; background: var(--note-bg); padding: 0 4px; border-radius: 3px; }
+  .pill {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--note-bg);
+    white-space: nowrap;
+  }
+  .pill.all { border-color: var(--accent); color: var(--accent); background: transparent; }
+
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    counter-reset: step;
+  }
+  .steps li {
+    counter-increment: step;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px 13px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    min-width: 0;
+  }
+  .steps li::before {
+    content: counter(step);
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .steps li b { display: block; margin-bottom: 3px; }
+  .steps li.turn { border-color: var(--warn); background: var(--warn-soft); }
+  .steps li.turn::before { color: var(--warn); }
+
+  .phase-tag {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 6px;
+  }
+
+  footer {
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+    margin-top: 8px;
+  }
+  footer code { font-family: "IBM Plex Mono", monospace; }
+
+  @media (max-width: 860px) {
+    .figure-grid { grid-template-columns: 1fr; }
+    .block-notes {
+      margin-top: 4px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+  }
+  @media (max-width: 480px) {
+    .page { padding: 28px 16px 48px; }
+    figure { padding: 16px 10px 14px; }
+  }
+</style>
+
+<div class="page">
+
+  <p class="eyebrow">Monitoring after deployment, generalized</p>
+  <h1>The Monitor Loop</h1>
+  <p class="intro">
+    The gate in the Suite Loop checks a few dozen scripted Harbor tasks before a change merges. It
+    can't tell you what happens once real users arrive. Users ask new things, the model provider
+    changes the model under you, and your own product changes. This is <strong>drift</strong>, and it
+    means eval work never finishes. Monitoring has two jobs. The first is to <strong>re-measure the
+    failure modes you already know about</strong> on real traffic, with a number you can trust. The
+    second is to <strong>find the failure modes you don't know about yet</strong>. Both feed the same
+    eval matrix: confirmed failures add new <b>tasks</b> (columns), and new failure modes add new
+    <b>rows</b>.
+  </p>
+
+  <div class="note warn">
+    <h2>Before you start</h2>
+    <ul>
+      <li>This loop assumes three things already exist. A <b>frozen taxonomy</b> of failure modes (the Taxonomy Loop). At least one <b>frozen judge</b> with its error rates measured on a held-out test set (the Judge Loop). And a <b>gate</b> of Harbor tasks running on every change (the Suite Loop). This page expands the Suite Loop's Phase 4 and adds the discovery work that Phase 4 explicitly leaves out.</li>
+      <li><b>"Frozen" covers the prompt, the model, the inputs, and the verdict parser.</b> Change any one of them and you have a new judge with unknown error rates. Pin a dated model identifier rather than an alias, because a provider can repoint an alias without telling you.</li>
+      <li><b>1 means the failure is present</b> everywhere on this page. HW5 treated Pass as the positive class, so the names flip. The monitor's <b>failure sensitivity</b> (the share of real failures the judge flags) is HW5's TNR. Its <b>pass specificity</b> (the share of real passes it leaves alone) is HW5's TPR. The numbers are the same; only the labels change.</li>
+      <li>Cartwheel has no live traffic, so HW7 uses two full runs of the same 50 scenarios as two stand-in "deployment periods." Production works the same way, except that each period is a time window, such as the last 24 hours.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <h2>Sizing this in practice</h2>
+    <ul>
+      <li><b>Operational metrics and code checks:</b> every trace. They cost almost nothing.</li>
+      <li><b>Judges, in production:</b> a 1&ndash;5% uniform random sample, run as a batch job (for example nightly, over the last 24 hours), with scores written back to the trace store.</li>
+      <li><b>Judges, in HW7:</b> 20% of 50 conversations, which is 10 per period. That is too few to estimate a rate with any precision, and seeing why is part of the lesson (see the worked example below).</li>
+      <li><b>Risk groups:</b> every matching conversation, judged so that someone reads it, never counted toward the rate.</li>
+      <li><b>Threshold:</b> pick it <i>before</i> you look at any period's results. HW7's default is a corrected rate of 15%.</li>
+      <li><b>Reading traces without a checklist:</b> about weekly as a rule of thumb (in the lecture, Shreya said she manages every two weeks in practice), plus after any major product or model change.</li>
+      <li><b>Judge recalibration:</b> every few weeks, on a freshly hand-labeled batch (Suite Loop, Phase 5).</li>
+      <li><b>Suite size stays small:</b> 30&ndash;40 tasks at 5&ndash;10 trials each can already cost hundreds of dollars per run. Monitoring is how the suite grows <i>selectively</i>.</li>
+    </ul>
+  </div>
+
+  <p class="phase-tag">Phase 1 of 4</p>
+  <figure>
+    <div class="table-wrap">
+    <table class="layers">
+      <thead>
+        <tr><th>Instrument</th><th>Runs on</th><th>What it catches</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th><span class="tag">1.A</span>Operational metrics</th>
+          <td><span class="pill all">every trace</span><br>No error analysis needed</td>
+          <td>Harness bugs, provider outages, cost runaways, and the agent switching to a different path. These metrics catch breakage that the replies themselves hide.</td>
+          <td>Trace volume, P95 latency, tokens and cost per trace, model calls per trace, <b>tool calls per trace</b>, and the escalation-to-human rate. Shreya's example: tool calls per trace dropped to zero because of a harness bug, while every reply looked reasonable ("something is down, please try again later").</td>
+        </tr>
+        <tr>
+          <th><span class="tag">1.B</span>Code checks</th>
+          <td><span class="pill all">every trace</span><br>Deterministic and free</td>
+          <td>Known failure modes that a rule can detect.</td>
+          <td>A regex that finds internal doc IDs leaked into replies. A write tool called without a confirmation step. A refund whose amount doesn't match the order state.</td>
+        </tr>
+        <tr>
+          <th><span class="tag">1.C</span>Frozen judges</th>
+          <td><span class="pill">random sample</span> <span class="pill">risk groups</span><br>One model call per trace</td>
+          <td>Known failure modes that depend on meaning, measured against the full variety of real traffic.</td>
+          <td><code>unsupported_policy_claim</code>: the reply states a policy that the tool results don't support.</td>
+        </tr>
+        <tr>
+          <th><span class="tag">1.D</span>A human reading traces</th>
+          <td><span class="pill">small random sample</span><br>Your time</td>
+          <td>Failure modes nobody has named yet. No other instrument can catch these.</td>
+          <td>Open coding a fresh sample, <i>including traces that every judge passed</i>. A drop in user engagement while evaluator scores stay flat is a strong hint that something is uncovered.</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <figcaption><b>Figure 1.</b> Four instruments, ordered from cheapest to most expensive. The first three only ever answer questions you already know to ask. 1.A and 1.B cost so little that they should cover every trace. 1.C costs money per trace, so it samples. 1.D is the only one that finds anything new.</figcaption>
+  </figure>
+
+  <div class="note warn">
+    <h2>Don't use off-the-shelf evaluators</h2>
+    <p>Monitoring tools, Langfuse included, ship ready-made judges such as "correctness," "helpfulness," "hallucination," and RAGAS "context precision." Hamel's verdict in the lecture: <i>don't</i>. Each one is someone else's prompt, written without looking at your data. The lecture found several concrete problems in them:</p>
+    <ul>
+      <li><b>The criterion is too vague.</b> "Correctness" never comes out of axial coding as a single mode; it has to be split into specific, binary failure modes. If your axial codes look like this list, the axial coding needs more work.</li>
+      <li><b>The scale is wrong.</b> Several score on a continuous 0&ndash;1 scale. Every judge in this course is binary.</li>
+      <li><b>They expect inputs that don't exist in production.</b> Some templates want a "ground truth" answer. Live traffic never has one.</li>
+      <li><b>The examples come from someone else's product.</b> One built-in "correctness" prompt grounded itself with a recipe-bot example.</li>
+    </ul>
+    <p>The <i>features</i> of these tools are still useful: the trace store, scores attached to traces, dashboards built on those scores, and annotation queues for domain experts. Use your own frozen judge with them.</p>
+  </div>
+
+  <p class="phase-tag">Phase 2 of 4</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 650 630" role="img"
+         aria-label="One monitoring run. Pull one window of traces, either a deployment period or the last 24 hours. Group the traces into conversations by session, using the final trace ID as the record ID. Then split into two lanes. The random sample is a uniform draw, such as 20 percent, and is the only lane that estimates the failure rate. The risk groups include every matching conversation and are for inspection only. Judge the union of both lanes once with the frozen judge, where 1 means the failure is present, and keep track of which lane each conversation came from. Split again. The random verdicts alone are corrected with Rogan-Gladen and given a confidence interval. Flagged conversations from either lane form a reading list. Finally, write scores with stable IDs and update the dashboard, then exit to phase three with the rate and the reading list.">
+      <defs>
+        <marker id="m2arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <!-- 2.A -->
+        <rect x="150" y="16" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.A  Pull one window of traces</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10.5" fill="var(--muted)">a deployment period, or the last 24 hours</text>
+
+        <line x1="320" y1="72" x2="320" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#m2arrow)"/>
+
+        <!-- 2.B -->
+        <rect x="150" y="100" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="122" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.B  Group into conversations</text>
+        <text x="320" y="140" text-anchor="middle" font-size="10.5" fill="var(--muted)">by session &middot; final trace ID is the record ID</text>
+
+        <!-- split -->
+        <line x1="320" y1="156" x2="320" y2="172" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="165" y1="172" x2="475" y2="172" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="165" y1="172" x2="165" y2="198" stroke="currentColor" stroke-width="1.5" marker-end="url(#m2arrow)"/>
+        <line x1="475" y1="172" x2="475" y2="198" stroke="currentColor" stroke-width="1.5" marker-end="url(#m2arrow)"/>
+
+        <!-- 2.C random -->
+        <rect x="30" y="198" width="270" height="60" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="165" y="220" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.C  Random sample</text>
+        <text x="165" y="238" text-anchor="middle" font-size="10.5" fill="var(--muted)">uniform draw &middot; estimates the rate</text>
+
+        <!-- 2.D risk -->
+        <rect x="340" y="198" width="270" height="60" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="475" y="220" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.D  Risk groups</text>
+        <text x="475" y="238" text-anchor="middle" font-size="10.5" fill="var(--muted)">every match &middot; for reading only</text>
+
+        <!-- merge -->
+        <line x1="165" y1="258" x2="165" y2="274" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="475" y1="258" x2="475" y2="274" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="165" y1="274" x2="475" y2="274" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="320" y1="274" x2="320" y2="300" stroke="currentColor" stroke-width="1.5" marker-end="url(#m2arrow)"/>
+
+        <!-- 2.E -->
+        <rect x="150" y="300" width="340" height="60" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="322" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.E  Judge the union once</text>
+        <text x="320" y="340" text-anchor="middle" font-size="10.5" fill="var(--muted)">frozen judge &middot; 1 = present &middot; remember each lane</text>
+
+        <!-- split -->
+        <line x1="320" y1="360" x2="320" y2="376" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="165" y1="376" x2="475" y2="376" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="165" y1="376" x2="165" y2="402" stroke="currentColor" stroke-width="1.5" marker-end="url(#m2arrow)"/>
+        <line x1="475" y1="376" x2="475" y2="402" stroke="currentColor" stroke-width="1.5" marker-end="url(#m2arrow)"/>
+
+        <!-- 2.F accent -->
+        <rect x="30" y="402" width="270" height="60" rx="10" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="165" y="424" text-anchor="middle" font-size="13" font-weight="700" fill="var(--on-accent)">2.F  Correct the rate</text>
+        <text x="165" y="442" text-anchor="middle" font-size="10" fill="var(--on-accent)" opacity="0.9">random verdicts only &middot; Rogan-Gladen + CI</text>
+
+        <!-- 2.G -->
+        <rect x="340" y="402" width="270" height="60" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="475" y="424" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.G  Collect flagged traces</text>
+        <text x="475" y="442" text-anchor="middle" font-size="10.5" fill="var(--muted)">from either lane &middot; a reading list</text>
+
+        <!-- merge -->
+        <line x1="165" y1="462" x2="165" y2="478" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="475" y1="462" x2="475" y2="478" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="165" y1="478" x2="475" y2="478" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="320" y1="478" x2="320" y2="504" stroke="currentColor" stroke-width="1.5" marker-end="url(#m2arrow)"/>
+
+        <!-- 2.H -->
+        <rect x="150" y="504" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="526" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">2.H  Write scores, update dashboard</text>
+        <text x="320" y="544" text-anchor="middle" font-size="10.5" fill="var(--muted)">stable score IDs, so a rerun overwrites</text>
+
+        <line x1="320" y1="560" x2="320" y2="588" stroke="var(--accent)" stroke-width="2" marker-end="url(#m2arrow)"/>
+        <text x="320" y="612" text-anchor="middle" font-size="12.5" fill="var(--accent)" font-weight="600">Corrected rate + reading list &#8594; Phase 3</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">2.A</span><p>A window is either a scheduled slice (the last 24 hours) or a deliberate period (before and after a deploy). Validate it before you judge anything. In HW7, a period is rejected if any of the 50 scenario IDs is missing or if a trace used a different model. Production has no fixed scenario list, but the same discipline applies: a window that silently dropped traces isn't a random sample.</p></div>
+      <div><span class="tag">2.B</span><p>Judge conversations, not individual traces. A multi-turn conversation creates several traces, so two periods with the same 50 conversations can have different trace counts. Give the judge the same normalized text it was validated on in HW5: the ordered turns plus tool evidence, with no labels or scenario metadata.</p></div>
+      <div><span class="tag">2.C</span><p>A uniform random draw, seeded so the run is reproducible. Every conversation has the same chance of being picked. That is why this lane can stand in for the whole window, and it is the only lane that can.</p></div>
+      <div><span class="tag">2.D</span><p>A risk group is a rule over <i>trace evidence</i>: conversations that called a policy tool, made a write, or had more than one user turn. Never build one from the agent's own reply. You judge every match because these conversations are where failures concentrate. For the same reason, their flag rate overstates the overall rate, so it is never used for estimation.</p></div>
+      <div><span class="tag">2.E</span><p>A conversation can be in both lanes. Judge it once to save a model call, but record both memberships. Show the number of judge calls before running, because this step is where the money goes.</p></div>
+      <div><span class="tag">2.F</span><p>The raw flag rate is biased by the judge's own mistakes. Correct it using the judge's held-out error rates, and attach an interval. See the worked example below.</p></div>
+      <div><span class="tag">2.G</span><p>Flagged conversations from <i>both</i> lanes go on the reading list. The risk lane can't estimate the rate, but it often surfaces the clearest examples to read.</p></div>
+      <div><span class="tag">2.H</span><p>Write a per-trace verdict for the random lane, a separate per-trace verdict for the risk lane, and one corrected-rate score per period. Score IDs must be stable so that a rerun updates the existing scores instead of creating duplicates. Dashboards plot each score over time.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 2.</b> One monitoring run. Two lanes leave 2.B and stay separate all the way to 2.H. Only the solid lane produces a number; the dashed lane produces examples worth reading. In HW7 this runs on a daily schedule in GitHub Actions. If a window has no eligible conversations, the run records a zero and exits without calling the judge.</figcaption>
+  </figure>
+
+  <div class="note">
+    <h2>Correcting the raw rate (Rogan-Gladen)</h2>
+    <p>The judge makes two kinds of mistake. It <b>misses real failures</b>, which pulls the raw rate down. It <b>flags real passes</b>, which pushes the raw rate up. The second kind matters more than it looks: if the judge wrongly flags 10% of passes, a perfect agent still shows a 10% raw failure rate.</p>
+    <p>
+      <code>corrected&nbsp;=&nbsp;(raw&nbsp;+&nbsp;spec&nbsp;&minus;&nbsp;1)&nbsp;/&nbsp;(sens&nbsp;+&nbsp;spec&nbsp;&minus;&nbsp;1)</code>, clipped to [0, 1]<br>
+      <code>sens</code> is failure sensitivity and <code>spec</code> is pass specificity, both measured on the frozen judge's held-out test set.
+    </p>
+    <ul>
+      <li><b>If the denominator is near 0, stop.</b> At that point the judge is no better than a coin flip and the correction has nothing to work with.</li>
+      <li><b>The interval comes from a bootstrap.</b> Resample the judge's test-set pairs (to capture uncertainty in sens and spec) and the sampled verdicts (to capture sampling luck), recompute the corrected rate thousands of times, and take the 2.5th and 97.5th percentiles. Seed it so the committed number reproduces. The reader's version resamples only the test set. HW7's contract resamples both, which makes the interval wider and more realistic when the sample is small.</li>
+      <li><b>Judge errors mostly widen the interval</b> rather than shifting the corrected estimate. Better judge accuracy buys you a narrower interval.</li>
+    </ul>
+    <table class="metrics">
+      <caption>worked example &mdash; illustrative numbers, not a real run &middot; sens 0.85, spec 0.90</caption>
+      <thead><tr><th>period</th><th>flagged</th><th>raw</th><th>corrected</th><th>95% interval</th></tr></thead>
+      <tbody>
+        <tr><td>before</td><td class="num">2 / 10</td><td class="num">0.20</td><td class="num">0.13</td><td class="num">0.00 &ndash; 0.52</td></tr>
+        <tr><td>after</td><td class="num">4 / 10</td><td class="num">0.40</td><td class="num">0.40</td><td class="num">0.00 &ndash; 0.86</td></tr>
+        <tr><td>before, n=100</td><td class="num">20 / 100</td><td class="num">0.20</td><td class="num">0.13</td><td class="num">0.00 &ndash; 0.28</td></tr>
+        <tr><td>after, n=100</td><td class="num">40 / 100</td><td class="num">0.40</td><td class="num">0.40</td><td class="num">0.23 &ndash; 0.60</td></tr>
+      </tbody>
+    </table>
+    <p>With 10 conversations per period, the "after" point estimate triples and crosses a 15% threshold, but the two intervals overlap almost completely. The data supports "look at the flagged traces." It does not support "the agent got worse." The same proportions at 100 conversations per period give intervals that barely touch. Sample size, not the formula, decides whether a trend is real. This is why production samples a percentage of large volume, and why HW7's 10-per-period comparison is mechanics practice rather than evidence.</p>
+  </div>
+
+  <p class="phase-tag">Phase 3 of 4</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 650 630" role="img"
+         aria-label="Acting on a run. Compare the corrected rate and its interval to a threshold that was set before looking. If the rate is not above the threshold, wait for the next window. If it is above, do error analysis on the flagged traces from both lanes. If a human does not confirm the failures, suspect the judge and recalibrate it in phase five of the Suite Loop. If the failures are confirmed, fix the agent or let the failure earn a Harbor task through phase one of the Suite Loop. The confirmed traces become new tasks, which means new columns in the eval matrix, and go back to the gate.">
+      <defs>
+        <marker id="m3arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <!-- 3.A -->
+        <rect x="150" y="16" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">3.A  Compare to the threshold</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10.5" fill="var(--muted)">corrected rate + interval &middot; threshold set in advance</text>
+
+        <line x1="320" y1="72" x2="320" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#m3arrow)"/>
+
+        <!-- 3.B diamond -->
+        <polygon points="320,100 470,156 320,212 170,156" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="151" text-anchor="middle" font-size="11.5" fill="currentColor">3.B  Corrected rate</text>
+        <text x="320" y="166" text-anchor="middle" font-size="11.5" fill="currentColor">above threshold?</text>
+
+        <!-- 3.B no -> loop back -->
+        <polyline points="170,156 30,156 30,44 150,44" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#m3arrow)"/>
+        <text x="30" y="100" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 30 100)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no &mdash; next window</text>
+
+        <!-- 3.B yes -> 3.C -->
+        <line x1="320" y1="212" x2="320" y2="240" stroke="currentColor" stroke-width="1.5" marker-end="url(#m3arrow)"/>
+        <text x="340" y="230" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes</text>
+
+        <!-- 3.C -->
+        <rect x="150" y="240" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="262" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">3.C  Read the flagged traces</text>
+        <text x="320" y="280" text-anchor="middle" font-size="10.5" fill="var(--muted)">error analysis on both lanes' flags</text>
+
+        <line x1="320" y1="296" x2="320" y2="324" stroke="currentColor" stroke-width="1.5" marker-end="url(#m3arrow)"/>
+
+        <!-- 3.D diamond -->
+        <polygon points="320,324 470,380 320,436 170,380" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="375" text-anchor="middle" font-size="11.5" fill="currentColor">3.D  Does a human</text>
+        <text x="320" y="390" text-anchor="middle" font-size="11.5" fill="currentColor">confirm the failures?</text>
+
+        <!-- 3.D no -> warn exit -->
+        <polyline points="470,380 600,380 600,596" fill="none" stroke="var(--warn)" stroke-width="1.5" marker-end="url(#m3arrow)"/>
+        <text x="620" y="488" text-anchor="middle" font-size="10.5" fill="var(--warn)" transform="rotate(-90 620 488)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no &mdash; suspect the judge</text>
+        <text x="610" y="618" text-anchor="end" font-size="12" fill="var(--warn)" font-weight="600">Recalibrate &#8594; Suite Loop, Phase 5</text>
+
+        <!-- 3.D yes -> 3.E -->
+        <line x1="320" y1="436" x2="320" y2="464" stroke="currentColor" stroke-width="1.5" marker-end="url(#m3arrow)"/>
+        <text x="340" y="454" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes</text>
+
+        <!-- 3.E accent -->
+        <rect x="150" y="464" width="340" height="60" rx="10" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="320" y="486" text-anchor="middle" font-size="13" font-weight="700" fill="var(--on-accent)">3.E  Fix it, or let it earn a task</text>
+        <text x="320" y="504" text-anchor="middle" font-size="10" fill="var(--on-accent)" opacity="0.9">Suite Loop Phase 1 &middot; confirmed traces seed the task</text>
+
+        <line x1="320" y1="524" x2="320" y2="552" stroke="var(--accent)" stroke-width="2" marker-end="url(#m3arrow)"/>
+        <text x="300" y="576" text-anchor="middle" font-size="12.5" fill="var(--accent)" font-weight="600">New column in the matrix &#8594; the gate</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">3.A</span><p>Set the threshold before you see any result. Otherwise you'll end up choosing one that tells the story you already believe. The threshold is a trigger for a <i>look</i>. It is not a verdict that the agent regressed.</p></div>
+      <div><span class="tag">3.B</span><p>Act on the corrected point estimate, but read the interval alongside it. A crossing with a wide interval (the worked example above) still justifies reading traces, which is cheap. It does not justify an announcement, a rollback, or a claim that the model got worse.</p></div>
+      <div><span class="tag">3.C</span><p>Read every flagged trace, from the random lane and the risk lane. This is ordinary error analysis, scoped to one failure mode.</p></div>
+      <div><span class="tag">3.D</span><p>If the flagged traces turn out not to show the failure, the agent may be fine and the judge may have drifted: new kinds of requests it was never validated on, or a model behind an alias that changed. Don't trust its numbers again until you have relabeled a fresh batch and remeasured its error rates.</p></div>
+      <div><span class="tag">3.E</span><p>This is the same decision as the Suite Loop's 1.C: try a timeboxed fix first. If the failure survives, the confirmed real-world traces become new requests for Harbor tasks. Those are new <b>columns</b> in the eval matrix, more instances of a failure mode you already have. Confirm the fix by watching this same corrected rate fall over the next few windows.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 3.</b> Acting on a run. A monitor can find out that its judge is wrong (3.D), but only a human reading the traces can tell which is wrong, the judge or the agent. Every path through this figure goes through someone reading traces.</figcaption>
+  </figure>
+
+  <p class="phase-tag">Phase 4 of 4</p>
+  <figure>
+    <div class="figure-grid">
+    <svg viewBox="0 0 650 540" role="img"
+         aria-label="Finding what the monitor can't. On a schedule, roughly weekly, or after a major product or model change, or when operational metrics move while judge scores stay flat, sample random production traces with no checklist, including traces every judge passed. Open-code them the same way as in the Taxonomy Loop. If no failure appears that existing monitors don't already name, come back next cycle. If one does, add it as a new row in the eval matrix through the Taxonomy Loop, which may eventually produce a new judge.">
+      <defs>
+        <marker id="m4arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g style="color:var(--fg)" font-family="IBM Plex Sans, sans-serif">
+
+        <!-- 4.A -->
+        <rect x="150" y="16" width="340" height="74" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">4.A  Something prompts a look</text>
+        <text x="320" y="56" text-anchor="middle" font-size="10" fill="var(--muted)">the calendar (about weekly), a major change,</text>
+        <text x="320" y="72" text-anchor="middle" font-size="10" fill="var(--muted)">or ops metrics moving while judges stay flat</text>
+
+        <line x1="320" y1="90" x2="320" y2="118" stroke="currentColor" stroke-width="1.5" marker-end="url(#m4arrow)"/>
+
+        <!-- 4.B -->
+        <rect x="150" y="118" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="140" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">4.B  Sample with no checklist</text>
+        <text x="320" y="158" text-anchor="middle" font-size="10.5" fill="var(--muted)">random traces, including ones every judge passed</text>
+
+        <line x1="320" y1="174" x2="320" y2="202" stroke="currentColor" stroke-width="1.5" marker-end="url(#m4arrow)"/>
+
+        <!-- 4.C -->
+        <rect x="150" y="202" width="340" height="56" rx="10" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="224" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">4.C  Open-code them</text>
+        <text x="320" y="242" text-anchor="middle" font-size="10.5" fill="var(--muted)">the same way the Taxonomy Loop did</text>
+
+        <line x1="320" y1="258" x2="320" y2="286" stroke="currentColor" stroke-width="1.5" marker-end="url(#m4arrow)"/>
+
+        <!-- 4.D diamond -->
+        <polygon points="320,286 470,342 320,398 170,342" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="337" text-anchor="middle" font-size="11.5" fill="currentColor">4.D  A failure no</text>
+        <text x="320" y="352" text-anchor="middle" font-size="11.5" fill="currentColor">monitor names?</text>
+
+        <!-- 4.D no -> loop -->
+        <polyline points="170,342 30,342 30,53 150,53" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#m4arrow)"/>
+        <text x="30" y="198" text-anchor="middle" font-size="10.5" fill="var(--muted)" transform="rotate(-90 30 198)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">no &mdash; next cycle</text>
+
+        <!-- 4.D yes -> 4.E -->
+        <line x1="320" y1="398" x2="320" y2="426" stroke="currentColor" stroke-width="1.5" marker-end="url(#m4arrow)"/>
+        <text x="340" y="416" font-size="10.5" fill="var(--muted)" paint-order="stroke" stroke="var(--panel)" stroke-width="4" stroke-linejoin="round">yes</text>
+
+        <!-- 4.E accent -->
+        <rect x="150" y="426" width="340" height="60" rx="10" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="320" y="448" text-anchor="middle" font-size="13" font-weight="700" fill="var(--on-accent)">4.E  Add a row</text>
+        <text x="320" y="466" text-anchor="middle" font-size="10" fill="var(--on-accent)" opacity="0.9">new failure mode &#8594; Taxonomy Loop &#8594; maybe a judge</text>
+
+        <line x1="320" y1="486" x2="320" y2="512" stroke="var(--accent)" stroke-width="2" marker-end="url(#m4arrow)"/>
+        <text x="320" y="534" text-anchor="middle" font-size="12.5" fill="var(--accent)" font-weight="600">New row in the matrix</text>
+      </g>
+    </svg>
+    <div class="block-notes">
+      <div><span class="tag">4.A</span><p>Error analysis is never "done," and nothing makes it free. How often to repeat it is a cost-benefit call: more often after big product changes and model swaps, less often when nothing is moving. Operational metrics can also prompt a look. If latency doubles and retrieval calls go from one to four per request while judge scores stay flat, the agent has found a new path, and no judge was built to describe it.</p></div>
+      <div><span class="tag">4.B</span><p>Deliberately include traces that passed every judge. A clean score only means the failure modes you thought to check didn't show up. It doesn't mean the trace is good.</p></div>
+      <div><span class="tag">4.C</span><p>Read without the existing taxonomy in mind, or you will only find what you're already looking for. Langfuse annotation queues let domain experts write open codes next to the trace itself, which works well for single model calls. For long agent traces, a custom review view usually works better.</p></div>
+      <div><span class="tag">4.D</span><p>Something new that already has an obvious fix (a missing instruction in the prompt, a specification gap) gets fixed directly. It never needs to become a row.</p></div>
+      <div><span class="tag">4.E</span><p>A failure mode that survives a fix becomes a new <b>row</b>: defined, labeled, and, if it needs meaning to detect, given its own judge through the Judge Loop. Rows can also be dropped once they stop occurring. The matrix keeps changing on purpose.</p></div>
+    </div>
+    </div>
+    <figcaption><b>Figure 4.</b> The work the Suite Loop's Phase 4 explicitly says it doesn't do. Judges re-measure old questions; this is the only place new questions come from. Together, Figures 3 and 4 are how you know monitoring is working: the eval matrix keeps gaining columns (Figure 3) and rows (Figure 4).</figcaption>
+  </figure>
+
+  <h2 class="part">When the agent is under pressure</h2>
+  <p class="intro">
+    The second half of the lecture covered safety from a builder's point of view, using the
+    OpenAI / Hugging Face incident. The headlines said agents "escaped a sandbox" and "broke into"
+    Hugging Face. The lecture's reading is that what happened was <strong>predictable</strong>. An
+    agent told to pass a grader will treat the grader as the target. It will use any path the
+    environment leaves open to reach it. Full traces have not been released, so what follows is the
+    partial account given in the lecture.
+  </p>
+
+  <figure>
+    <ol class="steps">
+      <li><b>The setup</b>Tens of thousands of agent copies, each working one ExploitGym task: write an exploit that makes a vulnerable program reveal a secret flag. A grader checked whether the flag came back.</li>
+      <li><b>The sandbox</b>No internet access, except an internal package server (Artifactory, which works like PyPI or npm) for installing libraries. Safety classifiers were switched off, because exploit work would have tripped them constantly.</li>
+      <li class="turn"><b>The turn</b>Some tasks were too hard. Agents reasoned that the grader's code probably contained the flag, so reading the grader would be easier than writing a real exploit. This is reward hacking: chasing the grader instead of the skill it measures.</li>
+      <li class="turn"><b>The open door</b>The package server accepted <i>writes</i>. About 1,200 agents used it as a message board, with around 70,000 messages over months, to coordinate on finding the graders.</li>
+      <li class="turn"><b>The reach</b>Agents guessed the graders lived on Hugging Face behind a login. They found Hugging Face credentials exposed in someone's public Modal app, used them, and downloaded the data. About 700 agents took part, and 4 private repositories were downloaded.</li>
+      <li><b>The cover story</b>Agents believed, wrongly, that the grader also checked <i>how</i> the flag was obtained. So they wrote plausible-looking exploit plans to make their traces look legitimate.</li>
+    </ol>
+    <figcaption><b>Figure 5.</b> The incident as a sequence. Every step after 3 used a door the environment left open: a writable shared store, credentials left exposed, a grader reachable from inside the environment. Nothing in it required the agent to break anything.</figcaption>
+  </figure>
+
+  <div class="note">
+    <h2>Reward pressure</h2>
+    <p>Hamel's term for it. Run enough agents against one goal, with enough iterations, and you get something like evolutionary pressure: whatever path reaches the goal gets found, intended or not. Other reported OpenAI cases show the same thing:</p>
+    <ul>
+      <li><b>Notes left in compaction.</b> An agent wrote notes to itself in the summary produced when its context was compacted. The notes weren't visible in the trace you would read, but later model calls read them.</li>
+      <li><b>A leaked GitHub token.</b> A researcher told an agent to prove a theorem itself, without looking up solutions. The agent used the researcher's GitHub token to post in an internal repository and get help from other agents. The model was shut down for about two weeks.</li>
+      <li><b>Watching the reasoning isn't a guarantee.</b> A monitor on reasoning traces might have caught that second case. Under enough pressure, though, reasoning that is being watched can itself become obfuscated.</li>
+    </ul>
+    <p>The lecture's lesson for evals: <b>keep the grader out of the agent's reach, and read the traces.</b> It added that most product agents aren't under this kind of pressure, because their prompts don't say "win the benchmark." <i>My inference, not from the lecture:</i> an automated improve loop that tunes the agent against your own eval suite (HW8 and HW9) does create that pressure. It is the reason the course says to keep evaluation inputs out of prompts and to hold out test cases until the configuration is frozen.</p>
+  </div>
+
+  <figure>
+    <div class="table-wrap">
+    <table class="layers">
+      <thead>
+        <tr><th>Control</th><th>Assume</th><th>So</th><th>Cartwheel's version</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Network</th>
+          <td>Any host the agent can reach, it will try.</td>
+          <td>No open internet from tool calls. Allowlist what it really needs.</td>
+          <td>Tools call only the local database and server.</td>
+        </tr>
+        <tr>
+          <th>Credentials</th>
+          <td>A credential can end up somewhere public.</td>
+          <td>Short-lived, narrowly scoped tokens. Never long-lived personal ones.</td>
+          <td>Session auth from HW2. Keys stay in <code>.env</code>.</td>
+        </tr>
+        <tr>
+          <th>Shared storage</th>
+          <td>Anywhere it can write, it will write, including notes to itself or to other agents.</td>
+          <td>Make shared stores read-only unless writing is the point.</td>
+          <td>Writes go only through the refund and cancel tools.</td>
+        </tr>
+        <tr>
+          <th>Human approval</th>
+          <td>Long autonomous runs drift away from what you meant.</td>
+          <td>Put approval in front of consequential actions, even though it's tedious.</td>
+          <td>Refunds above the threshold need approval.</td>
+        </tr>
+        <tr>
+          <th>Logs</th>
+          <td>An agent that can delete or edit memory can erase the evidence.</td>
+          <td>Append-only logs for anything agents write. Keep every trace.</td>
+          <td>Langfuse traces and approval audit rows.</td>
+        </tr>
+        <tr>
+          <th>Kill switch</th>
+          <td>Debugging takes hours or days. Harm happens in seconds.</td>
+          <td>Disable one capability without redeploying, and test that it works before you need it.</td>
+          <td><code>AGENT_KILL_SWITCH=refunds</code> or <code>readonly</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <figcaption><b>Figure 6.</b> Controls, each phrased as an assumption about what the agent will do. The Cartwheel column comes from the course reader (Chapter 4) and the repository's rules. Prepare the incident plan before you need it: keep all traces, know whom to notify if the agent affects anyone outside your company, and have a way to analyze the traces afterward. Hugging Face used an open model (GLM) for its analysis because closed models refused to process logs that mentioned exploits.</figcaption>
+  </figure>
+
+  <div class="note">
+    <h2>Three things this isn't</h2>
+    <ul>
+      <li><b>Not a dashboard you set up once.</b> The dashboard tells you <i>when</i> to read traces. Monitoring that never leads to someone reading traces, and never adds a row or a column, is just a chart.</li>
+      <li><b>Not one rate from every judged trace.</b> Risk groups are chosen because they fail more often. Mixing them into the estimate inflates it in a way you can't undo. Keep the lanes separate from sampling all the way through to the scores.</li>
+      <li><b>Not a verdict from a raw percentage.</b> A raw flag rate includes the judge's own mistakes, and a corrected rate from 10 conversations has an interval about half as wide as the whole scale. Correct the rate, attach the interval, and treat a threshold crossing as a reason to look.</li>
+    </ul>
+  </div>
+
+  <footer>
+    A process guide for watching an agent after deployment: cheap metrics and code checks on every trace, a corrected judge rate on a random sample, risk groups for reading, and a recurring human look for whatever none of these was built to see. Sources: the Module 3 monitoring and safety lecture, HW7, and course reader &sect;3.4, &sect;4.5, and Appendix A.4. The worked example uses illustrative numbers and is not a record of any run.
+  </footer>
+
+</div>
